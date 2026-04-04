@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VELION MALL — Light up your every day.</title>
+  <meta name="description" content="VELION MALL — 東京・品川に2026年4月5日グランドオープン。150店舗が集結する新しいショッピング体験。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ========== NAVIGATION ========== -->
+  <header class="nav" id="nav">
+    <div class="nav__inner container">
+      <a href="#hero" class="nav__logo">
+        <span class="nav__logo-icon">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <polygon points="14,2 17,10 26,10 19,15.5 21.5,24 14,19 6.5,24 9,15.5 2,10 11,10" fill="currentColor" opacity="0.9"/>
+          </svg>
+        </span>
+        <span class="nav__logo-text">VELION MALL</span>
+      </a>
+
+      <nav class="nav__menu" aria-label="メインナビゲーション">
+        <ul class="nav__list">
+          <li><a href="#about" class="nav__link">About</a></li>
+          <li><a href="#shops" class="nav__link">Shops</a></li>
+          <li><a href="#floor" class="nav__link">Floor Guide</a></li>
+          <li><a href="#events" class="nav__link">Events</a></li>
+          <li><a href="#access" class="nav__link">Access</a></li>
+        </ul>
+      </nav>
+
+      <button class="nav__hamburger" id="hamburger" aria-label="メニューを開く" aria-expanded="false" aria-controls="mobileMenu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div class="nav__mobile" id="mobileMenu" aria-hidden="true">
+      <ul class="nav__mobile-list">
+        <li><a href="#about" class="nav__mobile-link">About</a></li>
+        <li><a href="#shops" class="nav__mobile-link">Shops</a></li>
+        <li><a href="#floor" class="nav__mobile-link">Floor Guide</a></li>
+        <li><a href="#events" class="nav__mobile-link">Events</a></li>
+        <li><a href="#access" class="nav__mobile-link">Access</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ========== HERO ========== -->
+    <section class="hero" id="hero" aria-label="ヒーローセクション">
+      <div class="hero__bg" aria-hidden="true">
+        <div class="hero__bg-shape hero__bg-shape--1"></div>
+        <div class="hero__bg-shape hero__bg-shape--2"></div>
+        <div class="hero__bg-shape hero__bg-shape--3"></div>
+        <div class="hero__particles" id="particles" aria-hidden="true"></div>
+      </div>
+
+      <div class="hero__content container">
+        <p class="hero__label reveal">GRAND OPEN — 2026.04.05</p>
+        <h1 class="hero__title reveal reveal--delay-1">
+          <span class="hero__title-main">VELION</span>
+          <span class="hero__title-sub">MALL</span>
+        </h1>
+        <p class="hero__catch reveal reveal--delay-2">"Light up your every day."</p>
+        <p class="hero__desc reveal reveal--delay-3">
+          東京・品川に誕生する、新しいショッピング体験。<br>
+          150店舗が紡ぐ、煌めきの空間へ。
+        </p>
+        <div class="hero__actions reveal reveal--delay-4">
+          <a href="#shops" class="btn btn--primary">ショップを見る</a>
+          <a href="#floor" class="btn btn--outline">フロアガイド</a>
+        </div>
+      </div>
+
+      <div class="hero__scroll-indicator" aria-hidden="true">
+        <span>Scroll</span>
+        <div class="hero__scroll-line"></div>
+      </div>
+    </section>
+
+    <!-- ========== COUNTDOWN ========== -->
+    <section class="countdown" aria-label="カウントダウン">
+      <div class="container">
+        <p class="countdown__label">GRAND OPENING COUNTDOWN</p>
+        <div class="countdown__timer" id="countdown">
+          <div class="countdown__unit">
+            <span class="countdown__num" id="cd-days">--</span>
+            <span class="countdown__text">Days</span>
+          </div>
+          <div class="countdown__sep" aria-hidden="true">:</div>
+          <div class="countdown__unit">
+            <span class="countdown__num" id="cd-hours">--</span>
+            <span class="countdown__text">Hours</span>
+          </div>
+          <div class="countdown__sep" aria-hidden="true">:</div>
+          <div class="countdown__unit">
+            <span class="countdown__num" id="cd-minutes">--</span>
+            <span class="countdown__text">Minutes</span>
+          </div>
+          <div class="countdown__sep" aria-hidden="true">:</div>
+          <div class="countdown__unit">
+            <span class="countdown__num" id="cd-seconds">--</span>
+            <span class="countdown__text">Seconds</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== ABOUT ========== -->
+    <section class="about section" id="about" aria-labelledby="about-heading">
+      <div class="container">
+        <div class="section-header reveal">
+          <p class="section-label">About</p>
+          <h2 class="section-title" id="about-heading">光に満ちた、<br>新しい日常の舞台。</h2>
+        </div>
+
+        <div class="about__grid">
+          <div class="about__visual reveal reveal--left" aria-hidden="true">
+            <div class="about__visual-main">
+              <div class="about__visual-inner">
+                <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <circle cx="60" cy="60" r="50" stroke="url(#grad1)" stroke-width="1.5" fill="none" opacity="0.4"/>
+                  <circle cx="60" cy="60" r="35" stroke="url(#grad1)" stroke-width="1" fill="none" opacity="0.3"/>
+                  <polygon points="60,20 66,42 90,42 71,56 78,78 60,65 42,78 49,56 30,42 54,42" fill="url(#grad1)" opacity="0.8"/>
+                  <defs>
+                    <linearGradient id="grad1" x1="0" y1="0" x2="120" y2="120">
+                      <stop offset="0%" stop-color="#c9a96e"/>
+                      <stop offset="100%" stop-color="#e8d5a3"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+            </div>
+            <div class="about__visual-accent about__visual-accent--1"></div>
+            <div class="about__visual-accent about__visual-accent--2"></div>
+          </div>
+
+          <div class="about__content reveal reveal--right">
+            <p class="about__text">
+              VELION MALLは「光」をテーマに設計された、次世代型ショッピングモールです。
+              ファッション、グルメ、ライフスタイル、エンターテインメントが融合した
+              150店舗が、あなたの毎日を輝かせます。
+            </p>
+            <p class="about__text">
+              最高峰のブランドから個性的なセレクトショップまで、
+              多彩なラインナップが揃うB1Fから6Fの空間。
+              訪れるたびに新しい発見と、忘れられない体験をお届けします。
+            </p>
+
+            <ul class="about__stats">
+              <li class="about__stat">
+                <span class="about__stat-num">150<small>+</small></span>
+                <span class="about__stat-label">Shops</span>
+              </li>
+              <li class="about__stat">
+                <span class="about__stat-num">7<small>F</small></span>
+                <span class="about__stat-label">Floors</span>
+              </li>
+              <li class="about__stat">
+                <span class="about__stat-num">3<small>万㎡</small></span>
+                <span class="about__stat-label">Area</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== SHOPS ========== -->
+    <section class="shops section section--alt" id="shops" aria-labelledby="shops-heading">
+      <div class="container">
+        <div class="section-header reveal">
+          <p class="section-label">Shops</p>
+          <h2 class="section-title" id="shops-heading">注目のショップ</h2>
+          <p class="section-desc">厳選された150店舗のなかから、注目のブランドをご紹介します。</p>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="shops__tabs reveal" role="tablist" aria-label="ショップカテゴリフィルター">
+          <button class="shops__tab is-active" data-filter="all" role="tab" aria-selected="true">All</button>
+          <button class="shops__tab" data-filter="fashion" role="tab" aria-selected="false">Fashion</button>
+          <button class="shops__tab" data-filter="food" role="tab" aria-selected="false">Food</button>
+          <button class="shops__tab" data-filter="lifestyle" role="tab" aria-selected="false">Lifestyle</button>
+          <button class="shops__tab" data-filter="beauty" role="tab" aria-selected="false">Beauty</button>
+        </div>
+
+        <div class="shops__grid" id="shopsGrid">
+
+          <article class="shop-card reveal" data-category="fashion">
+            <div class="shop-card__icon" style="--card-hue: 30;" aria-hidden="true">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><path d="M8 12 L16 8 L20 14 L24 8 L32 12 L30 32 L10 32 Z" stroke="currentColor" stroke-width="1.5" fill="none"/><line x1="20" y1="14" x2="20" y2="28" stroke="currentColor" stroke-width="1.5"/></svg>
+            </div>
+            <div class="shop-card__body">
+              <p class="shop-card__floor">2F</p>
+              <h3 class="shop-card__name">MAISON LUMIÈRE</h3>
+              <p class="shop-card__category">Fashion</p>
+              <p class="shop-card__desc">洗練されたパリジェンヌスタイルをベースにした上質なウィメンズコレクション。</p>
+            </div>
+          </article>
+
+          <article class="shop-card reveal reveal--delay-1" data-category="food">
+            <div class="shop-card__icon" style="--card-hue: 15;" aria-hidden="true">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><path d="M10 14 Q20 8 30 14 L28 32 L12 32 Z" stroke="currentColor" stroke-width="1.5" fill="none"/><circle cx="20" cy="20" r="4" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+            </div>
+            <div class="shop-card__body">
+              <p class="shop-card__floor">B1F</p>
+              <h3 class="shop-card__name">Le Jardin</h3>
+              <p class="shop-card__category">Restaurant</p>
+              <p class="shop-card__desc">旬の食材を使ったフレンチビストロ。開放的なテラス席で優雅なランチを。</p>
+            </div>
+          </article>
+
+          <article class="shop-card reveal reveal--delay-2" data-category="lifestyle">
+            <div class="shop-card__icon" style="--card-hue: 200;" aria-hidden="true">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><rect x="10" y="10" width="20" height="20" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/><line x1="15" y1="18" x2="25" y2="18" stroke="currentColor" stroke-width="1.5"/><line x1="15" y1="22" x2="21" y2="22" stroke="currentColor" stroke-width="1.5"/></svg>
+            </div>
+            <div class="shop-card__body">
+              <p class="shop-card__floor">4F</p>
+              <h3 class="shop-card__name">NORDIC HOME</h3>
+              <p class="shop-card__category">Interior</p>
+              <p class="shop-card__desc">北欧デザインの家具・インテリア雑貨。シンプルで機能的な暮らしを提案。</p>
+            </div>
+          </article>
+
+          <article class="shop-card reveal" data-category="beauty">
+            <div class="shop-card__icon" style="--card-hue: 330;" aria-hidden="true">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="16" r="6" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M14 28 Q14 22 20 22 Q26 22 26 28" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+            </div>
+            <div class="shop-card__body">
+              <p class="shop-card__floor">3F</p>
+              <h3 class="shop-card__name">AURUM Beauty</h3>
+              <p class="shop-card__category">Beauty</p>
+              <p class="shop-card__desc">世界の厳選コスメ・スキンケアが揃うラグジュアリービューティーセレクト。</p>
+            </div>
+          </article>
+
+          <article class="shop-card reveal reveal--delay-1" data-category="fashion">
+            <div class="shop-card__icon" style="--card-hue: 50;" aria-hidden="true">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><polygon points="20,8 26,16 36,18 28,26 30,36 20,30 10,36 12,26 4,18 14,16" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+            </div>
+            <div class="shop-card__body">
+              <p class="shop-card__floor">2F</p>
+              <h3 class="shop-card__name">STELLAR MEN'S</h3>
+              <p class="shop-card__category">Men's Fashion</p>
+              <p class="shop-card__desc">クラシックとモダンが融合したメンズウェア。ビジネスからカジュアルまで。</p>
+            </div>
+          </article>
+
+          <article class="shop-card reveal reveal--delay-2" data-category="food">
+            <div class="shop-card__icon" style="--card-hue: 0;" aria-hidden="true">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><rect x="8" y="22" width="24" height="10" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M14 22 Q14 10 20 10 Q26 10 26 22" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+            </div>
+            <div class="shop-card__body">
+              <p class="shop-card__floor">5F</p>
+              <h3 class="shop-card__name">ROOFTOP CAFÉ</h3>
+              <p class="shop-card__category">Café</p>
+              <p class="shop-card__desc">品川の景色を一望できるルーフトップカフェ。スペシャルティコーヒーと絶景を。</p>
+            </div>
+          </article>
+
+          <article class="shop-card reveal" data-category="lifestyle">
+            <div class="shop-card__icon" style="--card-hue: 160;" aria-hidden="true">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><path d="M10 30 L10 18 L20 10 L30 18 L30 30" stroke="currentColor" stroke-width="1.5" fill="none"/><rect x="16" y="22" width="8" height="8" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+            </div>
+            <div class="shop-card__body">
+              <p class="shop-card__floor">4F</p>
+              <h3 class="shop-card__name">BOOK & ART</h3>
+              <p class="shop-card__category">Culture</p>
+              <p class="shop-card__desc">アート書籍・写真集・ステーショナリーが充実した知的空間のカルチャーショップ。</p>
+            </div>
+          </article>
+
+          <article class="shop-card reveal reveal--delay-1" data-category="beauty">
+            <div class="shop-card__icon" style="--card-hue: 280;" aria-hidden="true">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><path d="M20 10 Q28 14 28 22 Q28 30 20 32 Q12 30 12 22 Q12 14 20 10 Z" stroke="currentColor" stroke-width="1.5" fill="none"/><circle cx="20" cy="21" r="3" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+            </div>
+            <div class="shop-card__body">
+              <p class="shop-card__floor">3F</p>
+              <h3 class="shop-card__name">SPA VELION</h3>
+              <p class="shop-card__category">Wellness</p>
+              <p class="shop-card__desc">日常の疲れを癒す本格エステ＆スパ。上質なトリートメントで心と体を整える。</p>
+            </div>
+          </article>
+
+        </div>
+
+        <div class="shops__more reveal">
+          <a href="#" class="btn btn--outline" aria-label="全ショップ一覧を見る">全ショップを見る（150店舗）</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== FLOOR GUIDE ========== -->
+    <section class="floor section" id="floor" aria-labelledby="floor-heading">
+      <div class="container">
+        <div class="section-header reveal">
+          <p class="section-label">Floor Guide</p>
+          <h2 class="section-title" id="floor-heading">フロアガイド</h2>
+          <p class="section-desc">B1Fから6Fまで、7フロアにわたる多彩な空間。</p>
+        </div>
+
+        <div class="floor__layout">
+          <div class="floor__building reveal reveal--left" aria-hidden="true">
+            <div class="floor__building-visual">
+              <div class="floor__building-floors">
+                <div class="floor__building-floor" style="--floor-delay: 0.6s;">6F</div>
+                <div class="floor__building-floor" style="--floor-delay: 0.5s;">5F</div>
+                <div class="floor__building-floor" style="--floor-delay: 0.4s;">4F</div>
+                <div class="floor__building-floor" style="--floor-delay: 0.3s;">3F</div>
+                <div class="floor__building-floor" style="--floor-delay: 0.2s;">2F</div>
+                <div class="floor__building-floor" style="--floor-delay: 0.1s;">1F</div>
+                <div class="floor__building-floor floor__building-floor--b1" style="--floor-delay: 0s;">B1F</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="floor__list reveal reveal--right">
+            <div class="floor__item" data-floor="6">
+              <div class="floor__item-label">6F</div>
+              <div class="floor__item-content">
+                <h3 class="floor__item-name">Entertainment &amp; Kids</h3>
+                <p class="floor__item-desc">シネマ・ゲームセンター・キッズパーク・プレイゾーン</p>
+              </div>
+            </div>
+            <div class="floor__item" data-floor="5">
+              <div class="floor__item-label">5F</div>
+              <div class="floor__item-content">
+                <h3 class="floor__item-name">Food Hall &amp; Rooftop</h3>
+                <p class="floor__item-desc">レストラン街・フードコート・ルーフトップカフェ（全18店舗）</p>
+              </div>
+            </div>
+            <div class="floor__item" data-floor="4">
+              <div class="floor__item-label">4F</div>
+              <div class="floor__item-content">
+                <h3 class="floor__item-name">Lifestyle &amp; Culture</h3>
+                <p class="floor__item-desc">インテリア・雑貨・書籍・アート・スポーツ用品</p>
+              </div>
+            </div>
+            <div class="floor__item" data-floor="3">
+              <div class="floor__item-label">3F</div>
+              <div class="floor__item-content">
+                <h3 class="floor__item-name">Beauty &amp; Wellness</h3>
+                <p class="floor__item-desc">コスメ・スキンケア・ネイル・エステ・スパ</p>
+              </div>
+            </div>
+            <div class="floor__item" data-floor="2">
+              <div class="floor__item-label">2F</div>
+              <div class="floor__item-content">
+                <h3 class="floor__item-name">Fashion &amp; Accessories</h3>
+                <p class="floor__item-desc">ウィメンズ・メンズ・バッグ・ジュエリー・時計</p>
+              </div>
+            </div>
+            <div class="floor__item" data-floor="1">
+              <div class="floor__item-label">1F</div>
+              <div class="floor__item-content">
+                <h3 class="floor__item-name">Grand Entrance &amp; Luxury</h3>
+                <p class="floor__item-desc">メインエントランス・ラグジュアリーブランド・インフォメーション</p>
+              </div>
+            </div>
+            <div class="floor__item floor__item--b1" data-floor="b1">
+              <div class="floor__item-label">B1F</div>
+              <div class="floor__item-content">
+                <h3 class="floor__item-name">Gourmet &amp; Supermarket</h3>
+                <p class="floor__item-desc">高級食品スーパー・デリカテッセン・スイーツ・パティスリー</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== EVENTS ========== -->
+    <section class="events section section--alt" id="events" aria-labelledby="events-heading">
+      <div class="container">
+        <div class="section-header reveal">
+          <p class="section-label">Events &amp; News</p>
+          <h2 class="section-title" id="events-heading">イベント・最新情報</h2>
+          <p class="section-desc">グランドオープンを彩る特別なイベントと、最新のニュースをお届けします。</p>
+        </div>
+
+        <div class="events__grid">
+
+          <article class="event-card event-card--featured reveal" aria-label="グランドオープン特集">
+            <div class="event-card__badge">GRAND OPEN</div>
+            <div class="event-card__visual event-card__visual--main" aria-hidden="true">
+              <div class="event-card__visual-content">
+                <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <polygon points="40,5 48,28 73,28 53,44 61,67 40,52 19,67 27,44 7,28 32,28" fill="url(#heroGrad)" opacity="0.9"/>
+                  <defs>
+                    <linearGradient id="heroGrad" x1="0" y1="0" x2="80" y2="80">
+                      <stop offset="0%" stop-color="#fff"/>
+                      <stop offset="100%" stop-color="#e8d5a3"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+            </div>
+            <div class="event-card__body">
+              <time class="event-card__date" datetime="2026-04-05">2026.04.05</time>
+              <h3 class="event-card__title">GRAND OPENING CELEBRATION</h3>
+              <p class="event-card__desc">
+                VELION MALLがついにオープン。オープニングセレモニーや限定コラボ商品、
+                来場者全員へのウェルカムギフトなど、忘れられない1日をお約束します。
+              </p>
+              <a href="#" class="event-card__link">詳細を見る →</a>
+            </div>
+          </article>
+
+          <article class="event-card reveal reveal--delay-1">
+            <div class="event-card__visual event-card__visual--fashion" aria-hidden="true">
+              <svg width="50" height="50" viewBox="0 0 50 50" fill="none"><path d="M10 15 L20 10 L25 18 L30 10 L40 15 L38 40 L12 40 Z" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.6"/></svg>
+            </div>
+            <div class="event-card__body">
+              <time class="event-card__date" datetime="2026-04-10">2026.04.10 – 04.12</time>
+              <h3 class="event-card__title">Spring Fashion Week</h3>
+              <p class="event-card__desc">各ブランドが春の新作を一斉に披露。スタイリストによるコーデ提案も実施。</p>
+              <a href="#" class="event-card__link">詳細を見る →</a>
+            </div>
+          </article>
+
+          <article class="event-card reveal reveal--delay-2">
+            <div class="event-card__visual event-card__visual--food" aria-hidden="true">
+              <svg width="50" height="50" viewBox="0 0 50 50" fill="none"><path d="M12 27 Q12 13 25 13 Q38 13 38 27 L36 40 L14 40 Z" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.6"/><circle cx="25" cy="26" r="5" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.6"/></svg>
+            </div>
+            <div class="event-card__body">
+              <time class="event-card__date" datetime="2026-04-05">2026.04.05 – 04.30</time>
+              <h3 class="event-card__title">Opening Gourmet Festival</h3>
+              <p class="event-card__desc">全レストランが参加する特別メニューフェス。限定コース＆限定スイーツが登場。</p>
+              <a href="#" class="event-card__link">詳細を見る →</a>
+            </div>
+          </article>
+
+          <article class="event-card reveal">
+            <div class="event-card__visual event-card__visual--art" aria-hidden="true">
+              <svg width="50" height="50" viewBox="0 0 50 50" fill="none"><circle cx="25" cy="25" r="14" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.6"/><polygon points="25,12 29,21 39,21 31,27 34,37 25,31 16,37 19,27 11,21 21,21" stroke="currentColor" stroke-width="1" fill="none" opacity="0.4"/></svg>
+            </div>
+            <div class="event-card__body">
+              <time class="event-card__date" datetime="2026-04-05">2026.04.05 – 05.31</time>
+              <h3 class="event-card__title">VELION Art Exhibition</h3>
+              <p class="event-card__desc">館内各所に現代アーティストの作品を展示。ショッピングとアートが融合した体験を。</p>
+              <a href="#" class="event-card__link">詳細を見る →</a>
+            </div>
+          </article>
+
+          <article class="event-card reveal reveal--delay-1">
+            <div class="event-card__visual event-card__visual--sale" aria-hidden="true">
+              <svg width="50" height="50" viewBox="0 0 50 50" fill="none"><path d="M12 25 L25 12 L38 25 L38 38 L12 38 Z" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.6"/><text x="19" y="32" font-size="10" fill="currentColor" opacity="0.7" font-family="sans-serif">SALE</text></svg>
+            </div>
+            <div class="event-card__body">
+              <time class="event-card__date" datetime="2026-04-05">2026.04.05 – 04.07</time>
+              <h3 class="event-card__title">Opening 3Days Special Sale</h3>
+              <p class="event-card__desc">グランドオープン3日間限定の特別セール。対象店舗で最大40%OFFのビッグセール。</p>
+              <a href="#" class="event-card__link">詳細を見る →</a>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== ACCESS ========== -->
+    <section class="access section" id="access" aria-labelledby="access-heading">
+      <div class="container">
+        <div class="section-header reveal">
+          <p class="section-label">Access</p>
+          <h2 class="section-title" id="access-heading">アクセス</h2>
+        </div>
+
+        <div class="access__grid">
+          <div class="access__map reveal reveal--left" aria-label="アクセスマップ（イメージ）">
+            <div class="access__map-visual" aria-hidden="true">
+              <svg width="100%" height="100%" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <!-- Background grid -->
+                <rect width="400" height="300" fill="#f8f6f2"/>
+                <line x1="0" y1="60" x2="400" y2="60" stroke="#e5e0d6" stroke-width="1"/>
+                <line x1="0" y1="120" x2="400" y2="120" stroke="#e5e0d6" stroke-width="1"/>
+                <line x1="0" y1="180" x2="400" y2="180" stroke="#e5e0d6" stroke-width="1"/>
+                <line x1="0" y1="240" x2="400" y2="240" stroke="#e5e0d6" stroke-width="1"/>
+                <line x1="80" y1="0" x2="80" y2="300" stroke="#e5e0d6" stroke-width="1"/>
+                <line x1="160" y1="0" x2="160" y2="300" stroke="#e5e0d6" stroke-width="1"/>
+                <line x1="240" y1="0" x2="240" y2="300" stroke="#e5e0d6" stroke-width="1"/>
+                <line x1="320" y1="0" x2="320" y2="300" stroke="#e5e0d6" stroke-width="1"/>
+                <!-- Roads -->
+                <rect x="0" y="100" width="400" height="24" fill="#ede8e0"/>
+                <rect x="180" y="0" width="24" height="300" fill="#ede8e0"/>
+                <!-- Building blocks -->
+                <rect x="90" y="30" width="70" height="50" rx="2" fill="#d8d3c8"/>
+                <rect x="250" y="30" width="60" height="50" rx="2" fill="#d8d3c8"/>
+                <rect x="90" y="150" width="50" height="40" rx="2" fill="#d8d3c8"/>
+                <rect x="250" y="150" width="80" height="60" rx="2" fill="#d8d3c8"/>
+                <!-- Station -->
+                <rect x="158" y="88" width="68" height="40" rx="3" fill="#b8a88a" opacity="0.5"/>
+                <text x="192" y="113" text-anchor="middle" font-size="9" fill="#6b5c45" font-family="sans-serif" font-weight="600">大崎駅</text>
+                <!-- VELION MALL marker -->
+                <circle cx="200" cy="200" r="20" fill="#c9a96e" opacity="0.2"/>
+                <circle cx="200" cy="200" r="12" fill="#c9a96e" opacity="0.5"/>
+                <circle cx="200" cy="200" r="6" fill="#c9a96e"/>
+                <text x="200" y="228" text-anchor="middle" font-size="10" fill="#8b6914" font-family="sans-serif" font-weight="700">VELION MALL</text>
+                <!-- Walk path -->
+                <path d="M192 128 L192 184" stroke="#c9a96e" stroke-width="2" stroke-dasharray="4 3"/>
+                <text x="174" y="160" font-size="8" fill="#c9a96e" font-family="sans-serif">徒歩3分</text>
+              </svg>
+            </div>
+          </div>
+
+          <div class="access__info reveal reveal--right">
+            <dl class="access__details">
+              <div class="access__detail-item">
+                <dt class="access__detail-label">
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M9 2C6.24 2 4 4.24 4 7C4 11 9 16 9 16C9 16 14 11 14 7C14 4.24 11.76 2 9 2ZM9 8.5C8.17 8.5 7.5 7.83 7.5 7C7.5 6.17 8.17 5.5 9 5.5C9.83 5.5 10.5 6.17 10.5 7C10.5 7.83 9.83 8.5 9 8.5Z" fill="currentColor"/></svg>
+                  住所
+                </dt>
+                <dd class="access__detail-value">〒141-0032<br>東京都品川区大崎1-5-3<br>VELION TOWER</dd>
+              </div>
+
+              <div class="access__detail-item">
+                <dt class="access__detail-label">
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M9 5V9.5L12 11.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                  営業時間
+                </dt>
+                <dd class="access__detail-value">
+                  <strong>ショップ</strong>：10:00 – 21:00<br>
+                  <strong>レストラン</strong>：11:00 – 23:00<br>
+                  <small>※一部店舗により異なります</small>
+                </dd>
+              </div>
+
+              <div class="access__detail-item">
+                <dt class="access__detail-label">
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><rect x="2" y="6" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M5 6V5C5 3.34 6.34 2 8 2H10C11.66 2 13 3.34 13 5V6" stroke="currentColor" stroke-width="1.5" fill="none"/><circle cx="9" cy="11" r="1.5" fill="currentColor"/></svg>
+                  電車
+                </dt>
+                <dd class="access__detail-value">
+                  JR大崎駅 北口より徒歩3分<br>
+                  東京メトロ南北線 五反田駅より徒歩5分<br>
+                  りんかい線 大崎駅より徒歩3分
+                </dd>
+              </div>
+
+              <div class="access__detail-item">
+                <dt class="access__detail-label">
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><rect x="2" y="7" width="14" height="7" rx="1" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M5 7V6C5 5 6 4 9 4C12 4 13 5 13 6V7" stroke="currentColor" stroke-width="1.5" fill="none"/><circle cx="5.5" cy="13.5" r="1.5" fill="currentColor"/><circle cx="12.5" cy="13.5" r="1.5" fill="currentColor"/></svg>
+                  お車
+                </dt>
+                <dd class="access__detail-value">
+                  地下駐車場：500台<br>
+                  <small>※1,000円以上のお買い上げで1時間無料</small>
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="footer" aria-label="フッター">
+    <div class="footer__top">
+      <div class="container">
+        <div class="footer__grid">
+          <div class="footer__brand">
+            <a href="#hero" class="footer__logo">
+              <svg width="24" height="24" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+                <polygon points="14,2 17,10 26,10 19,15.5 21.5,24 14,19 6.5,24 9,15.5 2,10 11,10" fill="currentColor" opacity="0.9"/>
+              </svg>
+              VELION MALL
+            </a>
+            <p class="footer__tagline">"Light up your every day."</p>
+            <p class="footer__address">〒141-0032 東京都品川区大崎1-5-3</p>
+            <div class="footer__social" aria-label="SNSリンク">
+              <a href="#" class="footer__social-link" aria-label="Instagram">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" stroke-width="1.5" fill="none"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.5" fill="none"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
+              </a>
+              <a href="#" class="footer__social-link" aria-label="X (Twitter)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 4L20 20M20 4L4 20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </a>
+              <a href="#" class="footer__social-link" aria-label="Facebook">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="4" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M12 8H10C9.4 8 9 8.4 9 9V12H12V15H9V22" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M12 12H15" stroke="currentColor" stroke-width="1.5"/></svg>
+              </a>
+              <a href="#" class="footer__social-link" aria-label="LINE">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 10.5C21 6.36 16.97 3 12 3C7.03 3 3 6.36 3 10.5C3 14.19 6.19 17.27 10.5 17.85L12 21L13.5 17.85C17.81 17.27 21 14.19 21 10.5Z" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+              </a>
+            </div>
+          </div>
+
+          <nav class="footer__nav" aria-label="フッターナビゲーション1">
+            <h3 class="footer__nav-title">ショッピング</h3>
+            <ul class="footer__nav-list">
+              <li><a href="#shops" class="footer__nav-link">ショップ一覧</a></li>
+              <li><a href="#floor" class="footer__nav-link">フロアガイド</a></li>
+              <li><a href="#events" class="footer__nav-link">セール情報</a></li>
+              <li><a href="#" class="footer__nav-link">ポイントカード</a></li>
+              <li><a href="#" class="footer__nav-link">ギフトカード</a></li>
+            </ul>
+          </nav>
+
+          <nav class="footer__nav" aria-label="フッターナビゲーション2">
+            <h3 class="footer__nav-title">施設情報</h3>
+            <ul class="footer__nav-list">
+              <li><a href="#access" class="footer__nav-link">アクセス</a></li>
+              <li><a href="#" class="footer__nav-link">駐車場</a></li>
+              <li><a href="#" class="footer__nav-link">授乳室・ベビールーム</a></li>
+              <li><a href="#" class="footer__nav-link">コインロッカー</a></li>
+              <li><a href="#" class="footer__nav-link">バリアフリー</a></li>
+            </ul>
+          </nav>
+
+          <nav class="footer__nav" aria-label="フッターナビゲーション3">
+            <h3 class="footer__nav-title">VELION MALL</h3>
+            <ul class="footer__nav-list">
+              <li><a href="#about" class="footer__nav-link">About</a></li>
+              <li><a href="#events" class="footer__nav-link">イベント情報</a></li>
+              <li><a href="#" class="footer__nav-link">出店・テナント募集</a></li>
+              <li><a href="#" class="footer__nav-link">採用情報</a></li>
+              <li><a href="#" class="footer__nav-link">お問い合わせ</a></li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer__bottom">
+      <div class="container">
+        <p class="footer__copy">
+          &copy; 2026 VELION MALL. All rights reserved.
+        </p>
+        <ul class="footer__legal" aria-label="法的情報リンク">
+          <li><a href="#">プライバシーポリシー</a></li>
+          <li><a href="#">利用規約</a></li>
+          <li><a href="#">特定商取引法</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Page Top Button -->
+  <button class="page-top" id="pageTop" aria-label="ページトップへ戻る">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M3 11L8 6L13 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+
+  <script src="script.js"></script>
+</body>
+</html>
