@@ -1,0 +1,963 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seedream 4.5 完全解説 — 配布資料</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:           #ffffff;
+    --bg-card:      #ffffff;
+    --bg-card-hover:#f9fafb;
+    --border:       #e5e7eb;
+    --text:         #111827;
+    --muted:        #6b7280;
+    --accent:       #2563eb;
+    --accent-green: #16a34a;
+    --accent-orange:#d97706;
+    --accent-purple:#7c3aed;
+    --accent-yellow:#d97706;
+    --accent-red:   #dc2626;
+    --accent-teal:  #0d9488;
+    --blue-t:   rgba(37,99,235,0.07);
+    --green-t:  rgba(22,163,74,0.07);
+    --orange-t: rgba(217,119,6,0.07);
+    --red-t:    rgba(220,38,38,0.07);
+    --purple-t: rgba(124,58,237,0.07);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Segoe UI', 'Noto Sans JP', system-ui, sans-serif;
+    background: #fffffffff;
+    color: #111827827;
+    line-height: 1.7;
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* 笏笏 LAYOUT 笏笏 */
+  .container { max-width: 960px; margin: 0 auto; padding: 0 32px 80px; }
+
+  /* 笏笏 COVER 笏笏 */
+  .cover {
+    min-height: 280px;
+    background: linear-gradient(145deg, #eef2ff 0%, #f5f3ff 40%, #ffffff 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 56px 32px 44px;
+    margin-bottom: 0;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 320px; height: 320px;
+    background: radial-gradient(circle, rgba(37,99,235,0.06), transparent 70%);
+    pointer-events: none;
+  }
+  .cover-inner { max-width: 960px; margin: 0 auto; width: 100%; }
+  .cover-tag {
+    display: inline-block;
+    padding: 3px 12px;
+    border: 1.5px solid rgba(37,99,235,0.4);
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+    background: var(--blue-t);
+  }
+  .cover h1 {
+    font-size: clamp(30px, 5vw, 52px);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 12px;
+    color: #111827827;
+    letter-spacing: -1.5px;
+  }
+  .cover .sub { font-size: 17px; color: #6b7280; margin-bottom: 28px; }
+  .cover-meta { display: flex; gap: 24px; flex-wrap: wrap; }
+  .cover-meta span { font-size: 13px; color: #9ca3af; }
+  .cover-meta strong { color: #6b7280; }
+
+  /* 笏笏 TOC 笏笏 */
+  .toc-bar {
+    background: rgba(255,255,255,0.97);
+    border-bottom: 1px solid #e5e7eb;
+    padding: 16px 32px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+  .toc-inner {
+    max-width: 960px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 14px;
+    align-items: center;
+  }
+  .toc-inner a { font-size: 12px; color: #9ca3af; text-decoration: none; transition: color 0.2s; }
+  .toc-inner a:hover { color: var(--accent); }
+  .toc-sep { color: #e5e7eb; font-size: 12px; }
+
+  /* 笏笏 SECTION 笏笏 */
+  .section { margin-top: 52px; scroll-margin-top: 80px; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 22px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .section-num {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; flex-shrink: 0;
+    border: 1.5px solid;
+  }
+  .num-blue   { color: #2563eb; border-color: rgba(37,99,235,0.3);  background: rgba(37,99,235,0.06); }
+  .num-green  { color: #16a34a; border-color: rgba(22,163,74,0.3);  background: rgba(22,163,74,0.06); }
+  .num-purple { color: #7c3aed; border-color: rgba(124,58,237,0.3); background: rgba(124,58,237,0.06); }
+  .num-red    { color: #dc2626; border-color: rgba(220,38,38,0.3);  background: rgba(220,38,38,0.06); }
+  .num-orange { color: #d97706; border-color: rgba(217,119,6,0.3);  background: rgba(217,119,6,0.06); }
+  .num-teal   { color: #0d9488; border-color: rgba(13,148,136,0.3); background: rgba(13,148,136,0.06); }
+  .num-yellow { color: #d97706; border-color: rgba(217,119,6,0.3);  background: rgba(217,119,6,0.06); }
+  .num-pink   { color: #e11d48; border-color: rgba(225,29,72,0.3);  background: rgba(225,29,72,0.06); }
+  .num-cyan   { color: #0891b2; border-color: rgba(8,145,178,0.3);  background: rgba(8,145,178,0.06); }
+  .num-indigo { color: #4338ca; border-color: rgba(67,56,202,0.3);  background: rgba(67,56,202,0.06); }
+  .section-header h2 { font-size: 22px; font-weight: 700; color: #111827827; }
+
+  /* 笏笏 TYPOGRAPHY 笏笏 */
+  h3 { font-size: 16px; font-weight: 700; margin: 22px 0 10px; color: var(--accent); }
+  p  { margin-bottom: 12px; color: #374151; }
+  .lead { font-size: 16px; color: #111827827; margin-bottom: 18px; font-weight: 500; }
+  .accent  { color: var(--accent); }
+  .green   { color: var(--accent-green); }
+  .orange  { color: var(--accent-orange); }
+  .yellow  { color: var(--accent-yellow); }
+  .purple  { color: var(--accent-purple); }
+  .red     { color: var(--accent-red); }
+  .teal    { color: var(--accent-teal); }
+
+  /* 笏笏 QUOTE BOX 笏笏 */
+  blockquote {
+    background: var(--blue-t);
+    border-left: 3px solid var(--accent);
+    padding: 14px 18px;
+    border-radius: 0 10px 10px 0;
+    margin: 14px 0;
+    font-size: 14.5px;
+    font-style: normal;
+    color: #374151;
+  }
+  blockquote.green  { background: var(--green-t);  border-color: var(--accent-green); }
+  blockquote.orange { background: var(--orange-t); border-color: var(--accent-orange); }
+  blockquote.yellow { background: var(--orange-t); border-color: var(--accent-yellow); }
+
+  /* 笏笏 TABLE 笏笏 */
+  .table-wrap { overflow-x: auto; margin: 14px 0; border-radius: 10px; border: 1px solid #e5e7eb; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  thead tr { background: #f8f9fb; }
+  th {
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    color: #6b7280;
+    font-size: 11.5px;
+    letter-spacing: 0.4px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  td { padding: 9px 14px; border-bottom: 1px solid #f3f4f6; color: #374151; line-height: 1.5; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: #f9fafb; }
+
+  /* 笏笏 CODE 笏笏 */
+  pre {
+    background: #f4f5f7;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.75;
+    color: #1e3a5f;
+    overflow-x: auto;
+    white-space: pre;
+    margin: 14px 0;
+  }
+  code {
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 13px;
+    background: #f3f4f6;
+    padding: 2px 7px;
+    border-radius: 4px;
+    color: #1e3a5f;
+    border: 1px solid #e5e7eb;
+  }
+
+  /* 笏笏 CARDS 笏笏 */
+  .card-grid { display: grid; gap: 14px; margin: 14px 0; }
+  .card-grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .card-grid-3 { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 640px) {
+    .card-grid-2, .card-grid-3 { grid-template-columns: 1fr; }
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .card:hover { border-color: #d1d5db; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .card-icon { font-size: 20px; margin-bottom: 10px; }
+  .card h4 { font-size: 14px; font-weight: 700; margin-bottom: 8px; color: #111827827; }
+  .card p, .card li { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .card ul { padding-left: 16px; }
+  .card ul li { margin-bottom: 4px; }
+
+  /* 笏笏 STAT 笏笏 */
+  .stat-row { display: flex; gap: 14px; flex-wrap: wrap; margin: 14px 0; }
+  .stat-box {
+    flex: 1; min-width: 130px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .stat-box .stat-num { font-size: 28px; font-weight: 800; line-height: 1; margin-bottom: 6px; }
+  .stat-box .stat-label { font-size: 12px; color: var(--muted); }
+
+  /* 笏笏 CHECK LIST 笏笏 */
+  .check-list { list-style: none; padding: 0; margin: 10px 0; }
+  .check-list li {
+    padding: 6px 0 6px 26px;
+    position: relative;
+    font-size: 14px;
+    color: #374151;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .check-list li:last-child { border-bottom: none; }
+  .check-list li::before { content: '笨・; position: absolute; left: 0; font-size: 13px; }
+  .check-list.warn li::before  { content: '笞・・; }
+  .check-list.cross li::before { content: '笶・; }
+
+  /* 笏笏 STAR RATING 笏笏 */
+  .stars { color: #f59e0b; letter-spacing: 1px; }
+  .stars-gray { color: #d1d5db; letter-spacing: 1px; }
+
+  /* 笏笏 BADGE 笏笏 */
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; border: 1px solid; }
+  .badge-blue   { color: #2563eb; border-color: rgba(37,99,235,0.35);  background: rgba(37,99,235,0.07); }
+  .badge-green  { color: #16a34a; border-color: rgba(22,163,74,0.35);  background: rgba(22,163,74,0.07); }
+  .badge-red    { color: #dc2626; border-color: rgba(220,38,38,0.35);  background: rgba(220,38,38,0.07); }
+  .badge-orange { color: #d97706; border-color: rgba(217,119,6,0.35);  background: rgba(217,119,6,0.07); }
+  .badge-purple { color: #7c3aed; border-color: rgba(124,58,237,0.35); background: rgba(124,58,237,0.07); }
+  .badge-teal   { color: #0d9488; border-color: rgba(13,148,136,0.35); background: rgba(13,148,136,0.07); }
+
+  /* 笏笏 DIVIDER 笏笏 */
+  .divider { height: 1px; background: #e5e7eb; margin: 28px 0; }
+
+  /* 笏笏 FOOTER 笏笏 */
+  footer { margin-top: 72px; padding: 28px 32px; border-top: 1px solid #e5e7eb; text-align: center; }
+  .footer-inner { max-width: 960px; margin: 0 auto; }
+  footer p { font-size: 12px; color: #9ca3af; margin-bottom: 4px; }
+
+  /* 笏笏 PRINT 笏笏 */
+  @media print {
+    .toc-bar { display: none; }
+    .cover { page-break-after: always; }
+    .section { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ COVER ══════════════ -->
+<div class="cover">
+  <div class="cover-inner">
+    <div class="cover-tag">Seminar Handout</div>
+    <h1>Seedream 4.5<br>完全解説セミナー</h1>
+    <p class="sub">ByteDance最新AI画像生成モデルの全貌</p>
+    <div class="cover-meta">
+      <span><strong>開発元</strong> ByteDance / Seed Team</span>
+      <span><strong>リリース</strong> 2025年12月</span>
+      <span><strong>資料作成</strong> 2026年4月4日</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ TOC NAV ══════════════ -->
+<nav class="toc-bar">
+  <div class="toc-inner">
+    <a href="#s1">① 概要</a><span class="toc-sep">›</span>
+    <a href="#s2">② 背景</a><span class="toc-sep">›</span>
+    <a href="#s3">③ 機能</a><span class="toc-sep">›</span>
+    <a href="#s4">④ 技術</a><span class="toc-sep">›</span>
+    <a href="#s5">⑤ 比較</a><span class="toc-sep">›</span>
+    <a href="#s6">⑥ 活用例</a><span class="toc-sep">›</span>
+    <a href="#s7">⑦ API/価格</a><span class="toc-sep">›</span>
+    <a href="#s8">⑧ プロンプト</a><span class="toc-sep">›</span>
+    <a href="#s9">⑨ SWOT</a><span class="toc-sep">›</span>
+    <a href="#s10">⑩ 展望</a><span class="toc-sep">›</span>
+    <a href="#s11">⑪ まとめ</a>
+  </div>
+</nav>
+
+<!-- ══════════════ MAIN CONTENT ══════════════ -->
+<div class="container">
+
+  <!-- ①  概要 -->
+  <section class="section" id="s1">
+    <div class="section-header">
+      <div class="section-num num-blue">1</div>
+      <h2>Seedream 4.5 とは</h2>
+    </div>
+
+    <p class="lead"><span class="accent">Seedream 4.5</span> は、TikTokの親会社 <strong>ByteDance（バイトダンス）</strong> が開発した最先端のAI画像生成モデルです。</p>
+
+    <blockquote>
+      「テキストから4K画像を生成 ＋ 高精度な画像編集 ＋ 複数参照画像による一貫性維持」を<br>
+      一つのモデルで実現した<strong>統合型AI画像生成エンジン</strong>
+    </blockquote>
+
+    <div class="card-grid card-grid-3">
+      <div class="card">
+        <div class="card-icon">🏢</div>
+        <h4>開発元</h4>
+        <p>ByteDance Seed Team<br>（TikTok / Douyinの画像・映像AI技術中核部門）</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎯</div>
+        <h4>ターゲット</h4>
+        <p>商用・プロフェッショナル用途。マーケティング・E-Commerce・エンタメ分野に特化。</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚙️</div>
+        <h4>アーキテクチャ</h4>
+        <p>Diffusion Transformer（DiT）ベース。クローズドソース・APIアクセス専用モデル。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ②  開発背景 -->
+  <section class="section" id="s2">
+    <div class="section-header">
+      <div class="section-num num-green">2</div>
+      <h2>開発背景・リリース情報</h2>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>項目</th><th>内容</th></tr></thead>
+        <tbody>
+          <tr><td>開発元</td><td>ByteDance / Seed Team</td></tr>
+          <tr><td>リリース日</td><td>2025年12月</td></tr>
+          <tr><td>前バージョン</td><td>Seedream 4.0</td></tr>
+          <tr><td>次世代版</td><td>Seedream 5.0（2026年初頭リリース済み）</td></tr>
+          <tr><td>アーキテクチャ</td><td>Diffusion Transformer（DiT）</td></tr>
+          <tr><td>モデル種別</td><td>クローズドソース（APIアクセスのみ）</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>4.0からの主な改善点</h3>
+    <div class="card-grid card-grid-2">
+      <div class="card">
+        <h4 class="green">✅ 改善された領域</h4>
+        <ul>
+          <li>テキスト描画の不正確さ</li>
+          <li>複数参照画像使用時の被写体一貫性</li>
+          <li>高密度テキスト・ロゴ描画の精度</li>
+          <li>空間認識・透視図法の精度</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4 class="accent">📌 背景・動機</h4>
+        <p>ByteDanceは自社プラットフォーム（TikTok・Douyin・Lark等）に組み込む商用AIを必要としており、Seedreamシリーズはその中核技術として開発されてきた。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ③  主要機能 -->
+  <section class="section" id="s3">
+    <div class="section-header">
+      <div class="section-num num-purple">3</div>
+      <h2>主要機能と特徴</h2>
+    </div>
+
+    <h3>3-1. テキスト描画能力（Text Rendering）</h3>
+    <p>Seedream 4.5<strong>最大の差別化ポイント</strong>。ほとんどのAI画像生成モデルが苦手とする「画像内への正確なテキスト生成」において突出した性能を持つ。</p>
+
+    <div class="stat-row">
+      <div class="stat-box"><div class="stat-num accent">99%+</div><div class="stat-label">綴り精度（英単語・ブランド名）</div></div>
+      <div class="stat-box"><div class="stat-num green">英語</div><div class="stat-label">メイン対応言語</div></div>
+      <div class="stat-box"><div class="stat-num orange">商用</div><div class="stat-label">マーケ・看板・ラベル用途</div></div>
+    </div>
+
+    <blockquote class="green">
+      実用例：「GRAND OPENING」「50% OFF」「Brand Name」などを画像内に正確に描画できる
+    </blockquote>
+
+    <div class="divider"></div>
+
+    <h3>3-2. マルチ画像参照（Multi-Image Reference）</h3>
+    <p>最大 <strong class="accent">10枚の参照画像</strong> を同時に入力し、被写体・スタイル・アイデンティティを維持した画像生成が可能。</p>
+
+    <pre>
+[入力]
+  参照画像A ─── キャラクター（顔・体型の一致）
+  参照画像B ─── 商品（素材・形状の一致）
+  参照画像C ─── スタイル・照明（雰囲気の一致）
+
+[出力]
+  → 3つの要素を自然に統合した一貫性のある新規画像</pre>
+
+    <p>全入力にまたがる特徴マップを計算し、アイデンティティ情報を三角測量して抽出する独自アーキテクチャを採用。</p>
+
+    <div class="divider"></div>
+
+    <h3>3-3. 統合型 生成＋編集</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>編集タイプ</th><th>内容</th></tr></thead>
+        <tbody>
+          <tr><td>インペインティング</td><td>画像の特定領域を別のコンテンツで置換</td></tr>
+          <tr><td>アウトペインティング</td><td>画像の外側に自然にコンテンツを拡張</td></tr>
+          <tr><td>オブジェクト追加/削除</td><td>テキスト指示による要素の追加・除去</td></tr>
+          <tr><td>スタイル転送</td><td>参照画像のスタイルを適用</td></tr>
+          <tr><td>顔・人物編集</td><td>顔の構造・照明・色調を保持しながら精密な変更</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>矢印・バウンディングボックス・落書き（ドゥードル）で編集対象領域を指定でき、複雑な編集も直感的に操作可能。</p>
+
+    <div class="divider"></div>
+
+    <h3>3-4. 画質・解像度</h3>
+    <div class="stat-row">
+      <div class="stat-box"><div class="stat-num accent">2048<span style="font-size:16px">px</span></div><div class="stat-label">最大解像度（4K相当）</div></div>
+      <div class="stat-box"><div class="stat-num green">5〜15<span style="font-size:16px">秒</span></div><div class="stat-label">生成速度（解像度による）</div></div>
+      <div class="stat-box"><div class="stat-num purple">3段階</div><div class="stat-label">マルチステージ訓練</div></div>
+    </div>
+  </section>
+
+  <!-- ④  技術アーキテクチャ -->
+  <section class="section" id="s4">
+    <div class="section-header">
+      <div class="section-num num-teal">4</div>
+      <h2>技術アーキテクチャ</h2>
+    </div>
+
+    <pre>
+Diffusion Transformer（DiT）
+├── 高効率・スケーラブルなトランスフォーマーベースの拡散モデル
+├── モデル容量の大幅増加
+└── 訓練・推論の計算コスト削減
+
+VAE（変分オートエンコーダー）
+├── 高圧縮比設計
+├── 潜在空間で処理するトークン数を最小化
+└── 高周波詳細（細かいテキスト・肌テクスチャ）の保持に最適化
+
+マルチステージ訓練
+├── Stage 1: 512 × 512 解像度
+├── Stage 2: 漸進的な解像度向上
+└── Stage 3: 4K 高解像度ファインチューニング</pre>
+
+    <div class="card-grid card-grid-3">
+      <div class="card">
+        <h4 class="accent">統合フレームワーク</h4>
+        <p>テキスト→画像・画像編集・マルチ画像合成をシングルモデルで処理</p>
+      </div>
+      <div class="card">
+        <h4 class="green">スケーラビリティ</h4>
+        <p>商業規模での展開を考慮した設計</p>
+      </div>
+      <div class="card">
+        <h4 class="orange">効率性</h4>
+        <p>DiT + 高圧縮VAEの組み合わせによる高速推論</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ⑤  競合比較 -->
+  <section class="section" id="s5">
+    <div class="section-header">
+      <div class="section-num num-red">5</div>
+      <h2>競合モデルとの比較</h2>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>評価項目</th>
+            <th>Seedream 4.5</th>
+            <th>Midjourney v6</th>
+            <th>DALL-E 3</th>
+            <th>SD 3.5</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>テキスト描画</td>
+            <td><span class="stars">★★★★★</span></td>
+            <td><span class="stars">★★</span><span class="stars-gray">★★★</span></td>
+            <td><span class="stars">★★★★★</span></td>
+            <td><span class="stars">★★</span><span class="stars-gray">★★★</span></td>
+          </tr>
+          <tr>
+            <td>フォトリアリズム</td>
+            <td><span class="stars">★★★★★</span></td>
+            <td><span class="stars">★★★★</span><span class="stars-gray">★</span></td>
+            <td><span class="stars">★★★★</span><span class="stars-gray">★</span></td>
+            <td><span class="stars">★★★★</span><span class="stars-gray">★</span></td>
+          </tr>
+          <tr>
+            <td>芸術性・スタイル</td>
+            <td><span class="stars">★★★</span><span class="stars-gray">★★</span></td>
+            <td><span class="stars">★★★★★</span></td>
+            <td><span class="stars">★★★</span><span class="stars-gray">★★</span></td>
+            <td><span class="stars">★★★★</span><span class="stars-gray">★</span></td>
+          </tr>
+          <tr>
+            <td>被写体一貫性</td>
+            <td><span class="stars">★★★★★</span></td>
+            <td><span class="stars">★★★</span><span class="stars-gray">★★</span></td>
+            <td><span class="stars">★★★</span><span class="stars-gray">★★</span></td>
+            <td><span class="stars">★★★</span><span class="stars-gray">★★</span></td>
+          </tr>
+          <tr>
+            <td>編集機能</td>
+            <td><span class="stars">★★★★★</span></td>
+            <td><span class="stars">★★★</span><span class="stars-gray">★★</span></td>
+            <td><span class="stars">★★★★</span><span class="stars-gray">★</span></td>
+            <td><span class="stars">★★★★</span><span class="stars-gray">★</span></td>
+          </tr>
+          <tr>
+            <td>オープンソース</td>
+            <td><span class="badge badge-red">非公開</span></td>
+            <td><span class="badge badge-red">非公開</span></td>
+            <td><span class="badge badge-red">非公開</span></td>
+            <td><span class="badge badge-green">公開</span></td>
+          </tr>
+          <tr>
+            <td>価格（1枚あたり）</td>
+            <td>$0.02〜0.04</td>
+            <td>$0.04〜</td>
+            <td>$0.04〜</td>
+            <td>$0.002〜0.01</td>
+          </tr>
+          <tr>
+            <td>最大解像度</td>
+            <td>2048×2048</td>
+            <td>2048×2048</td>
+            <td>1024×1024</td>
+            <td>1024×1024</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card-grid card-grid-2" style="margin-top:20px">
+      <div class="card">
+        <h4 class="green">Seedream 4.5 が特に優れる場面</h4>
+        <ul class="check-list">
+          <li>商業用写真・プロダクション品質が必要な場合</li>
+          <li>画像内にテキスト（ブランド名・スローガン）を正確に含める場合</li>
+          <li>キャラクターや商品の視覚的一貫性が重要な場合</li>
+          <li>参照画像から複数要素を組み合わせる場合</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4 class="yellow">他モデルが優れる場面</h4>
+        <ul class="check-list warn">
+          <li>高度な芸術性・スタイライズド表現 → <strong>Midjourney</strong></li>
+          <li>ローカル実行・コスト最小化・カスタマイズ → <strong>Stable Diffusion</strong></li>
+          <li>OpenAI エコシステムとの統合 → <strong>DALL-E 3</strong></li>
+        </ul>
+      </div>
+    </div>
+
+    <blockquote class="orange">
+      <strong>LM Arena グローバルリーダーボード：</strong>10位（スコア1147）— AI画像生成モデルの中でトップ10圏内を維持
+    </blockquote>
+  </section>
+
+  <!-- ⑥  ユースケース -->
+  <section class="section" id="s6">
+    <div class="section-header">
+      <div class="section-num num-orange">6</div>
+      <h2>ユースケース・活用例</h2>
+    </div>
+
+    <div class="card-grid card-grid-2">
+      <div class="card">
+        <div class="card-icon">📢</div>
+        <h4>マーケティング・広告</h4>
+        <ul>
+          <li>商品写真にブランドロゴ・キャッチコピーを埋め込んだビジュアル生成</li>
+          <li>SNS広告バナーの量産（参照画像×複数サイズ展開）</li>
+          <li>季節・キャンペーン別の商品ビジュアル差し替え</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">🛒</div>
+        <h4>E-Commerce プロダクト撮影</h4>
+        <ul>
+          <li>商品の白背景からシチュエーション写真への変換</li>
+          <li>複数カラーバリエーションの一貫した画像生成</li>
+          <li>商品を使用するシーンのライフスタイル写真生成</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎮</div>
+        <h4>エンターテインメント・ゲーム</h4>
+        <ul>
+          <li>キャラクターデザインの一貫性維持（衣装違い・ポーズ違い）</li>
+          <li>コンセプトアートの量産</li>
+          <li>ゲーム内アセット（テクスチャ・背景）生成</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎬</div>
+        <h4>映画・映像制作</h4>
+        <ul>
+          <li>ストーリーボード・コンテ制作</li>
+          <li>セット・背景のビジュアル開発</li>
+          <li>キャラクターの外見設定のビジュアライゼーション</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">📰</div>
+        <h4>出版・メディア</h4>
+        <ul>
+          <li>記事のサムネイル・カバー画像</li>
+          <li>インフォグラフィックの視覚要素</li>
+          <li>書籍カバーデザイン</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>広告バナー制作ワークフロー例</h3>
+    <pre>
+1. 商品写真（参照A） + ブランドロゴ（参照B） + 季節テーマ（参照C）を入力
+2. プロンプト:
+   「春のセール、桜背景、○○ブランドの△△商品を中央に配置、
+    右上に"SPRING SALE 30% OFF"の文字」
+3. 高解像度バナー生成 → 商用利用可</pre>
+  </section>
+
+  <!-- ⑦  API/価格 -->
+  <section class="section" id="s7">
+    <div class="section-header">
+      <div class="section-num num-yellow">7</div>
+      <h2>API・価格・アクセス方法</h2>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>プラットフォーム</th><th>種類</th><th>特徴</th><th>価格目安</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>BytePlus（公式）</strong></td>
+            <td><span class="badge badge-blue">API</span></td>
+            <td>公式サービス、法人向け</td>
+            <td>要問合せ</td>
+          </tr>
+          <tr>
+            <td>WaveSpeedAI</td>
+            <td><span class="badge badge-blue">API</span></td>
+            <td>高速推論特化</td>
+            <td>$0.04 / 画像</td>
+          </tr>
+          <tr>
+            <td>fal.ai</td>
+            <td><span class="badge badge-blue">API</span></td>
+            <td>開発者向けAPIプラットフォーム</td>
+            <td>$0.02〜0.04 / 画像</td>
+          </tr>
+          <tr>
+            <td>OpenRouter</td>
+            <td><span class="badge badge-blue">API</span></td>
+            <td>複数AIモデルの統合アクセス</td>
+            <td>$0.04 / 画像</td>
+          </tr>
+          <tr>
+            <td>Artlist AI</td>
+            <td><span class="badge badge-teal">Web UI</span></td>
+            <td>デザイナー向けインターフェース</td>
+            <td>プラン制</td>
+          </tr>
+          <tr>
+            <td>Lovart.ai</td>
+            <td><span class="badge badge-teal">Web UI</span></td>
+            <td>クリエイター向け</td>
+            <td>プラン制</td>
+          </tr>
+          <tr>
+            <td>VisualGPT.io</td>
+            <td><span class="badge badge-teal">Web UI</span></td>
+            <td>無料トライアルあり（約200枚）</td>
+            <td>一部無料</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card-grid card-grid-3" style="margin-top:16px">
+      <div class="card">
+        <h4 class="green">商用利用権</h4>
+        <p>有料生成には商用利用権が含まれる（ウォーターマークなし）</p>
+      </div>
+      <div class="card">
+        <h4 class="accent">無料トライアル</h4>
+        <p>新規ユーザーは約200枚分の無料クレジットを利用可能なサービスあり</p>
+      </div>
+      <div class="card">
+        <h4 class="orange">5.0 Lite 登場</h4>
+        <p>Seedream 5.0 Lite は $0.035/画像とさらに低コスト</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ⑧  プロンプトガイド -->
+  <section class="section" id="s8">
+    <div class="section-header">
+      <div class="section-num num-pink">8</div>
+      <h2>プロンプトガイド・使い方</h2>
+    </div>
+
+    <h3>基本のプロンプト構造</h3>
+    <pre>
+[被写体の説明] + [スタイル・雰囲気] + [技術的仕様] + [テキスト指定（必要な場合）]
+
+例:
+  A professional woman in a modern office, commercial photography style,
+  soft natural lighting, 4K quality, ultra-detailed</pre>
+
+    <h3>テキストレンダリング — 引用符で囲む</h3>
+    <pre>
+A vintage coffee shop sign with the text "MORNING BREW" in bold serif font,
+warm lighting, rustic wooden background
+
+Product label for organic honey jar with text "Pure Honey" and "100% Natural",
+clean white background, professional product photography</pre>
+
+    <h3>マルチ画像参照のベストプラクティス</h3>
+    <pre>
+参照画像の影響度（推奨値）:
+  商品写真（形状・素材）  ─── 0.6 〜 0.7
+  ロゴ・文字素材          ─── 0.8 〜 0.9  ← 最高優先
+  スタイル・照明参照      ─── 0.3 〜 0.5
+
+参照の書き方:
+  "Replace the character in Image 2 with the character from Image 1,
+   generate the result in the style of Image 3"</pre>
+
+    <h3>画像編集プロンプト — 具体性が重要</h3>
+    <div class="card-grid card-grid-2">
+      <div class="card">
+        <h4 class="green">良い例 ✅</h4>
+        <p>"Remove the red car in the left side of the image and replace it with a green park bench"</p>
+      </div>
+      <div class="card">
+        <h4 class="red">悪い例 ❌</h4>
+        <p>"Edit the car"</p>
+      </div>
+    </div>
+
+    <h3>品質向上のコツ</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>コツ</th><th>説明</th></tr></thead>
+        <tbody>
+          <tr><td>詳細な説明</td><td>被写体・環境・照明・スタイルを具体的に記述</td></tr>
+          <tr><td>ネガティブプロンプト</td><td>避けたい要素を明示（blur, watermark 等）</td></tr>
+          <tr><td>解像度指定</td><td>"4K", "ultra-detailed", "high resolution" を含める</td></tr>
+          <tr><td>参照画像の品質</td><td>高品質な参照画像ほど出力品質が向上</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ⑨  SWOT -->
+  <section class="section" id="s9">
+    <div class="section-header">
+      <div class="section-num num-indigo">9</div>
+      <h2>強みと弱点の整理</h2>
+    </div>
+
+    <div class="card-grid card-grid-2">
+      <div class="card">
+        <h4 class="green">強み（Strengths）</h4>
+        <ul class="check-list">
+          <li><strong>テキスト描画の正確性</strong> — 競合他社が最も苦手とする領域でトップクラスの精度</li>
+          <li><strong>フォトリアリズム</strong> — DSLRカメラ写真に近い質感・テクスチャ・照明表現</li>
+          <li><strong>マルチ画像一貫性</strong> — 最大10枚の参照画像から被写体の同一性を維持</li>
+          <li><strong>統合アーキテクチャ</strong> — 生成・編集をシングルモデルで処理</li>
+          <li><strong>商用利用権</strong> — 全ての有料生成は商用利用権を含む</li>
+          <li><strong>高解像度</strong> — 最大2048×2048（4K相当）の出力</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4 class="red">弱点（Weaknesses）</h4>
+        <ul class="check-list cross">
+          <li><strong>クローズドソース</strong> — カスタマイズ・ローカル実行・微調整が不可</li>
+          <li><strong>コスト</strong> — Stable Diffusionと比較して約4〜20倍</li>
+          <li><strong>芸術的スタイライゼーション</strong> — Midjourneyのような高度な芸術的表現は苦手</li>
+          <li><strong>日本語テキスト</strong> — 英語中心設計のため、アジア言語のテキスト精度は限定的</li>
+          <li><strong>透明性の欠如</strong> — 学習データ・バイアスの検証が困難</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ⑩  展望 -->
+  <section class="section" id="s10">
+    <div class="section-header">
+      <div class="section-num num-cyan">10</div>
+      <h2>今後の展望（Seedream 5.0）</h2>
+    </div>
+
+    <p>ByteDanceは2026年初頭に <strong class="accent">Seedream 5.0</strong> をリリース済み。</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>特徴</th><th>詳細</th></tr></thead>
+        <tbody>
+          <tr><td>物理認識</td><td>物理法則を考慮した画像生成（Physics-Aware）</td></tr>
+          <tr><td>セマンティック理解の強化</td><td>より深い文脈・意味の理解</td></tr>
+          <tr><td>解像度</td><td>4K解像度の直接サポート</td></tr>
+          <tr><td>Web検索統合</td><td>リアルタイムWeb情報の参照</td></tr>
+          <tr><td>価格</td><td>Seedream 5.0 Lite: $0.035 / 画像</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>AI画像生成の将来トレンド</h3>
+    <pre>
+現在                         →     近未来
+──────────────────────────────────────────────
+テキスト → 画像              →     動画・3D生成との統合
+静止画編集                   →     リアルタイム・インタラクティブ編集
+英語中心                     →     多言語テキスト描画の精度向上
+クラウド専用                 →     エッジデバイスでの軽量推論</pre>
+  </section>
+
+  <!-- ⑪  まとめ/FAQ -->
+  <section class="section" id="s11">
+    <div class="section-header">
+      <div class="section-num num-blue">11</div>
+      <h2>まとめ・Q&amp;A</h2>
+    </div>
+
+    <blockquote>
+      <strong>Seedream 4.5 は「商業品質AI画像生成」の新基準を設定したモデルです。</strong>
+    </blockquote>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>評価軸</th><th>評価</th></tr></thead>
+        <tbody>
+          <tr><td>技術革新性</td><td><span class="stars">★★★★★</span></td></tr>
+          <tr><td>商用実用性</td><td><span class="stars">★★★★★</span></td></tr>
+          <tr><td>コストパフォーマンス</td><td><span class="stars">★★★★</span><span class="stars-gray">★</span></td></tr>
+          <tr><td>開発者フレンドリー</td><td><span class="stars">★★★★</span><span class="stars-gray">★</span></td></tr>
+          <tr><td>芸術的自由度</td><td><span class="stars">★★★</span><span class="stars-gray">★★</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>こんな人・組織に最もおすすめ</h3>
+    <div class="card-grid card-grid-2">
+      <div class="card">
+        <ul class="check-list">
+          <li><strong>マーケター・広告担当者</strong> — テキスト入り高品質バナー・広告素材の量産</li>
+          <li><strong>ECサイト運営者</strong> — 商品写真の高品質化・バリエーション展開</li>
+          <li><strong>ゲーム・映像制作会社</strong> — キャラクター・アセットの一貫した高品質生成</li>
+        </ul>
+      </div>
+      <div class="card">
+        <ul class="check-list">
+          <li><strong>AIプロダクト開発者</strong> — BytePlus API経由でのサービス組み込み</li>
+          <li><strong>コンテンツクリエイター</strong> — SNS・YouTube等の視覚コンテンツ制作効率化</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>よくある質問（FAQ）</h3>
+    <div class="card-grid">
+      <div class="card">
+        <h4 class="accent">Q: 無料で使えますか？</h4>
+        <p>一部のプラットフォーム（visualgpt.io等）で無料トライアルが提供されており、新規ユーザーには約200枚分の無料クレジットが付与されるケースがあります。本格利用は有料（$0.02〜0.04/画像）となります。</p>
+      </div>
+      <div class="card">
+        <h4 class="accent">Q: 日本語テキストを画像内に生成できますか？</h4>
+        <p>主として英語テキストの描画に最適化されています。日本語テキストは限定的なサポートにとどまり、精度はさらなる改善が期待されます。</p>
+      </div>
+      <div class="card">
+        <h4 class="accent">Q: Stable Diffusionとどちらがいいですか？</h4>
+        <p>用途によって異なります。商業品質のフォトリアリズム・テキスト精度・一貫性を求める場合はSeedream 4.5。低コスト・ローカル実行・高度なカスタマイズが必要な場合はStable Diffusionが適しています。</p>
+      </div>
+      <div class="card">
+        <h4 class="accent">Q: 生成した画像は商用利用できますか？</h4>
+        <p>有料プランで生成した画像はウォーターマークなしで商用利用が可能です。</p>
+      </div>
+      <div class="card">
+        <h4 class="accent">Q: 競合他社との最大の差は何ですか？</h4>
+        <p>Seedream 4.5の最大の差別化ポイントは「テキスト描画精度」「マルチ参照画像の一貫性」「生成・編集の統合アーキテクチャ」の3点です。</p>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h3>参考リソース</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>リソース</th><th>URL</th></tr></thead>
+        <tbody>
+          <tr><td>公式サイト</td><td><code>seed.bytedance.com/en/seedream4_5</code></td></tr>
+          <tr><td>BytePlus API</td><td><code>byteplus.com/en/product/Seedream</code></td></tr>
+          <tr><td>fal.ai API（Text-to-Image）</td><td><code>fal.ai/models/fal-ai/bytedance/seedream/v4.5/text-to-image</code></td></tr>
+          <tr><td>fal.ai API（Image Edit）</td><td><code>fal.ai/models/fal-ai/bytedance/seedream/v4.5/edit</code></td></tr>
+          <tr><td>プロンプトガイド（fal.ai）</td><td><code>fal.ai/learn/devs/seedream-v4-5-prompt-guide</code></td></tr>
+          <tr><td>WaveSpeedAI ガイド</td><td><code>wavespeed.ai/blog/posts/seedream-4-5-complete-guide-2026/</code></td></tr>
+          <tr><td>日本語解説（WEEL）</td><td><code>weel.co.jp/media/tech/seedream-4-5/</code></td></tr>
+          <tr><td>OpenRouter API</td><td><code>openrouter.ai/bytedance-seed/seedream-4.5</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div><!-- /container -->
+
+<footer>
+  <div class="footer-inner">
+    <p>Seedream 4.5 完全解説セミナー — 配布資料</p>
+    <p>作成日: 2026年4月4日 ／ 情報の正確性について: 本資料は公開情報をもとに作成しています。価格・仕様は変更される場合があります。最新情報は各公式サイトをご確認ください。</p>
+  </div>
+</footer>
+
+</body>
+</html>
