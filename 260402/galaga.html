@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>ギャラガ</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; touch-action:none; }
+body {
+  background:#000;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  min-height:100vh;
+  font-family:'Courier New',monospace;
+  overflow:hidden;
+  user-select:none;
+}
+#wrap {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  width:100%;
+}
+#ui {
+  color:#fff;
+  display:flex;
+  justify-content:space-between;
+  width:100%;
+  max-width:480px;
+  padding:6px 8px;
+  font-size:13px;
+  letter-spacing:1px;
+  background:#000;
+}
+#gameCanvas {
+  display:block;
+  max-width:100%;
+  image-rendering:pixelated;
+}
+/* モバイル操作ボタン */
+#controls {
+  display:none;
+  flex-direction:row;
+  justify-content:space-between;
+  align-items:center;
+  width:100%;
+  max-width:480px;
+  padding:10px 16px;
+  background:#000;
+  gap:10px;
+}
+#controls.show { display:flex; }
+.ctrl-group {
+  display:flex;
+  gap:10px;
+}
+.btn {
+  width:64px; height:64px;
+  border-radius:50%;
+  border:2px solid #444;
+  background:rgba(255,255,255,0.08);
+  color:#fff;
+  font-size:22px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  flex-shrink:0;
+}
+.btn:active, .btn.pressed { background:rgba(255,255,255,0.25); border-color:#aaf; }
+#btnFire {
+  width:80px; height:80px;
+  background:rgba(255,50,50,0.15);
+  border-color:#f44;
+  font-size:14px;
+  font-weight:bold;
+  color:#f88;
+}
+#btnFire.pressed { background:rgba(255,50,50,0.4); }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="ui">
+    <span>SCORE:<span id="elScore">0</span></span>
+    <span>HI:<span id="elHi">0</span></span>
+    <span>STAGE:<span id="elStage">1</span></span>
+    <span>LIVES:<span id="elLives">★★★</span></span>
+  </div>
+  <canvas id="gameCanvas" width="480" height="600"></canvas>
+  <div id="controls">
+    <div class="ctrl-group">
+      <div class="btn" id="btnLeft">◀</div>
+      <div class="btn" id="btnRight">▶</div>
+    </div>
+    <div class="btn" id="btnFire">FIRE</div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════
+// キャンバス設定
+// ══════════════════════════════════════════════════
+const canvas = document.getElementById('gameCanvas');
+const ctx    = canvas.getContext('2d');
+const CW = 480, CH = 600;
+
+// スマホ対応: 画面幅に合わせてスケール
+function resize() {
+  const scale = Math.min(1, (window.innerWidth) / CW,
+                          (window.innerHeight - 180) / CH);
+  canvas.style.width  = (CW * scale) + 'px';
+  canvas.style.height = (CH * scale) + 'px';
+  // モバイル判定
+  if ('ontouchstart' in window || window.innerWidth < 700) {
+    document.getElementById('controls').classList.add('show');
+  }
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ══════════════════════════════════════════════════
+// 音声 (Web Audio API)
+// ══════════════════════════════════════════════════
+let audioCtx = null;
+let bgmInterval = null;
+let bgmOn = false;
+let masterGain = null;
+
+function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0.4;
+  masterGain.connect(audioCtx.destination);
+}
+
+// 短い音を鳴らす
+function playTone(freq, type, duration, vol, startDelay=0, freqEnd=null) {
+  if (!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const g   = audioCtx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  if (freqEnd !== null) {
+    osc.frequency.linearRampToValueAtTime(freqEnd,
+      audioCtx.currentTime + startDelay + duration);
+  }
+  g.gain.setValueAtTime(vol, audioCtx.currentTime + startDelay);
+  g.gain.exponentialRampToValueAtTime(0.001,
+    audioCtx.currentTime + startDelay + duration);
+  osc.connect(g);
+  g.connect(masterGain);
+  osc.start(audioCtx.currentTime + startDelay);
+  osc.stop(audioCtx.currentTime + startDelay + duration + 0.01);
+}
+
+// ノイズ爆発音
+function playNoise(duration, vol) {
+  if (!audioCtx) return;
+  const bufLen = audioCtx.sampleRate * duration;
+  const buf    = audioCtx.createBuffer(1, bufLen, audioCtx.sampleRate);
+  const data   = buf.getChannelData(0);
+  for (let i = 0; i < bufLen; i++) data[i] = (Math.random()*2-1);
+  const src = audioCtx.createBufferSource();
+  src.buffer = buf;
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(vol, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+  // ローパスフィルタ
+  const filt = audioCtx.createBiquadFilter();
+  filt.type = 'lowpass';
+  filt.frequency.value = 800;
+  src.connect(filt);
+  filt.connect(g);
+  g.connect(masterGain);
+  src.start();
+  src.stop(audioCtx.currentTime + duration);
+}
+
+// 効果音
+function sfxShoot() { playTone(880, 'square', 0.08, 0.3, 0, 440); }
+function sfxExplode(big=false) {
+  playNoise(big ? 0.6 : 0.3, big ? 0.8 : 0.5);
+  playTone(200, 'sawtooth', 0.3, 0.4, 0, 50);
+}
+function sfxEnemyDie() {
+  playTone(660, 'square', 0.05, 0.4);
+  playTone(440, 'square', 0.05, 0.4, 0.05);
+  playTone(330, 'square', 0.08, 0.3, 0.1);
+}
+function sfxPlayerDie() {
+  playNoise(0.5, 0.7);
+  for (let i=0; i<5; i++) {
+    playTone(400 - i*60, 'sawtooth', 0.1, 0.3, i*0.1, 100);
+  }
+}
+function sfxStageClear() {
+  const mel = [523,659,784,1047];
+  mel.forEach((f,i) => playTone(f,'square',0.15,0.4,i*0.15));
+}
+
+// BGM: ループするチップチューン
+const BGM_TEMPO = 0.14; // 1ビートの秒数
+// 音符: [周波数, ビート数]  0=休符
+const BGM_BASS = [
+  [110,2],[0,2],[138,1],[110,1],[0,2],[110,2],[0,2],[138,1],[110,1],[0,2],
+  [147,2],[0,2],[165,1],[147,1],[0,2],[147,2],[0,2],[165,1],[147,1],[0,2],
+];
+const BGM_LEAD = [
+  [440,1],[494,1],[523,2],[440,1],[494,1],[523,2],[0,2],
+  [523,1],[587,1],[659,2],[523,1],[587,1],[659,2],[0,2],
+  [587,1],[523,1],[494,1],[440,1],[494,2],[0,2],[440,1],[0,1],
+  [330,1],[370,1],[440,2],[330,1],[370,1],[440,2],[0,2],
+];
+
+function buildBGMSchedule(notes) {
+  let t = 0;
+  return notes.map(([f, beats]) => { const s = t; t += beats * BGM_TEMPO; return {f, s, d: beats * BGM_TEMPO * 0.85}; });
+}
+
+let bgmBassSchedule = buildBGMSchedule(BGM_BASS);
+let bgmLeadSchedule = buildBGMSchedule(BGM_LEAD);
+let bgmLoopStart = 0;
+let bgmLoopLen = 0;
+
+function startBGM() {
+  if (!audioCtx || bgmOn) return;
+  bgmOn = true;
+  const bassLen = BGM_BASS.reduce((a,[,b])=>a+b,0) * BGM_TEMPO;
+  const leadLen = BGM_LEAD.reduce((a,[,b])=>a+b,0) * BGM_TEMPO;
+  bgmLoopLen = Math.max(bassLen, leadLen);
+  bgmLoopStart = audioCtx.currentTime;
+  scheduleBGMLoop();
+  bgmInterval = setInterval(() => {
+    if (bgmOn) scheduleBGMLoop();
+  }, (bgmLoopLen - 0.5) * 1000);
+}
+
+function scheduleBGMLoop() {
+  const now = audioCtx.currentTime;
+  // ループタイミング調整
+  while (bgmLoopStart + bgmLoopLen < now + 0.3) bgmLoopStart += bgmLoopLen;
+  const base = bgmLoopStart;
+
+  bgmBassSchedule.forEach(({f, s, d}) => {
+    if (f === 0) return;
+    playToneAt(f, 'triangle', d, 0.35, base + s);
+  });
+  bgmLeadSchedule.forEach(({f, s, d}) => {
+    if (f === 0) return;
+    playToneAt(f, 'square', d * 0.7, 0.15, base + s);
+  });
+  // ドラム風パーカッション
+  for (let i = 0; i < bgmLoopLen / BGM_TEMPO; i += 2) {
+    const t = base + i * BGM_TEMPO;
+    if (t < now) continue;
+    // キック
+    const ko = audioCtx.createOscillator();
+    const kg = audioCtx.createGain();
+    ko.type = 'sine';
+    ko.frequency.setValueAtTime(160, t);
+    ko.frequency.exponentialRampToValueAtTime(40, t + 0.12);
+    kg.gain.setValueAtTime(0.6, t);
+    kg.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+    ko.connect(kg); kg.connect(masterGain);
+    ko.start(t); ko.stop(t + 0.2);
+    // スネア
+    const st = t + BGM_TEMPO;
+    const nb = audioCtx.sampleRate * 0.1;
+    const snBuf = audioCtx.createBuffer(1, nb, audioCtx.sampleRate);
+    const snDat = snBuf.getChannelData(0);
+    for (let j = 0; j < nb; j++) snDat[j] = Math.random()*2-1;
+    const sn = audioCtx.createBufferSource();
+    sn.buffer = snBuf;
+    const sg = audioCtx.createGain();
+    sg.gain.setValueAtTime(0.25, st);
+    sg.gain.exponentialRampToValueAtTime(0.001, st + 0.1);
+    sn.connect(sg); sg.connect(masterGain);
+    sn.start(st); sn.stop(st + 0.12);
+  }
+  bgmLoopStart += bgmLoopLen;
+}
+
+function playToneAt(freq, type, duration, vol, when) {
+  if (!audioCtx || when < audioCtx.currentTime) return;
+  const osc = audioCtx.createOscillator();
+  const g   = audioCtx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  g.gain.setValueAtTime(vol, when);
+  g.gain.exponentialRampToValueAtTime(0.001, when + duration);
+  osc.connect(g); g.connect(masterGain);
+  osc.start(when); osc.stop(when + duration + 0.01);
+}
+
+function stopBGM() {
+  bgmOn = false;
+  if (bgmInterval) { clearInterval(bgmInterval); bgmInterval = null; }
+}
+
+// ══════════════════════════════════════════════════
+// 星背景
+// ══════════════════════════════════════════════════
+const STARS = Array.from({length:150}, () => ({
+  x: Math.random() * CW,
+  y: Math.random() * CH,
+  r: Math.random() * 1.6 + 0.3,
+  spd: Math.random() * 0.7 + 0.2,
+  p: Math.random() * Math.PI * 2
+}));
+
+function drawStars() {
+  STARS.forEach(s => {
+    s.y += s.spd;
+    if (s.y > CH) { s.y = 0; s.x = Math.random() * CW; }
+    const a = 0.4 + 0.6 * Math.abs(Math.sin(Date.now()*0.0015 + s.p));
+    ctx.fillStyle = `rgba(255,255,255,${a.toFixed(2)})`;
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+    ctx.fill();
+  });
+}
+
+// ══════════════════════════════════════════════════
+// ゲーム変数（全部初期化済み）
+// ══════════════════════════════════════════════════
+let state    = 'title';
+let score    = 0;
+let hiScore  = 0;
+let stage    = 1;
+let lives    = 3;
+let frame    = 0;
+let player   = null;
+let bullets      = [];
+let enemyBullets = [];
+let enemies      = [];
+let explosions   = [];
+let scorePopups  = [];
+let capturedByBoss = false; // 捕獲中フラグ
+
+// 入力状態
+const inp = { left:false, right:false, fire:false };
+let firePrev = false;
+
+// ══════════════════════════════════════════════════
+// 入力: キーボード
+// ══════════════════════════════════════════════════
+window.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft'  || e.key === 'a' || e.key === 'A') inp.left  = true;
+  if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') inp.right = true;
+  if (e.key === ' ' || e.key === 'z' || e.key === 'Z') inp.fire = true;
+  if (e.key === ' ') e.preventDefault();
+
+  if ((state === 'title' || state === 'gameover') && (e.key === ' ' || e.key === 'Enter')) {
+    startGame();
+  }
+});
+window.addEventListener('keyup', e => {
+  if (e.key === 'ArrowLeft'  || e.key === 'a' || e.key === 'A') inp.left  = false;
+  if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') inp.right = false;
+  if (e.key === ' ' || e.key === 'z' || e.key === 'Z') inp.fire = false;
+});
+
+// ══════════════════════════════════════════════════
+// 入力: モバイルボタン
+// ══════════════════════════════════════════════════
+function bindBtn(id, key) {
+  const el = document.getElementById(id);
+  ['touchstart','mousedown'].forEach(ev =>
+    el.addEventListener(ev, e => { e.preventDefault(); inp[key]=true; el.classList.add('pressed'); }, {passive:false})
+  );
+  ['touchend','mouseup','touchcancel','mouseleave'].forEach(ev =>
+    el.addEventListener(ev, e => { e.preventDefault(); inp[key]=false; el.classList.remove('pressed'); }, {passive:false})
+  );
+}
+bindBtn('btnLeft',  'left');
+bindBtn('btnRight', 'right');
+bindBtn('btnFire',  'fire');
+
+// モバイル: タップでゲーム開始
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  initAudio();
+  if (state === 'title' || state === 'gameover') startGame();
+}, {passive:false});
+canvas.addEventListener('click', () => {
+  initAudio();
+  if (state === 'title' || state === 'gameover') startGame();
+});
+
+// ══════════════════════════════════════════════════
+// ゲーム開始・ステージ初期化
+// ══════════════════════════════════════════════════
+function startGame() {
+  initAudio();
+  score = 0; lives = 3; stage = 1;
+  updateUI();
+  initStage();
+  state = 'playing';
+  startBGM();
+}
+
+function initStage() {
+  player       = { x: CW/2, y: CH - 55, inv: 0, blink: 0 };
+  bullets      = [];
+  enemyBullets = [];
+  enemies      = [];
+  explosions   = [];
+  scorePopups  = [];
+  capturedByBoss = false;
+  frame = 0;
+  spawnFormation();
+}
+
+function updateUI() {
+  document.getElementById('elScore').textContent = score;
+  document.getElementById('elHi').textContent    = hiScore;
+  document.getElementById('elStage').textContent  = stage;
+  const stars = '★'.repeat(lives) + '☆'.repeat(Math.max(0, 3-lives));
+  document.getElementById('elLives').textContent  = stars;
+}
+
+// ══════════════════════════════════════════════════
+// 敵フォーメーション生成
+// ══════════════════════════════════════════════════
+function spawnFormation() {
+  // 配置: boss(上段), butterfly(中段), bee(下段×2)
+  const rows = [
+    { type:'boss',      count:6,  y:80,  score:800,  hp:2 },
+    { type:'butterfly', count:8,  y:130, score:160,  hp:1 },
+    { type:'bee',       count:10, y:180, score:80,   hp:1 },
+    { type:'bee',       count:10, y:220, score:80,   hp:1 },
+  ];
+  let id = 0;
+  rows.forEach(row => {
+    const total = row.count;
+    const spacing = Math.min(52, (CW - 60) / (total - 1));
+    const startX = (CW - spacing * (total-1)) / 2;
+    for (let c = 0; c < total; c++) {
+      const formX = startX + c * spacing;
+      const formY = row.y;
+      id++;
+      enemies.push({
+        id,
+        type:   row.type,
+        x:      formX,
+        y:      -80 - id * 18,      // 画面外から登場
+        formX, formY,
+        hp:     row.hp,
+        baseScore: row.score,
+        // 登場アニメ
+        entering:   true,
+        entryDelay: id * 5,
+        // ダイブ
+        diving:    false,
+        diveT:     0,
+        divePath:  [],
+        // 弾発射
+        shotTimer: 90 + Math.random()*120 + id*4,
+        // ボス専用
+        beamCooldown: (row.type==='boss') ? 300+Math.random()*200 : 0,
+        beamActive:   false,
+        beamLen:      0,
+        captured:     false,
+      });
+    }
+  });
+}
+
+// ベジェ曲線ダイブパス生成
+function makeDivePath(e) {
+  const path = [];
+  const steps = 140;
+  const px = player ? player.x : CW/2;
+  // 制御点
+  const cp1x = e.x + (Math.random()-0.5)*260;
+  const cp1y = e.y + 120 + Math.random()*80;
+  const cp2x = px  + (Math.random()-0.5)*140;
+  const cp2y = CH * 0.5 + Math.random()*100;
+  const ex   = -60 + Math.random()*(CW+120);
+  const ey   = CH + 80;
+  for (let i=0; i<=steps; i++) {
+    const t = i/steps, m=1-t;
+    path.push({
+      x: m*m*m*e.x + 3*m*m*t*cp1x + 3*m*t*t*cp2x + t*t*t*ex,
+      y: m*m*m*e.y + 3*m*m*t*cp1y + 3*m*t*t*cp2y + t*t*t*ey,
+    });
+  }
+  return path;
+}
+
+// ══════════════════════════════════════════════════
+// 衝突判定
+// ══════════════════════════════════════════════════
+function hit(ax,ay,ar, bx,by,br) {
+  const dx=ax-bx, dy=ay-by;
+  return dx*dx+dy*dy < (ar+br)*(ar+br);
+}
+
+// ══════════════════════════════════════════════════
+// スコア加算
+// ══════════════════════════════════════════════════
+function addScore(pts, x, y) {
+  score += pts;
+  if (score > hiScore) hiScore = score;
+  updateUI();
+  scorePopups.push({ x, y, pts, life:1.0 });
+}
+
+// ══════════════════════════════════════════════════
+// 爆発追加
+// ══════════════════════════════════════════════════
+function addExplosion(x, y, col='#f80', n=14) {
+  for (let i=0; i<n; i++) {
+    const a = Math.random()*Math.PI*2;
+    const s = Math.random()*5+1;
+    explosions.push({
+      x, y,
+      vx: Math.cos(a)*s, vy: Math.sin(a)*s,
+      life: 1.0,
+      col,
+      r: Math.random()*3+1
+    });
+  }
+}
+
+// ══════════════════════════════════════════════════
+// 自機死亡
+// ══════════════════════════════════════════════════
+function killPlayer() {
+  sfxPlayerDie();
+  addExplosion(player.x, player.y, '#4af', 20);
+  lives = Math.max(0, lives - 1);
+  capturedByBoss = false;
+  updateUI();
+  if (lives <= 0) {
+    player = null;
+    state = 'gameover';
+    stopBGM();
+    return;
+  }
+  player = null;
+  state = 'respawn';
+  setTimeout(() => {
+    player = { x: CW/2, y: CH-55, inv: 180, blink: 180 };
+    state = 'playing';
+  }, 2000);
+}
+
+// ══════════════════════════════════════════════════
+// メイン更新
+// ══════════════════════════════════════════════════
+function update() {
+  frame++;
+
+  // ── 自機 ──────────────────────────────────────
+  if (player && state === 'playing') {
+    const spd = 4.5;
+    if (inp.left  && player.x > 20)      player.x -= spd;
+    if (inp.right && player.x < CW - 20) player.x += spd;
+
+    // 弾発射（押した瞬間）
+    const fireNow = inp.fire;
+    if (fireNow && !firePrev) {
+      if (bullets.length < 2) {
+        bullets.push({ x: player.x, y: player.y - 16, vy: -13 });
+        sfxShoot();
+      }
+    }
+    firePrev = fireNow;
+
+    if (player.inv   > 0) player.inv--;
+    if (player.blink > 0) player.blink--;
+  } else {
+    firePrev = inp.fire;
+  }
+
+  // ── 自機弾移動 ────────────────────────────────
+  bullets = bullets.filter(b => {
+    b.y += b.vy;
+    return b.y > -10;
+  });
+
+  // ── 敵弾移動 ──────────────────────────────────
+  enemyBullets = enemyBullets.filter(b => {
+    b.x += b.vx;
+    b.y += b.vy;
+    return b.y < CH+10 && b.x > -10 && b.x < CW+10;
+  });
+
+  // ── フォーメーション揺れ ──────────────────────
+  const oscX = Math.sin(frame * 0.016) * 28;
+  const oscY = Math.sin(frame * 0.011) * 6;
+
+  // ── 敵更新 ────────────────────────────────────
+  for (let i = enemies.length-1; i >= 0; i--) {
+    const e = enemies[i];
+
+    // 登場アニメ
+    if (e.entering) {
+      e.entryDelay--;
+      if (e.entryDelay > 0) continue;
+      const tx = e.formX + oscX;
+      const ty = e.formY;
+      e.x += (tx - e.x) * 0.08 + (e.y < ty ? 5 : 0);
+      e.y += (e.y < ty) ? 5 : (ty - e.y) * 0.08;
+      if (e.y >= ty - 2 && e.y > 0) {
+        e.entering = false;
+        e.x = e.formX + oscX;
+        e.y = ty;
+      }
+      continue;
+    }
+
+    if (e.diving) {
+      // ダイブ
+      if (e.diveT < e.divePath.length) {
+        e.x = e.divePath[e.diveT].x;
+        e.y = e.divePath[e.diveT].y;
+        e.diveT++;
+
+        // ダイブ中に弾発射
+        e.shotTimer--;
+        if (e.shotTimer <= 0 && player && e.y < CH - 30) {
+          fireEnemyBullet(e);
+          e.shotTimer = 35 + Math.random()*25;
+        }
+      } else {
+        // 画面外に出たらフォームに戻る
+        e.diving   = false;
+        e.diveT    = 0;
+        e.divePath = [];
+        if (e.y > CH) { e.y = -60; e.x = e.formX + oscX; }
+        e.entering   = true;
+        e.entryDelay = 20;
+      }
+      continue;
+    }
+
+    // フォーメーション追従
+    e.x = e.formX + oscX;
+    e.y = e.formY + oscY;
+
+    // ボス: 捕獲ビーム
+    if (e.type === 'boss' && !e.captured && !capturedByBoss && player) {
+      e.beamCooldown--;
+      if (e.beamCooldown <= 0) {
+        e.beamActive = true;
+        e.beamLen    = 0;
+        e.beamTimer  = 100;
+        capturedByBoss = true;
+      }
+    }
+    if (e.beamActive) {
+      e.beamLen = Math.min(CH, e.beamLen + 14);
+      e.beamTimer--;
+
+      // ビームが自機に当たったか
+      if (player && player.inv <= 0 &&
+          Math.abs(player.x - e.x) < 18 &&
+          player.y > e.y && player.y < e.y + e.beamLen) {
+        // 捕獲
+        e.captured = true;
+        e.beamActive = false;
+        capturedByBoss = false;
+        e.beamCooldown = 9999; // 捕獲後は発射しない
+        killPlayer();
+        if (state !== 'gameover') state = 'playing'; // 残機あればすぐ復活待ち
+        continue;
+      }
+
+      if (e.beamTimer <= 0) {
+        e.beamActive = false;
+        capturedByBoss = false;
+        e.beamCooldown = 350 + Math.random()*200;
+      }
+    }
+
+    // ランダムダイブ
+    e.shotTimer--;
+    if (e.shotTimer <= 0) {
+      // ダイブか弾発射か
+      if (Math.random() < 0.4 + stage*0.05) {
+        e.diving   = true;
+        e.diveT    = 0;
+        e.divePath = makeDivePath(e);
+        e.shotTimer = 100 + Math.random()*80;
+      } else {
+        if (player) fireEnemyBullet(e);
+        e.shotTimer = 60 + Math.random()*60;
+      }
+    }
+  }
+
+  // ── 自機弾 vs 敵 ──────────────────────────────
+  for (let bi = bullets.length-1; bi >= 0; bi--) {
+    const b = bullets[bi];
+    for (let ei = enemies.length-1; ei >= 0; ei--) {
+      const e = enemies[ei];
+      if (e.entering && e.y < 0) continue;
+      if (hit(b.x, b.y, 5, e.x, e.y, 16)) {
+        bullets.splice(bi, 1);
+        e.hp--;
+        if (e.hp <= 0) {
+          const pts = e.baseScore * (e.diving ? 2 : 1) * (e.captured ? 2 : 1);
+          addScore(pts, e.x, e.y);
+          addExplosion(e.x, e.y, e.type==='boss' ? '#f88' : '#fa0',
+                       e.type==='boss' ? 20 : 12);
+          sfxEnemyDie();
+          // ボスが捕獲プレイヤー持っていた場合: 解放ボーナス
+          if (e.captured) { addScore(1000, e.x, e.y - 20); }
+          if (e.beamActive) { capturedByBoss = false; }
+          enemies.splice(ei, 1);
+        }
+        break;
+      }
+    }
+  }
+
+  // ── 敵弾 vs 自機 ──────────────────────────────
+  if (player && player.inv <= 0 && state === 'playing') {
+    for (let bi = enemyBullets.length-1; bi >= 0; bi--) {
+      const b = enemyBullets[bi];
+      if (hit(b.x, b.y, 5, player.x, player.y, 14)) {
+        enemyBullets.splice(bi, 1);
+        killPlayer();
+        break;
+      }
+    }
+    // 敵本体との接触（ダイブ中）
+    if (player) {
+      for (let ei = enemies.length-1; ei >= 0; ei--) {
+        const e = enemies[ei];
+        if (e.diving && hit(e.x, e.y, 16, player.x, player.y, 14)) {
+          addExplosion(e.x, e.y, '#fa0', 12); sfxEnemyDie();
+          addScore(e.baseScore, e.x, e.y);
+          enemies.splice(ei, 1);
+          killPlayer();
+          break;
+        }
+      }
+    }
+  }
+
+  // ── ステージクリア ────────────────────────────
+  if (state === 'playing' && enemies.length === 0 && frame > 120) {
+    state = 'stageclear';
+    sfxStageClear();
+    setTimeout(() => {
+      stage++;
+      updateUI();
+      initStage();
+      state = 'playing';
+    }, 2500);
+  }
+
+  // ── 爆発更新 ──────────────────────────────────
+  explosions = explosions.filter(p => {
+    p.x += p.vx; p.y += p.vy;
+    p.vx *= 0.94; p.vy *= 0.94;
+    p.life -= 0.035;
+    return p.life > 0;
+  });
+}
+
+// ══════════════════════════════════════════════════
+// 敵弾発射
+// ══════════════════════════════════════════════════
+function fireEnemyBullet(e) {
+  const px = player ? player.x : CW/2;
+  const py = player ? player.y : CH/2;
+  const dx = px - e.x, dy = py - e.y;
+  const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+  const spd = 4 + stage * 0.4;
+  enemyBullets.push({
+    x: e.x, y: e.y,
+    vx: (dx/dist)*spd,
+    vy: (dy/dist)*spd,
+  });
+}
+
+// ══════════════════════════════════════════════════
+// 描画
+// ══════════════════════════════════════════════════
+function draw() {
+  ctx.clearRect(0, 0, CW, CH);
+  ctx.fillStyle = '#00000e';
+  ctx.fillRect(0, 0, CW, CH);
+
+  drawStars();
+
+  // 敵
+  enemies.forEach(e => {
+    if (e.entering && e.y < -20) return;
+    drawEnemy(e);
+    // ボス捕獲ビーム
+    if (e.beamActive && e.beamLen > 0) {
+      const blink = Math.floor(frame/3) % 2;
+      if (blink) {
+        const grd = ctx.createLinearGradient(e.x, e.y, e.x, e.y + e.beamLen);
+        grd.addColorStop(0,   'rgba(0,255,200,0.0)');
+        grd.addColorStop(0.1, 'rgba(0,255,200,0.6)');
+        grd.addColorStop(0.6, 'rgba(160,0,255,0.35)');
+        grd.addColorStop(1,   'rgba(0,255,200,0.0)');
+        ctx.fillStyle = grd;
+        ctx.fillRect(e.x - 15, e.y + 12, 30, e.beamLen);
+      }
+    }
+  });
+
+  // 自機弾
+  ctx.shadowColor = '#ff8';
+  ctx.shadowBlur  = 10;
+  bullets.forEach(b => {
+    ctx.fillStyle = '#ff0';
+    ctx.fillRect(b.x - 3, b.y - 10, 6, 18);
+  });
+  ctx.shadowBlur = 0;
+
+  // 敵弾
+  ctx.shadowColor = '#f44';
+  ctx.shadowBlur  = 8;
+  enemyBullets.forEach(b => {
+    ctx.fillStyle = '#f66';
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, 5, 0, Math.PI*2);
+    ctx.fill();
+  });
+  ctx.shadowBlur = 0;
+
+  // 自機
+  if (player) {
+    const vis = (player.blink <= 0) || (Math.floor(frame/6) % 2 === 0);
+    if (vis) drawPlayer(player.x, player.y);
+  }
+
+  // 爆発パーティクル
+  explosions.forEach(p => {
+    ctx.globalAlpha = p.life;
+    ctx.fillStyle   = p.col;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+
+  // スコアポップ
+  scorePopups = scorePopups.filter(p => {
+    p.y -= 0.8;
+    p.life -= 0.018;
+    ctx.globalAlpha = p.life;
+    ctx.fillStyle   = '#ff0';
+    ctx.font        = 'bold 14px Courier New';
+    ctx.textAlign   = 'center';
+    ctx.fillText('+' + p.pts, p.x, p.y);
+    return p.life > 0;
+  });
+  ctx.globalAlpha = 1;
+  ctx.textAlign   = 'left';
+
+  // ステージクリア
+  if (state === 'stageclear') {
+    ctx.fillStyle = 'rgba(0,0,0,0.45)';
+    ctx.fillRect(0, CH/2-50, CW, 100);
+    ctx.fillStyle = '#ff0';
+    ctx.font      = 'bold 30px Courier New';
+    ctx.textAlign = 'center';
+    ctx.fillText('STAGE CLEAR!', CW/2, CH/2 + 5);
+    ctx.fillStyle = '#8ff';
+    ctx.font      = '16px Courier New';
+    ctx.fillText('STAGE ' + (stage+1) + ' へ', CW/2, CH/2 + 32);
+    ctx.textAlign = 'left';
+  }
+
+  // タイトル画面
+  if (state === 'title') {
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fillRect(0, 70, CW, 400);
+
+    ctx.fillStyle = '#f4a';
+    ctx.font      = 'bold 60px Courier New';
+    ctx.textAlign = 'center';
+    ctx.shadowColor = '#f4a'; ctx.shadowBlur = 24;
+    ctx.fillText('GALAGA', CW/2, 175);
+    ctx.shadowBlur = 0;
+
+    ctx.fillStyle = '#4ff';
+    ctx.font      = '15px Courier New';
+    ctx.fillText('─── キーボード操作 ───', CW/2, 225);
+    ctx.fillStyle = '#fff';
+    ctx.fillText('← → / A D : 移動', CW/2, 255);
+    ctx.fillText('SPACE / Z : 発射・スタート', CW/2, 278);
+
+    ctx.fillStyle = '#4ff';
+    ctx.fillText('─── スマホ操作 ───', CW/2, 315);
+    ctx.fillStyle = '#fff';
+    ctx.fillText('画面タップ でスタート', CW/2, 340);
+    ctx.fillText('下の ◀ ▶ で移動 / FIRE で発射', CW/2, 363);
+
+    // 点滅テキスト
+    if (Math.floor(frame/20) % 2 === 0) {
+      ctx.fillStyle = '#ff0';
+      ctx.font      = 'bold 18px Courier New';
+      ctx.fillText('PRESS SPACE / TAP TO START', CW/2, 415);
+    }
+    ctx.fillStyle = '#555';
+    ctx.font      = '12px Courier New';
+    ctx.fillText('TRIBUTE TO NAMCO 1981', CW/2, 445);
+    ctx.textAlign = 'left';
+  }
+
+  // ゲームオーバー
+  if (state === 'gameover') {
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.fillRect(0, CH/2-80, CW, 170);
+    ctx.fillStyle = '#f44';
+    ctx.font      = 'bold 38px Courier New';
+    ctx.textAlign = 'center';
+    ctx.shadowColor = '#f44'; ctx.shadowBlur = 20;
+    ctx.fillText('GAME OVER', CW/2, CH/2 - 20);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#aaa';
+    ctx.font      = '15px Courier New';
+    ctx.fillText('SCORE: ' + score, CW/2, CH/2 + 15);
+    if (score === hiScore && score > 0) {
+      ctx.fillStyle = '#ff0';
+      ctx.fillText('NEW HI-SCORE!', CW/2, CH/2 + 40);
+    }
+    if (Math.floor(frame/20) % 2 === 0) {
+      ctx.fillStyle = '#fff';
+      ctx.font      = '16px Courier New';
+      ctx.fillText('SPACE / TAP でリスタート', CW/2, CH/2 + 75);
+    }
+    ctx.textAlign = 'left';
+  }
+}
+
+// ══════════════════════════════════════════════════
+// 敵キャラ描画
+// ══════════════════════════════════════════════════
+function drawEnemy(e) {
+  ctx.save();
+  ctx.translate(e.x, e.y);
+  // ダイブ中は向きを進行方向に
+  if (e.diving && e.diveT > 1 && e.diveT < e.divePath.length) {
+    const prev = e.divePath[Math.max(0, e.diveT-2)];
+    const angle = Math.atan2(e.y - prev.y, e.x - prev.x) + Math.PI/2;
+    ctx.rotate(angle - Math.PI/2);
+  }
+
+  if (e.type === 'boss') {
+    // ボスギャラガ（蝶形）
+    const col = e.hp >= 2 ? '#f4a' : '#fa4';
+    ctx.fillStyle = col;
+    for (let s of [-1,1]) {
+      ctx.save(); ctx.scale(s,1);
+      ctx.beginPath();
+      ctx.moveTo(0,-12);
+      ctx.bezierCurveTo(20,-22, 28,-2, 18,12);
+      ctx.bezierCurveTo(10,22, 0,12, 0,12);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+    ctx.fillStyle = '#ffc';
+    ctx.beginPath(); ctx.ellipse(0,0,8,13,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#f00';
+    ctx.beginPath();
+    ctx.arc(-3,-5,3,0,Math.PI*2); ctx.arc(3,-5,3,0,Math.PI*2); ctx.fill();
+    // 捕獲してる自機（小さく）
+    if (e.captured) { ctx.save(); ctx.translate(26,4); ctx.scale(0.6,0.6); _drawShip(); ctx.restore(); }
+
+  } else if (e.type === 'butterfly') {
+    // バタフライ
+    ctx.fillStyle = '#4ff';
+    for (let s of [-1,1]) {
+      ctx.save(); ctx.scale(s,1);
+      ctx.beginPath();
+      ctx.moveTo(0,-10);
+      ctx.bezierCurveTo(16,-18, 22,0, 13,10);
+      ctx.bezierCurveTo(6,16, 0,10, 0,10);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.ellipse(0,0,6,10,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#00c';
+    ctx.beginPath();
+    ctx.arc(-2,-3,2.5,0,Math.PI*2); ctx.arc(2,-3,2.5,0,Math.PI*2); ctx.fill();
+
+  } else {
+    // ビー（雑魚）
+    ctx.fillStyle = '#8f8';
+    ctx.beginPath();
+    for (let i=0; i<6; i++) {
+      const a = (Math.PI/3)*i - Math.PI/6;
+      const r = (i%2===0) ? 12 : 7;
+      i===0 ? ctx.moveTo(Math.cos(a)*r, Math.sin(a)*r)
+             : ctx.lineTo(Math.cos(a)*r, Math.sin(a)*r);
+    }
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#ff4';
+    ctx.beginPath(); ctx.arc(0,0,4.5,0,Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
+}
+
+// ══════════════════════════════════════════════════
+// 自機描画
+// ══════════════════════════════════════════════════
+function _drawShip() {
+  ctx.fillStyle = '#4af';
+  ctx.beginPath();
+  ctx.moveTo(0,-22);
+  ctx.lineTo(-16,14);
+  ctx.lineTo(-5,8);
+  ctx.lineTo(0,13);
+  ctx.lineTo(5,8);
+  ctx.lineTo(16,14);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = '#8ef';
+  ctx.beginPath(); ctx.arc(0,-5,6,0,Math.PI*2); ctx.fill();
+  // エンジン炎（点滅）
+  if (Math.floor(frame/4)%2===0) {
+    ctx.fillStyle = '#f80';
+    ctx.beginPath();
+    ctx.moveTo(-7,12); ctx.lineTo(-4,12); ctx.lineTo(-5.5, 20); ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(7,12);  ctx.lineTo(4,12);  ctx.lineTo(5.5, 20);  ctx.closePath(); ctx.fill();
+  }
+}
+
+function drawPlayer(x, y) {
+  ctx.save();
+  ctx.translate(x, y);
+  _drawShip();
+  ctx.restore();
+}
+
+// ══════════════════════════════════════════════════
+// メインループ
+// ══════════════════════════════════════════════════
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+loop(); // 即座に起動（タイトル画面からスタート）
+</script>
+</body>
+</html>
