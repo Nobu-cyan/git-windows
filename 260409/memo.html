@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>メモ帳</title>
+<style>
+/* ── Tokens ── */
+:root{
+  --bg:#f0f2f5; --surface:#fff; --surface2:#f8f9fa; --border:#e0e0e0;
+  --text:#202124; --muted:#5f6368; --light:#9aa0a6; --divider:#ececec;
+  --primary:#4f46e5; --primary-l:#eef2ff;
+  --shadow:0 1px 4px rgba(0,0,0,.12),0 1px 3px rgba(0,0,0,.08);
+  --shadow-h:0 4px 16px rgba(0,0,0,.15);
+  --r:10px; --r-sm:6px;
+
+  /* Card palette (light) */
+  --cl-default:#fff;
+  --cl-yellow:#fff9c4; --cl-green:#ccff90; --cl-teal:#a7ffeb;
+  --cl-blue:#cbf0f8;   --cl-purple:#d7aefb; --cl-pink:#fdcfe8;
+  --cl-red:#f28b82;    --cl-orange:#fbbc04;
+}
+[data-theme="dark"]{
+  --bg:#111827; --surface:#1f2937; --surface2:#1a2130;
+  --border:#374151; --text:#f3f4f6; --muted:#9ca3af; --light:#4b5563;
+  --divider:#2d3748; --primary-l:#1e1b4b;
+
+  --cl-default:#1f2937;
+  --cl-yellow:#2d2700; --cl-green:#0c2818; --cl-teal:#003d30;
+  --cl-blue:#001e3c;   --cl-purple:#200040; --cl-pink:#3a0a24;
+  --cl-red:#3a0a08;    --cl-orange:#2d1400;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100dvh}
+body{
+  font-family:-apple-system,'Segoe UI','Hiragino Sans',sans-serif;
+  background:var(--bg);color:var(--text);
+  -webkit-tap-highlight-color:transparent;
+}
+button{cursor:pointer;font-family:inherit;touch-action:manipulation}
+textarea,input{font-family:inherit}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* ── Header ── */
+.header{
+  position:sticky;top:0;z-index:200;
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:10px 16px;display:flex;align-items:center;gap:10px;
+  box-shadow:0 1px 6px rgba(0,0,0,.08);
+}
+.logo{font-size:1.1rem;font-weight:800;color:var(--text);display:flex;align-items:center;gap:7px;flex-shrink:0}
+.search-wrap{flex:1;position:relative;max-width:440px}
+.search-ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.9rem;pointer-events:none}
+.search-inp{
+  width:100%;padding:8px 32px 8px 32px;border:1.5px solid var(--border);
+  border-radius:24px;background:var(--surface2);color:var(--text);font-size:.88rem;
+  transition:all .15s;
+}
+.search-inp:focus{outline:none;border-color:var(--primary);background:var(--surface);box-shadow:0 0 0 3px var(--primary-l)}
+.search-clear{
+  position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  border:none;background:none;color:var(--muted);font-size:.9rem;display:none;padding:2px;
+}
+.header-btns{display:flex;gap:6px;flex-shrink:0}
+.icon-btn{
+  width:36px;height:36px;border:1.5px solid var(--border);border-radius:50%;
+  background:var(--surface2);color:var(--muted);font-size:1rem;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;
+}
+.icon-btn:hover{background:var(--border);color:var(--text)}
+
+/* ── Category bar ── */
+.cat-bar{
+  display:flex;align-items:center;gap:7px;padding:8px 16px;
+  overflow-x:auto;background:var(--surface);border-bottom:1px solid var(--border);
+  position:sticky;top:57px;z-index:190;
+}
+.cat-bar::-webkit-scrollbar{display:none}
+.cat-chip{
+  display:flex;align-items:center;gap:5px;padding:5px 14px;
+  border:1.5px solid var(--border);border-radius:20px;background:var(--surface2);
+  color:var(--muted);font-size:.8rem;font-weight:600;white-space:nowrap;flex-shrink:0;
+  transition:all .15s;
+}
+.cat-chip:hover{border-color:var(--primary);color:var(--primary)}
+.cat-chip.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.cat-add{
+  width:30px;height:30px;border:1.5px dashed var(--border);border-radius:50%;
+  background:none;color:var(--muted);font-size:1rem;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all .15s;
+}
+.cat-add:hover{border-color:var(--primary);color:var(--primary)}
+
+/* ── Quick Capture ── */
+.quick-capture{
+  margin:16px 16px 8px;
+  background:var(--surface);border-radius:var(--r);border:1px solid var(--border);
+  box-shadow:var(--shadow);transition:box-shadow .2s;overflow:hidden;
+}
+.quick-capture:focus-within{box-shadow:var(--shadow-h);border-color:var(--border)}
+.qc-top{display:flex;align-items:center;padding:12px 14px;gap:10px}
+.qc-type-toggle{
+  width:34px;height:34px;border:1.5px solid var(--border);border-radius:8px;
+  background:var(--surface2);color:var(--muted);font-size:1rem;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;
+}
+.qc-type-toggle:hover{border-color:var(--primary);color:var(--primary)}
+.qc-type-toggle.todo-mode{border-color:var(--primary);background:var(--primary-l);color:var(--primary)}
+.qc-title{
+  flex:1;border:none;background:transparent;color:var(--text);
+  font-size:.95rem;font-weight:600;outline:none;
+}
+.qc-title::placeholder{color:var(--light);font-weight:400}
+
+.qc-body{display:none;padding:0 14px 12px}
+.qc-body.show{display:block}
+.qc-content{
+  width:100%;border:none;background:transparent;color:var(--text);
+  font-size:.88rem;outline:none;resize:none;min-height:60px;line-height:1.6;
+}
+.qc-content::placeholder{color:var(--light)}
+
+/* Todo input in quick capture */
+.qc-todos{margin-bottom:6px}
+.qc-todo-row{
+  display:flex;align-items:center;gap:8px;padding:4px 0;
+  border-bottom:1px solid var(--divider);
+}
+.qc-todo-row:last-child{border-bottom:none}
+.todo-cb{
+  width:18px;height:18px;border:2px solid var(--border);border-radius:50%;
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .15s;background:var(--surface);
+}
+.todo-cb.done{background:var(--success,#22c55e);border-color:var(--success,#22c55e);color:#fff;font-size:.68rem}
+.todo-inp{
+  flex:1;border:none;background:transparent;color:var(--text);
+  font-size:.88rem;outline:none;line-height:1.5;
+}
+.todo-inp::placeholder{color:var(--light)}
+.todo-del{
+  border:none;background:none;color:var(--light);font-size:.85rem;padding:2px 4px;
+  opacity:0;transition:opacity .15s;cursor:pointer;
+}
+.qc-todo-row:hover .todo-del{opacity:1}
+
+.qc-footer{
+  display:flex;align-items:center;gap:8px;padding-top:10px;
+  border-top:1px solid var(--divider);margin-top:6px;flex-wrap:wrap;
+}
+.color-dots{display:flex;gap:5px;flex-wrap:wrap}
+.color-dot{
+  width:22px;height:22px;border-radius:50%;border:2px solid transparent;
+  cursor:pointer;transition:all .15s;flex-shrink:0;
+}
+.color-dot:hover,.color-dot.active{border-color:var(--text);transform:scale(1.15)}
+.qc-cat-sel{
+  appearance:none;-webkit-appearance:none;padding:5px 24px 5px 9px;
+  border:1.5px solid var(--border);border-radius:20px;background:var(--surface2)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%239aa0a6'/%3E%3C/svg%3E") no-repeat right 7px center;
+  color:var(--muted);font-size:.78rem;font-weight:600;cursor:pointer;
+}
+.qc-cat-sel:focus{outline:none;border-color:var(--primary)}
+.qc-cat-sel option{background:var(--surface)}
+.qc-btns{margin-left:auto;display:flex;gap:7px}
+.btn-sm{
+  padding:6px 14px;border:none;border-radius:20px;font-size:.8rem;font-weight:700;
+  transition:all .12s;
+}
+.btn-sm:active{transform:scale(.95)}
+.btn-cancel{background:var(--surface2);color:var(--muted)}
+.btn-cancel:hover{color:var(--text)}
+.btn-save{background:var(--primary);color:#fff;box-shadow:0 2px 8px rgba(79,70,229,.3)}
+.btn-save:hover{background:#4338ca}
+
+/* ── Notes Grid ── */
+.notes-area{padding:8px 16px 80px}
+.section-label{
+  font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
+  color:var(--muted);padding:10px 2px 6px;
+}
+.notes-grid{
+  columns:240px;column-gap:12px;
+}
+.notes-grid.list-view{
+  columns:1;
+}
+
+/* ── Note Card ── */
+.note-card{
+  break-inside:avoid;display:block;margin-bottom:12px;
+  border-radius:var(--r);border:1px solid rgba(0,0,0,.08);
+  box-shadow:var(--shadow);cursor:pointer;position:relative;
+  transition:box-shadow .2s,transform .15s;overflow:hidden;
+}
+.note-card:hover{box-shadow:var(--shadow-h);transform:translateY(-2px)}
+[data-theme="dark"] .note-card{border-color:rgba(255,255,255,.06)}
+
+/* Card colors */
+.note-card.c-default{background:var(--cl-default)}
+.note-card.c-yellow {background:var(--cl-yellow)}
+.note-card.c-green  {background:var(--cl-green)}
+.note-card.c-teal   {background:var(--cl-teal)}
+.note-card.c-blue   {background:var(--cl-blue)}
+.note-card.c-purple {background:var(--cl-purple)}
+.note-card.c-pink   {background:var(--cl-pink)}
+.note-card.c-red    {background:var(--cl-red)}
+.note-card.c-orange {background:var(--cl-orange)}
+
+.note-card.pinned::before{
+  content:'📌';position:absolute;top:6px;right:8px;font-size:.8rem;opacity:.6;
+}
+
+.card-body{padding:12px 12px 8px}
+.card-title{
+  font-size:.92rem;font-weight:700;line-height:1.4;
+  margin-bottom:5px;word-break:break-word;color:var(--text);
+}
+.card-content{
+  font-size:.82rem;line-height:1.6;color:var(--text);word-break:break-word;
+  display:-webkit-box;-webkit-line-clamp:8;-webkit-box-orient:vertical;overflow:hidden;
+  white-space:pre-wrap;
+}
+
+/* Card todo items */
+.card-todos{display:flex;flex-direction:column;gap:4px;margin-top:4px}
+.card-todo{
+  display:flex;align-items:center;gap:7px;font-size:.82rem;color:var(--text);
+}
+.card-todo-cb{
+  width:16px;height:16px;border:2px solid var(--border);border-radius:50%;
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+}
+.card-todo.done .card-todo-cb{background:#22c55e;border-color:#22c55e;color:#fff;font-size:.6rem}
+.card-todo.done .card-todo-text{text-decoration:line-through;opacity:.5}
+.card-todo-more{font-size:.76rem;color:var(--muted);margin-top:3px}
+
+/* Card footer */
+.card-footer{
+  display:flex;align-items:center;padding:4px 10px 8px;gap:6px;
+  flex-wrap:wrap;
+}
+.card-cat{
+  font-size:.68rem;font-weight:700;padding:2px 8px;
+  border-radius:20px;background:rgba(0,0,0,.08);color:var(--text);
+  display:flex;align-items:center;gap:3px;
+}
+[data-theme="dark"] .card-cat{background:rgba(255,255,255,.1)}
+.card-date{font-size:.68rem;color:var(--muted);margin-left:auto}
+
+/* Card hover actions */
+.card-actions{
+  display:flex;gap:2px;padding:0 8px 8px;opacity:0;transition:opacity .15s;flex-wrap:wrap;
+}
+.note-card:hover .card-actions{opacity:1}
+.cact{
+  width:28px;height:28px;border:none;background:rgba(0,0,0,.06);border-radius:50%;
+  color:var(--muted);font-size:.82rem;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;
+}
+.cact:hover{background:rgba(0,0,0,.12);color:var(--text)}
+[data-theme="dark"] .cact{background:rgba(255,255,255,.08)}
+[data-theme="dark"] .cact:hover{background:rgba(255,255,255,.15)}
+.cact.pin-active{color:#f59e0b}
+.cact.del:hover{background:#fee2e2;color:#ef4444}
+
+/* ── Empty state ── */
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-ico{font-size:3rem;margin-bottom:12px;opacity:.4}
+.empty-ttl{font-size:1rem;font-weight:700;margin-bottom:4px}
+.empty-sub{font-size:.85rem}
+
+/* ── Edit Modal ── */
+.overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);
+  z-index:500;align-items:center;justify-content:center;
+  padding:20px;backdrop-filter:blur(3px);
+}
+.overlay.show{display:flex}
+.modal{
+  background:var(--surface);border-radius:16px;width:100%;max-width:540px;
+  max-height:90dvh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.25);
+  animation:modalIn .22s cubic-bezier(.34,1.56,.64,1);overflow:hidden;
+}
+@keyframes modalIn{from{transform:scale(.93) translateY(8px);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-color-bar{height:6px;transition:background .2s}
+.modal-inner{flex:1;overflow-y:auto;padding:18px 20px 12px}
+.modal-title-inp{
+  width:100%;border:none;background:transparent;color:var(--text);
+  font-size:1.05rem;font-weight:700;outline:none;margin-bottom:10px;
+  padding:0;border-bottom:1.5px solid var(--divider);padding-bottom:8px;
+}
+.modal-title-inp::placeholder{color:var(--light);font-weight:400}
+.modal-content-inp{
+  width:100%;border:none;background:transparent;color:var(--text);
+  font-size:.9rem;outline:none;resize:none;min-height:120px;
+  line-height:1.7;padding:0;
+}
+.modal-content-inp::placeholder{color:var(--light)}
+
+/* Modal todo list */
+.modal-todos{margin-bottom:8px}
+.modal-todo-row{
+  display:flex;align-items:center;gap:9px;padding:6px 0;
+  border-bottom:1px solid var(--divider);
+}
+.modal-todo-row:last-child{border-bottom:none}
+.modal-todo-cb{
+  width:20px;height:20px;border:2px solid var(--border);border-radius:50%;
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .15s;background:var(--surface);
+}
+.modal-todo-cb.done{background:#22c55e;border-color:#22c55e;color:#fff;font-size:.72rem}
+.modal-todo-inp{
+  flex:1;border:none;background:transparent;color:var(--text);
+  font-size:.9rem;outline:none;
+}
+.modal-todo-inp.done{text-decoration:line-through;opacity:.5}
+.modal-todo-del{
+  border:none;background:none;color:var(--light);font-size:.9rem;
+  padding:2px 5px;cursor:pointer;opacity:0;transition:opacity .15s;
+}
+.modal-todo-row:hover .modal-todo-del{opacity:1}
+.modal-todo-add{
+  display:flex;align-items:center;gap:9px;padding:8px 0;
+  color:var(--muted);font-size:.85rem;cursor:pointer;
+  transition:color .15s;
+}
+.modal-todo-add:hover{color:var(--primary)}
+
+.modal-footer{
+  padding:12px 20px 16px;border-top:1px solid var(--divider);
+  display:flex;flex-wrap:wrap;align-items:center;gap:8px;
+}
+.mf-left{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.mf-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.modal-cat-sel{
+  appearance:none;-webkit-appearance:none;padding:5px 24px 5px 9px;
+  border:1.5px solid var(--border);border-radius:20px;
+  background:var(--surface2)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%239aa0a6'/%3E%3C/svg%3E") no-repeat right 7px center;
+  color:var(--muted);font-size:.78rem;font-weight:600;cursor:pointer;
+}
+.modal-cat-sel:focus{outline:none;border-color:var(--primary)}
+.modal-cat-sel option{background:var(--surface)}
+.type-toggle-btn{
+  display:flex;align-items:center;gap:5px;padding:5px 11px;
+  border:1.5px solid var(--border);border-radius:20px;background:var(--surface2);
+  color:var(--muted);font-size:.78rem;font-weight:600;transition:all .15s;
+}
+.type-toggle-btn:hover,.type-toggle-btn.on{border-color:var(--primary);color:var(--primary);background:var(--primary-l)}
+.modal-del{
+  padding:7px 14px;border:none;border-radius:20px;
+  background:var(--surface2);color:var(--muted);font-size:.8rem;font-weight:700;
+  transition:all .15s;
+}
+.modal-del:hover{background:#fee2e2;color:#ef4444}
+.btn-close{
+  width:32px;height:32px;border:1.5px solid var(--border);border-radius:50%;
+  background:var(--surface2);color:var(--muted);font-size:.9rem;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;
+}
+.btn-close:hover{background:var(--border);color:var(--text)}
+
+/* Color picker row */
+.cpicker{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.cp-dot{
+  width:24px;height:24px;border-radius:50%;border:2.5px solid transparent;
+  cursor:pointer;transition:all .15s;
+}
+.cp-dot:hover,.cp-dot.active{border-color:var(--text);transform:scale(1.18)}
+
+/* ── Category modal ── */
+.cat-modal{
+  background:var(--surface);border-radius:16px;width:100%;max-width:360px;
+  box-shadow:0 20px 60px rgba(0,0,0,.25);padding:20px;
+  animation:modalIn .22s cubic-bezier(.34,1.56,.64,1);
+}
+.cat-modal-title{font-size:.95rem;font-weight:800;margin-bottom:14px}
+.cat-modal-row{display:flex;gap:8px;margin-bottom:10px}
+.cat-emoji-inp{width:52px;padding:8px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--surface2);color:var(--text);font-size:1.1rem;text-align:center;outline:none}
+.cat-emoji-inp:focus{border-color:var(--primary)}
+.cat-name-inp{flex:1;padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--surface2);color:var(--text);font-size:.9rem;outline:none}
+.cat-name-inp:focus{border-color:var(--primary)}
+.cat-list{margin-bottom:14px;max-height:180px;overflow-y:auto}
+.cat-list-item{
+  display:flex;align-items:center;gap:8px;padding:8px 10px;
+  border-radius:var(--r-sm);transition:background .15s;
+}
+.cat-list-item:hover{background:var(--surface2)}
+.cat-list-item span{flex:1;font-size:.88rem}
+.cat-del-btn{border:none;background:none;color:var(--light);cursor:pointer;font-size:.85rem;padding:2px 5px}
+.cat-del-btn:hover{color:#ef4444}
+.cat-modal-btns{display:flex;gap:8px;justify-content:flex-end}
+
+/* ── FAB ── */
+.fab{
+  display:none;position:fixed;right:18px;bottom:20px;
+  width:54px;height:54px;border-radius:50%;border:none;
+  background:var(--primary);color:#fff;font-size:1.5rem;
+  box-shadow:0 4px 18px rgba(79,70,229,.45);z-index:300;
+  align-items:center;justify-content:center;transition:transform .18s;
+}
+.fab:active{transform:scale(.9)}
+
+/* ── Animations ── */
+@keyframes cardIn{
+  from{opacity:0;transform:scale(.94) translateY(6px)}
+  to  {opacity:1;transform:scale(1)}
+}
+.note-card{animation:cardIn .22s ease both}
+@keyframes removeCard{
+  to{opacity:0;transform:scale(.9);max-height:0;margin-bottom:0;padding:0;border:0}
+}
+.note-card.removing{animation:removeCard .25s ease forwards}
+
+/* ── Responsive ── */
+@media(max-width:640px){
+  .header{padding:8px 12px}
+  .logo{font-size:.95rem}
+  .search-wrap{max-width:none}
+  .cat-bar{padding:7px 12px;top:53px}
+  .quick-capture{margin:12px 12px 6px}
+  .notes-area{padding:8px 12px 80px}
+  .notes-grid{columns:1}
+  .fab{display:flex}
+  .quick-capture{display:none}
+}
+@media(min-width:641px) and (max-width:900px){
+  .notes-grid{columns:2 240px}
+}
+@media(min-width:901px){
+  .notes-grid{columns:3 220px}
+}
+@media(max-width:640px){
+  .overlay{padding:0;align-items:flex-end}
+  .modal{border-radius:20px 20px 0 0;max-height:94dvh;animation:sheetIn .26s cubic-bezier(.32,.72,0,1)}
+  @keyframes sheetIn{from{transform:translateY(100%)}to{transform:translateY(0)}}
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="logo">📝 メモ帳</div>
+  <div class="search-wrap">
+    <span class="search-ico">🔍</span>
+    <input class="search-inp" id="search" type="search" placeholder="メモを検索..." oninput="onSearch()">
+    <button class="search-clear" id="search-clear" onclick="clearSearch()">✕</button>
+  </div>
+  <div class="header-btns">
+    <button class="icon-btn" id="view-btn" onclick="toggleView()" title="表示切替">⊞</button>
+    <button class="icon-btn" onclick="toggleTheme()" id="theme-btn" title="テーマ切替">🌙</button>
+  </div>
+</div>
+
+<!-- Category bar -->
+<div class="cat-bar" id="cat-bar">
+  <button class="cat-chip active" data-cat="" onclick="setCategory('',this)">📋 すべて</button>
+  <button class="cat-chip" data-cat="__pinned" onclick="setCategory('__pinned',this)">📌 ピン</button>
+  <div id="cat-chips"></div>
+  <button class="cat-chip" data-cat="__todo" onclick="setCategory('__todo',this)">☑️ ToDo</button>
+  <button class="cat-add" onclick="openCatModal()" title="カテゴリ追加">＋</button>
+</div>
+
+<!-- Quick Capture (desktop) -->
+<div class="quick-capture" id="quick-capture">
+  <div class="qc-top">
+    <button class="qc-type-toggle" id="qc-toggle" onclick="toggleQcType()" title="メモ/ToDo切替">📝</button>
+    <input class="qc-title" id="qc-title" placeholder="メモを入力... (クリックで展開)" onfocus="expandQC()">
+  </div>
+  <div class="qc-body" id="qc-body">
+    <!-- Content area (note or todo) populated by JS -->
+    <div id="qc-content-area"></div>
+    <div class="qc-footer">
+      <div class="color-dots" id="qc-color-dots"></div>
+      <select class="qc-cat-sel" id="qc-cat"></select>
+      <div class="qc-btns">
+        <button class="btn-sm btn-cancel" onclick="collapseQC()">閉じる</button>
+        <button class="btn-sm btn-save" onclick="saveQC()">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Notes area -->
+<div class="notes-area">
+  <div id="notes-container"></div>
+</div>
+
+<!-- FAB (mobile) -->
+<button class="fab" onclick="openModal(null)">＋</button>
+
+<!-- Edit Modal -->
+<div class="overlay" id="edit-overlay">
+  <div class="modal" id="edit-modal">
+    <div class="modal-color-bar" id="modal-color-bar"></div>
+    <div class="modal-inner">
+      <input class="modal-title-inp" id="m-title" placeholder="タイトル (任意)" maxlength="100">
+      <div id="m-content-area"></div>
+    </div>
+    <div class="modal-footer">
+      <div class="mf-left">
+        <div class="cpicker" id="m-color-picker"></div>
+        <select class="modal-cat-sel" id="m-cat"></select>
+        <button class="type-toggle-btn" id="m-type-toggle" onclick="toggleModalType()">☑️ ToDo</button>
+      </div>
+      <div class="mf-right">
+        <button class="modal-del" id="m-del" onclick="deleteFromModal()">🗑 削除</button>
+        <button class="btn-sm btn-save" onclick="saveModal()">保存</button>
+        <button class="btn-close" onclick="closeModal()">✕</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Category Modal -->
+<div class="overlay" id="cat-overlay">
+  <div class="cat-modal">
+    <div class="cat-modal-title">📁 カテゴリ管理</div>
+    <div class="cat-list" id="cat-list"></div>
+    <div class="cat-modal-row">
+      <input class="cat-emoji-inp" id="cat-emoji" value="📁" maxlength="2" placeholder="📁">
+      <input class="cat-name-inp" id="cat-name" placeholder="カテゴリ名..." maxlength="20">
+    </div>
+    <div class="cat-modal-btns">
+      <button class="btn-sm btn-cancel" onclick="closeCatModal()">閉じる</button>
+      <button class="btn-sm btn-save" onclick="addCategory()">追加</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════
+//  CONSTANTS
+// ═══════════════════════════
+const COLORS = [
+  {id:'default', bg:'var(--cl-default)', dot:'#e8eaed', label:'デフォルト'},
+  {id:'yellow',  bg:'var(--cl-yellow)',  dot:'#fbbc04', label:'黄'},
+  {id:'green',   bg:'var(--cl-green)',   dot:'#34a853', label:'緑'},
+  {id:'teal',    bg:'var(--cl-teal)',    dot:'#00897b', label:'青緑'},
+  {id:'blue',    bg:'var(--cl-blue)',    dot:'#4285f4', label:'青'},
+  {id:'purple',  bg:'var(--cl-purple)', dot:'#9c27b0', label:'紫'},
+  {id:'pink',    bg:'var(--cl-pink)',   dot:'#e91e63', label:'ピンク'},
+  {id:'red',     bg:'var(--cl-red)',    dot:'#ea4335', label:'赤'},
+  {id:'orange',  bg:'var(--cl-orange)', dot:'#fa7b17', label:'橙'},
+];
+
+// ═══════════════════════════
+//  STATE
+// ═══════════════════════════
+let notes      = load('mp-notes') || sampleNotes();
+let categories = load('mp-cats')  || sampleCats();
+let filterCat  = '';
+let searchQ    = '';
+let listView   = false;
+let editId     = null;
+let editTodos  = [];
+let editType   = 'note';
+let qcType     = 'note';
+let qcColor    = 'default';
+let qcTodos    = [];
+
+function load(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null}catch{return null}}
+function save(){localStorage.setItem('mp-notes',JSON.stringify(notes));localStorage.setItem('mp-cats',JSON.stringify(categories))}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+
+function sampleCats(){return[
+  {id:'work', name:'仕事', icon:'💼'},
+  {id:'priv', name:'プライベート', icon:'🏠'},
+  {id:'idea', name:'アイデア', icon:'💡'},
+]}
+function sampleNotes(){const now=new Date().toISOString();const yd=new Date(Date.now()-86400000).toISOString();return[
+  {id:uid(),type:'note',title:'会議メモ',content:'・新機能の優先順位を確認\n・来週月曜にデモ予定\n・デザインレビュー水曜',color:'blue',category:'work',pinned:true,createdAt:now,updatedAt:now},
+  {id:uid(),type:'todo',title:'今週のToDo',todos:[
+    {id:uid(),text:'メールの返信',done:true},
+    {id:uid(),text:'資料の作成',done:false},
+    {id:uid(),text:'ジムに行く',done:false},
+    {id:uid(),text:'本を読む',done:false},
+  ],color:'green',category:'priv',pinned:false,createdAt:now,updatedAt:now},
+  {id:uid(),type:'note',title:'アイデアメモ',content:'新しいアプリのアイデア：\n・位置情報と連携したリマインダー\n・音声入力対応\n・ウィジェット機能',color:'yellow',category:'idea',pinned:true,createdAt:yd,updatedAt:yd},
+  {id:uid(),type:'note',title:'レシピ',content:'カルボナーラの作り方：\n卵2個、ベーコン100g、パルメザン50g\n生クリームなし！卵とチーズだけでクリーミーに',color:'orange',category:'priv',pinned:false,createdAt:yd,updatedAt:yd},
+  {id:uid(),type:'todo',title:'買い物リスト',todos:[
+    {id:uid(),text:'牛乳',done:false},
+    {id:uid(),text:'卵',done:true},
+    {id:uid(),text:'パン',done:false},
+    {id:uid(),text:'シャンプー',done:false},
+  ],color:'teal',category:'',pinned:false,createdAt:yd,updatedAt:yd},
+  {id:uid(),type:'note',title:'',content:'明日の朝イチでSlackに返信！',color:'pink',category:'work',pinned:false,createdAt:yd,updatedAt:yd},
+]}
+
+// ═══════════════════════════
+//  RENDER
+// ═══════════════════════════
+function render(){
+  renderCatChips();
+  renderColorPickers();
+  renderCatSelects();
+  renderNotes();
+}
+
+function renderCatChips(){
+  const el=document.getElementById('cat-chips');
+  el.innerHTML=categories.map(c=>`
+    <button class="cat-chip${filterCat===c.id?' active':''}" data-cat="${c.id}" onclick="setCategory('${c.id}',this)">
+      ${c.icon} ${esc(c.name)}
+    </button>`).join('');
+}
+
+function renderColorPickers(){
+  const makeRow=(id)=>COLORS.map(c=>`
+    <div class="color-dot${id==='qc'?( qcColor===c.id?' active':''):(editColorSel===c.id?' active':'')}"
+      style="background:${c.dot}${c.id==='default'?';border:2px solid var(--border)':''}"
+      onclick="${id==='qc'?`setQcColor('${c.id}')`:`setEditColor('${c.id}')`}"
+      title="${c.label}"></div>`).join('');
+
+  document.getElementById('qc-color-dots').innerHTML=makeRow('qc');
+  document.getElementById('m-color-picker').innerHTML=makeRow('modal');
+}
+
+function renderCatSelects(){
+  const opts='<option value="">カテゴリなし</option>'+categories.map(c=>`<option value="${c.id}">${c.icon} ${esc(c.name)}</option>`).join('');
+  document.getElementById('qc-cat').innerHTML=opts;
+  document.getElementById('m-cat').innerHTML=opts;
+}
+
+let editColorSel='default';
+
+function renderNotes(){
+  const q=searchQ.toLowerCase();
+  let filtered=[...notes];
+
+  // Apply filter
+  if(filterCat==='__pinned') filtered=filtered.filter(n=>n.pinned);
+  else if(filterCat==='__todo') filtered=filtered.filter(n=>n.type==='todo');
+  else if(filterCat) filtered=filtered.filter(n=>n.category===filterCat);
+
+  // Apply search
+  if(q) filtered=filtered.filter(n=>{
+    const text=(n.title+' '+n.content+' '+(n.todos||[]).map(t=>t.text).join(' ')).toLowerCase();
+    return text.includes(q);
+  });
+
+  // Sort: pinned first, then by updated
+  filtered.sort((a,b)=>{
+    if(a.pinned!==b.pinned) return a.pinned?-1:1;
+    return new Date(b.updatedAt)-new Date(a.updatedAt);
+  });
+
+  const container=document.getElementById('notes-container');
+
+  if(!filtered.length){
+    container.innerHTML=`<div class="empty">
+      <div class="empty-ico">📭</div>
+      <div class="empty-ttl">${searchQ?'メモが見つかりません':'メモがありません'}</div>
+      <div class="empty-sub">${searchQ?'別のキーワードで検索してみてください':'右下の「＋」ボタンで新しいメモを作成しましょう'}</div>
+    </div>`;
+    return;
+  }
+
+  const pinned=filtered.filter(n=>n.pinned);
+  const others=filtered.filter(n=>!n.pinned);
+
+  let html='';
+  if(pinned.length&&!searchQ&&!filterCat){
+    html+=`<div class="section-label">📌 ピン留め</div>
+      <div class="notes-grid${listView?' list-view':''}">${pinned.map(noteCard).join('')}</div>`;
+    if(others.length) html+=`<div class="section-label">その他のメモ</div>
+      <div class="notes-grid${listView?' list-view':''}">${others.map(noteCard).join('')}</div>`;
+  } else {
+    html+=`<div class="notes-grid${listView?' list-view':''}">${filtered.map(noteCard).join('')}</div>`;
+  }
+  container.innerHTML=html;
+}
+
+function noteCard(n){
+  const cat=categories.find(c=>c.id===n.category);
+  const date=fmtDate(n.updatedAt);
+  const todosDone=n.todos?n.todos.filter(t=>t.done).length:0;
+  const todosTotal=n.todos?n.todos.length:0;
+
+  let bodyHtml='';
+  if(n.type==='todo'&&n.todos&&n.todos.length){
+    const visible=n.todos.slice(0,6);
+    const more=n.todos.length-6;
+    bodyHtml=`<div class="card-todos">
+      ${visible.map(t=>`
+        <div class="card-todo${t.done?' done':''}">
+          <div class="card-todo-cb">${t.done?'✓':''}</div>
+          <span class="card-todo-text">${esc(t.text)}</span>
+        </div>`).join('')}
+      ${more>0?`<div class="card-todo-more">+ ${more}件</div>`:''}
+    </div>`;
+  } else if(n.content){
+    bodyHtml=`<div class="card-content">${esc(n.content)}</div>`;
+  }
+
+  return`<div class="note-card c-${n.color||'default'}${n.pinned?' pinned':''}" id="card-${n.id}" onclick="openModal('${n.id}')">
+    <div class="card-body">
+      ${n.title?`<div class="card-title">${esc(n.title)}</div>`:''}
+      ${bodyHtml}
+    </div>
+    <div class="card-footer">
+      ${cat?`<span class="card-cat">${cat.icon} ${esc(cat.name)}</span>`:''}
+      ${n.type==='todo'?`<span class="card-cat">☑️ ${todosDone}/${todosTotal}</span>`:''}
+      <span class="card-date">${date}</span>
+    </div>
+    <div class="card-actions" onclick="event.stopPropagation()">
+      <button class="cact${n.pinned?' pin-active':''}" onclick="togglePin('${n.id}')" title="${n.pinned?'ピン解除':'ピン留め'}">📌</button>
+      <button class="cact" onclick="changeCardColor('${n.id}',event)" title="色変更">🎨</button>
+      <button class="cact del" onclick="deleteNote('${n.id}')" title="削除">🗑</button>
+    </div>
+  </div>`;
+}
+
+function fmtDate(iso){
+  const d=new Date(iso);
+  const now=new Date();
+  const diff=Math.floor((now-d)/1000);
+  if(diff<60) return 'たった今';
+  if(diff<3600) return Math.floor(diff/60)+'分前';
+  if(diff<86400) return Math.floor(diff/3600)+'時間前';
+  if(diff<604800) return Math.floor(diff/86400)+'日前';
+  return`${d.getMonth()+1}/${d.getDate()}`;
+}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+// ═══════════════════════════
+//  QUICK CAPTURE
+// ═══════════════════════════
+function expandQC(){
+  document.getElementById('qc-body').classList.add('show');
+  renderQcContent();
+  document.getElementById('qc-body').querySelector('textarea,input')?.focus();
+}
+
+function collapseQC(){
+  document.getElementById('qc-body').classList.remove('show');
+  document.getElementById('qc-title').value='';
+  qcTodos=[{id:uid(),text:'',done:false}];
+  qcColor='default';
+  qcType='note';
+  renderColorPickers();
+  document.getElementById('qc-toggle').textContent='📝';
+  document.getElementById('qc-toggle').classList.remove('todo-mode');
+  renderQcContent();
+}
+
+function toggleQcType(){
+  qcType=qcType==='note'?'todo':'note';
+  const btn=document.getElementById('qc-toggle');
+  btn.textContent=qcType==='todo'?'☑️':'📝';
+  btn.classList.toggle('todo-mode',qcType==='todo');
+  if(qcType==='todo'&&!qcTodos.length) qcTodos=[{id:uid(),text:'',done:false}];
+  renderQcContent();
+}
+
+function renderQcContent(){
+  const area=document.getElementById('qc-content-area');
+  if(qcType==='note'){
+    area.innerHTML=`<textarea class="qc-content" id="qc-note-inp" placeholder="メモの内容..." rows="3"></textarea>`;
+  } else {
+    const rows=qcTodos.map((t,i)=>`
+      <div class="qc-todo-row">
+        <div class="todo-cb" onclick="toggleQcTodoCb(${i})">${t.done?'✓':''}</div>
+        <input class="todo-inp" value="${esc(t.text)}" placeholder="アイテムを入力..."
+          oninput="qcTodos[${i}].text=this.value"
+          onkeydown="qcTodoKey(event,${i})">
+        <button class="todo-del" onclick="removeQcTodo(${i})">✕</button>
+      </div>`).join('');
+    area.innerHTML=`<div class="qc-todos">${rows}</div>`;
+    // Focus last input
+    setTimeout(()=>{const ins=area.querySelectorAll('.todo-inp');if(ins.length)ins[ins.length-1].focus()},50);
+  }
+}
+
+function qcTodoKey(e,i){
+  if(e.key==='Enter'){
+    e.preventDefault();
+    qcTodos.splice(i+1,0,{id:uid(),text:'',done:false});
+    renderQcContent();
+  } else if(e.key==='Backspace'&&!e.target.value&&qcTodos.length>1){
+    e.preventDefault();
+    qcTodos.splice(i,1);
+    renderQcContent();
+  }
+}
+function toggleQcTodoCb(i){qcTodos[i].done=!qcTodos[i].done;renderQcContent()}
+function removeQcTodo(i){if(qcTodos.length>1){qcTodos.splice(i,1);renderQcContent()}}
+
+function setQcColor(c){
+  qcColor=c;
+  renderColorPickers();
+  document.querySelector('.quick-capture').style.background=`var(--cl-${c})`;
+}
+
+function saveQC(){
+  const title=document.getElementById('qc-title').value.trim();
+  const catVal=document.getElementById('qc-cat').value;
+  let content='',todos=[];
+
+  if(qcType==='note'){
+    content=document.getElementById('qc-note-inp')?.value?.trim()||'';
+    if(!title&&!content) return;
+  } else {
+    todos=qcTodos.filter(t=>t.text.trim()).map(t=>({id:uid(),text:t.text.trim(),done:t.done}));
+    if(!title&&!todos.length) return;
+  }
+
+  const now=new Date().toISOString();
+  notes.unshift({
+    id:uid(),type:qcType,title,content,todos,
+    color:qcColor,category:catVal,pinned:false,
+    createdAt:now,updatedAt:now
+  });
+  save();
+  collapseQC();
+  document.querySelector('.quick-capture').style.background='';
+  render();
+}
+
+// ═══════════════════════════
+//  EDIT MODAL
+// ═══════════════════════════
+function openModal(id){
+  editId=id;
+  const n=id?notes.find(n=>n.id===id):null;
+  editType=n?n.type:'note';
+  editTodos=n&&n.todos?n.todos.map(t=>({...t})):[{id:uid(),text:'',done:false}];
+  editColorSel=n?n.color:'default';
+
+  document.getElementById('m-title').value=n?n.title:'';
+  document.getElementById('m-cat').value=n&&n.category?n.category:'';
+  document.getElementById('m-del').style.display=id?'':'none';
+  document.getElementById('m-type-toggle').classList.toggle('on',editType==='todo');
+  document.getElementById('m-type-toggle').textContent=editType==='todo'?'☑️ ToDo ON':'☑️ ToDo';
+
+  renderModalColorBar();
+  renderColorPickers();
+  renderModalContent();
+
+  document.getElementById('edit-overlay').classList.add('show');
+  setTimeout(()=>{
+    const inp=editType==='note'?document.getElementById('m-note-inp'):null;
+    if(!n&&inp) inp.focus();
+    else document.getElementById('m-title').focus();
+  },100);
+}
+
+function closeModal(){
+  document.getElementById('edit-overlay').classList.remove('show');
+  editId=null;
+}
+
+function renderModalColorBar(){
+  const bar=document.getElementById('modal-color-bar');
+  const c=COLORS.find(x=>x.id===editColorSel);
+  bar.style.background=c&&c.id!=='default'?c.dot:'transparent';
+}
+
+function setEditColor(c){
+  editColorSel=c;
+  renderColorPickers();
+  renderModalColorBar();
+  // Update modal bg
+  document.getElementById('edit-modal').style.background=`var(--cl-${c})`;
+}
+
+function toggleModalType(){
+  editType=editType==='note'?'todo':'note';
+  if(editType==='todo'&&!editTodos.length) editTodos=[{id:uid(),text:'',done:false}];
+  document.getElementById('m-type-toggle').classList.toggle('on',editType==='todo');
+  document.getElementById('m-type-toggle').textContent=editType==='todo'?'☑️ ToDo ON':'☑️ ToDo';
+  renderModalContent();
+}
+
+function renderModalContent(){
+  const area=document.getElementById('m-content-area');
+  if(editType==='note'){
+    const n=editId?notes.find(n=>n.id===editId):null;
+    area.innerHTML=`<textarea class="modal-content-inp" id="m-note-inp" placeholder="メモの内容..." rows="6">${esc(n?n.content:'')}</textarea>`;
+  } else {
+    const rows=editTodos.map((t,i)=>`
+      <div class="modal-todo-row">
+        <div class="modal-todo-cb${t.done?' done':''}" onclick="toggleEditTodo(${i})">${t.done?'✓':''}</div>
+        <input class="modal-todo-inp${t.done?' done':''}" value="${esc(t.text)}" placeholder="アイテムを入力..."
+          oninput="editTodos[${i}].text=this.value"
+          onkeydown="editTodoKey(event,${i})">
+        <button class="modal-todo-del" onclick="removeEditTodo(${i})">✕</button>
+      </div>`).join('');
+    area.innerHTML=`<div class="modal-todos">${rows}
+      <div class="modal-todo-add" onclick="addEditTodo()">＋ アイテムを追加</div>
+    </div>`;
+  }
+}
+
+function toggleEditTodo(i){editTodos[i].done=!editTodos[i].done;renderModalContent()}
+function removeEditTodo(i){if(editTodos.length>1){editTodos.splice(i,1);renderModalContent()}}
+function addEditTodo(){editTodos.push({id:uid(),text:'',done:false});renderModalContent();
+  setTimeout(()=>{const ins=document.querySelectorAll('.modal-todo-inp');if(ins.length)ins[ins.length-1].focus()},50);}
+function editTodoKey(e,i){
+  if(e.key==='Enter'){e.preventDefault();editTodos.splice(i+1,0,{id:uid(),text:'',done:false});renderModalContent();
+    setTimeout(()=>{const ins=document.querySelectorAll('.modal-todo-inp');if(ins[i+1])ins[i+1].focus()},50);}
+  else if(e.key==='Backspace'&&!e.target.value&&editTodos.length>1){
+    e.preventDefault();editTodos.splice(i,1);renderModalContent();}
+}
+
+function saveModal(){
+  const title=document.getElementById('m-title').value.trim();
+  const catVal=document.getElementById('m-cat').value;
+  let content='',todos=[];
+
+  if(editType==='note'){
+    content=document.getElementById('m-note-inp')?.value?.trim()||'';
+    if(!title&&!content){closeModal();return}
+  } else {
+    todos=editTodos.filter(t=>t.text.trim()).map(t=>({id:t.id,text:t.text.trim(),done:t.done}));
+    if(!title&&!todos.length){closeModal();return}
+  }
+
+  const now=new Date().toISOString();
+  if(editId){
+    const n=notes.find(n=>n.id===editId);
+    if(n) Object.assign(n,{title,content,todos,type:editType,color:editColorSel,category:catVal,updatedAt:now});
+  } else {
+    notes.unshift({id:uid(),type:editType,title,content,todos,color:editColorSel,category:catVal,pinned:false,createdAt:now,updatedAt:now});
+  }
+  save(); closeModal();
+  document.getElementById('edit-modal').style.background='';
+  render();
+}
+
+function deleteFromModal(){
+  if(!editId) return;
+  if(confirm('このメモを削除しますか？')){
+    const card=document.getElementById('card-'+editId);
+    if(card) card.classList.add('removing');
+    setTimeout(()=>{
+      notes=notes.filter(n=>n.id!==editId);
+      save(); closeModal(); render();
+    },250);
+  }
+}
+
+// ═══════════════════════════
+//  CARD QUICK ACTIONS
+// ═══════════════════════════
+function togglePin(id){
+  const n=notes.find(n=>n.id===id);
+  if(n){n.pinned=!n.pinned;n.updatedAt=new Date().toISOString();save();render()}
+}
+
+function deleteNote(id){
+  const card=document.getElementById('card-'+id);
+  if(card) card.classList.add('removing');
+  setTimeout(()=>{notes=notes.filter(n=>n.id!==id);save();render()},250);
+}
+
+function changeCardColor(id,e){
+  e.stopPropagation();
+  const n=notes.find(n=>n.id===id);
+  if(!n) return;
+  const idx=COLORS.findIndex(c=>c.id===n.color);
+  n.color=COLORS[(idx+1)%COLORS.length].id;
+  n.updatedAt=new Date().toISOString();
+  save(); render();
+}
+
+// ═══════════════════════════
+//  CATEGORY MODAL
+// ═══════════════════════════
+function openCatModal(){
+  renderCatList();
+  document.getElementById('cat-overlay').classList.add('show');
+  document.getElementById('cat-name').focus();
+}
+function closeCatModal(){document.getElementById('cat-overlay').classList.remove('show')}
+function renderCatList(){
+  document.getElementById('cat-list').innerHTML=categories.length?categories.map(c=>`
+    <div class="cat-list-item">
+      <span>${c.icon}</span><span>${esc(c.name)}</span>
+      <button class="cat-del-btn" onclick="deleteCat('${c.id}')">✕</button>
+    </div>`).join(''):'<div style="color:var(--muted);font-size:.85rem;padding:8px 0">まだカテゴリがありません</div>';
+}
+function addCategory(){
+  const name=document.getElementById('cat-name').value.trim();
+  if(!name) return;
+  const icon=document.getElementById('cat-emoji').value||'📁';
+  categories.push({id:uid(),name,icon});
+  document.getElementById('cat-name').value='';
+  document.getElementById('cat-emoji').value='📁';
+  save(); renderCatList(); renderCatChips(); renderCatSelects();
+}
+function deleteCat(id){
+  categories=categories.filter(c=>c.id!==id);
+  notes.forEach(n=>{if(n.category===id)n.category=''});
+  save(); renderCatList(); renderCatChips(); renderCatSelects(); renderNotes();
+}
+
+// ═══════════════════════════
+//  FILTER & SEARCH
+// ═══════════════════════════
+function setCategory(cat,el){
+  filterCat=cat;
+  document.querySelectorAll('.cat-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderNotes();
+}
+function onSearch(){
+  searchQ=document.getElementById('search').value;
+  document.getElementById('search-clear').style.display=searchQ?'':'none';
+  renderNotes();
+}
+function clearSearch(){
+  document.getElementById('search').value='';
+  searchQ='';
+  document.getElementById('search-clear').style.display='none';
+  renderNotes();
+}
+function toggleView(){
+  listView=!listView;
+  document.getElementById('view-btn').textContent=listView?'⊞':'☰';
+  renderNotes();
+}
+
+// ═══════════════════════════
+//  THEME
+// ═══════════════════════════
+function toggleTheme(){
+  const d=document.documentElement;
+  const isDark=d.getAttribute('data-theme')==='dark';
+  d.setAttribute('data-theme',isDark?'light':'dark');
+  document.getElementById('theme-btn').textContent=isDark?'🌙':'☀️';
+  localStorage.setItem('mp-theme',isDark?'light':'dark');
+}
+
+// ═══════════════════════════
+//  KEYBOARD
+// ═══════════════════════════
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    closeModal(); closeCatModal();
+    collapseQC();
+  }
+  if((e.ctrlKey||e.metaKey)&&e.key==='n'){e.preventDefault();openModal(null)}
+});
+
+// Close overlays on bg click
+['edit-overlay','cat-overlay'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',e=>{
+    if(e.target.id===id){
+      if(id==='edit-overlay') closeModal();
+      else closeCatModal();
+    }
+  });
+});
+
+// ═══════════════════════════
+//  INIT
+// ═══════════════════════════
+(function init(){
+  const t=localStorage.getItem('mp-theme');
+  if(t){document.documentElement.setAttribute('data-theme',t);document.getElementById('theme-btn').textContent=t==='dark'?'☀️':'🌙'}
+  qcTodos=[{id:uid(),text:'',done:false}];
+  render();
+  renderQcContent();
+})();
+</script>
+</body>
+</html>

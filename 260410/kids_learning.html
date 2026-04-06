@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>まなぼう！🌟</title>
+<style>
+/* ── 基本設定 ── */
+:root{
+  --bg:#fff9f0; --text:#3d2b1f; --muted:#a08070;
+  --c1:#ff6b9d; --c2:#ffb84d; --c3:#6bcb77; --c4:#4d96ff;
+  --c5:#c77dff; --c6:#ff9f43;
+  --correct:#6bcb77; --wrong:#ff6b6b;
+  --shadow:0 6px 24px rgba(0,0,0,.13);
+  --r:22px; --rbtn:18px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;touch-action:manipulation}
+body{
+  font-family:-apple-system,'Hiragino Sans','Meiryo',sans-serif;
+  background:linear-gradient(160deg,#fff9f0 0%,#f0f8ff 100%);
+  color:var(--text);user-select:none;
+}
+button{cursor:pointer;font-family:inherit;border:none;outline:none}
+button:active{transform:scale(.93)!important;transition:transform .08s!important}
+
+/* ── スクリーン制御 ── */
+.screen{display:none;position:fixed;inset:0;flex-direction:column;overflow:hidden}
+.screen.active{display:flex}
+
+/* ── 共通ヘッダー ── */
+.s-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px 6px;flex-shrink:0;
+}
+.back-btn{
+  width:52px;height:52px;border-radius:50%;background:#fff;
+  font-size:1.4rem;display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow);transition:transform .15s;
+}
+.back-btn:active{transform:scale(.88)!important}
+.s-title{
+  font-size:1.3rem;font-weight:900;
+  text-shadow:0 2px 0 rgba(0,0,0,.08);
+}
+.progress-stars{display:flex;gap:4px}
+.pstar{font-size:1.3rem;opacity:.25;transition:all .3s}
+.pstar.on{opacity:1;animation:starPop .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes starPop{from{transform:scale(0) rotate(-30deg)}to{transform:scale(1) rotate(0)}}
+
+/* ══════════════════════════════
+   ホーム画面
+══════════════════════════════ */
+#screen-home{background:transparent;justify-content:flex-start}
+.home-header{
+  text-align:center;padding:20px 16px 8px;flex-shrink:0;
+}
+.home-char{font-size:5rem;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.home-title{font-size:2rem;font-weight:900;color:var(--c1);letter-spacing:.04em;
+  text-shadow:0 3px 0 rgba(255,107,157,.2)}
+.home-sub{font-size:.95rem;color:var(--muted);margin-top:4px}
+
+.modules-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
+  padding:12px 14px 20px;overflow-y:auto;flex:1;
+  align-content:start;
+}
+.module-btn{
+  border-radius:var(--r);padding:16px 8px 14px;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  box-shadow:var(--shadow);transition:transform .18s;
+  border:none;position:relative;overflow:hidden;
+}
+.module-btn::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(255,255,255,.25) 0%,transparent 60%);
+  border-radius:var(--r);
+}
+.module-btn:active{transform:scale(.92)!important}
+.mod-ico{font-size:2.6rem;line-height:1}
+.mod-lbl{font-size:.82rem;font-weight:800;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.2);letter-spacing:.02em}
+.mod-stars{font-size:.7rem;letter-spacing:1px;min-height:14px}
+
+/* ══════════════════════════════
+   えほん（絵本）画面
+══════════════════════════════ */
+#screen-story{background:linear-gradient(160deg,#fff9f0,#fff0f8)}
+.book-wrap{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:space-between;padding:10px 16px 16px;overflow:hidden;min-height:0;
+}
+.page-indicator{display:flex;gap:8px;justify-content:center;padding:4px 0}
+.page-dot{
+  width:10px;height:10px;border-radius:50%;background:#ddd;transition:all .3s;
+}
+.page-dot.active{background:var(--c1);transform:scale(1.3)}
+.book-scene{
+  flex:1;min-height:0;width:100%;max-width:480px;
+  background:#fff;border-radius:24px;box-shadow:var(--shadow);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:20px 16px;gap:8px;cursor:pointer;transition:transform .2s;
+  border:3px solid rgba(255,184,77,.3);
+  position:relative;overflow:hidden;
+}
+.book-scene:active{transform:scale(.98)}
+.book-scene::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(160deg,rgba(255,255,255,.5) 0%,transparent 50%);
+}
+.book-illus{
+  font-size:clamp(3rem,15vw,6rem);line-height:1.3;text-align:center;z-index:1;
+}
+.book-text{
+  font-size:clamp(1.1rem,4.5vw,1.5rem);font-weight:800;text-align:center;
+  line-height:1.6;color:var(--text);z-index:1;
+  background:rgba(255,255,255,.7);border-radius:14px;padding:8px 14px;
+}
+.book-tap-hint{
+  font-size:.82rem;color:var(--muted);text-align:center;
+  animation:blink 2s ease-in-out infinite;
+}
+@keyframes blink{0%,100%{opacity:.5}50%{opacity:1}}
+.book-nav{display:flex;gap:12px;justify-content:center;padding-top:4px}
+.book-nav-btn{
+  padding:12px 28px;border-radius:30px;font-size:1rem;font-weight:800;
+  box-shadow:0 4px 12px rgba(0,0,0,.1);transition:all .15s;color:#fff;
+}
+
+/* ══════════════════════════════
+   クイズ画面（共通）
+══════════════════════════════ */
+#screen-quiz{justify-content:space-between}
+.quiz-question-area{
+  flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:6px 16px 4px;gap:8px;
+}
+.quiz-label{
+  font-size:clamp(1rem,4vw,1.3rem);font-weight:800;color:var(--muted);
+  text-align:center;background:rgba(255,255,255,.6);
+  padding:6px 20px;border-radius:30px;
+}
+.quiz-visual{
+  font-size:clamp(3rem,18vw,7rem);text-align:center;line-height:1.2;
+  animation:questionIn .35s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes questionIn{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+.quiz-visual.shake{animation:shake .4s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+
+/* ブロック表示 */
+.blocks-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:320px}
+.block{
+  width:clamp(34px,10vw,52px);height:clamp(34px,10vw,52px);border-radius:10px;
+  border-bottom:4px solid rgba(0,0,0,.18);box-shadow:0 3px 8px rgba(0,0,0,.15);
+  animation:blockIn .3s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes blockIn{from{opacity:0;transform:scale(0) rotate(10deg)}to{opacity:1;transform:scale(1) rotate(0)}}
+
+/* 足し算表示 */
+.add-display{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;
+  font-size:clamp(1.8rem,8vw,3rem);font-weight:900;
+}
+.add-group{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;max-width:200px}
+.add-sign{color:var(--c1);font-size:clamp(2rem,9vw,3.5rem);font-weight:900}
+.add-eq{color:var(--muted);font-size:clamp(2rem,9vw,3.5rem);font-weight:900}
+.add-blank{
+  width:clamp(52px,14vw,80px);height:clamp(52px,14vw,80px);
+  border-radius:16px;border:4px dashed var(--c5);
+  display:flex;align-items:center;justify-content:center;
+  font-size:clamp(1.8rem,7vw,2.8rem);font-weight:900;color:var(--c5);
+  animation:pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+
+/* かたち表示 */
+.shape-display{
+  display:flex;align-items:center;justify-content:center;
+  font-size:clamp(4rem,22vw,8rem);
+}
+.shape-question-text{
+  font-size:clamp(1.4rem,6vw,2.2rem);font-weight:900;
+  color:var(--text);text-align:center;
+}
+
+/* ひらがな表示 */
+.hira-display{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+}
+.hira-char{
+  font-size:clamp(4rem,22vw,8rem);font-weight:900;line-height:1;
+  background:linear-gradient(135deg,var(--c1),var(--c5));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;filter:drop-shadow(0 3px 6px rgba(255,107,157,.3));
+}
+.hira-word{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,.8);border-radius:20px;padding:8px 18px;
+  box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+.hira-word-emoji{font-size:clamp(1.8rem,8vw,2.8rem)}
+.hira-word-text{font-size:clamp(1.2rem,5vw,1.8rem);font-weight:800}
+
+/* ── 選択肢エリア ── */
+.choices-area{
+  padding:8px 14px 14px;display:flex;flex-direction:column;gap:10px;flex-shrink:0;
+}
+.choices-row{display:flex;gap:10px;justify-content:center}
+.choice-btn{
+  flex:1;max-width:220px;min-height:68px;border-radius:var(--rbtn);
+  font-size:clamp(1.2rem,6vw,1.9rem);font-weight:900;color:#fff;
+  box-shadow:0 6px 0 rgba(0,0,0,.18),0 8px 20px rgba(0,0,0,.1);
+  transition:transform .15s,box-shadow .15s;
+  position:relative;overflow:hidden;
+  border-bottom:5px solid rgba(0,0,0,.18)!important;
+}
+.choice-btn::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:40%;
+  background:rgba(255,255,255,.2);border-radius:var(--rbtn) var(--rbtn) 0 0;
+}
+.choice-btn:active:not(:disabled){transform:translateY(4px)!important;box-shadow:0 2px 0 rgba(0,0,0,.18),0 4px 10px rgba(0,0,0,.1)!important}
+.choice-btn:disabled{cursor:default}
+.choice-btn.correct-flash{background:var(--correct)!important;animation:correctFlash .5s ease}
+.choice-btn.wrong-flash  {background:var(--wrong)!important;  animation:wrongFlash .4s ease}
+@keyframes correctFlash{0%{transform:scale(1)}30%{transform:scale(1.1)}100%{transform:scale(1)}}
+@keyframes wrongFlash{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+/* ── お祝いオーバーレイ ── */
+.celebrate-overlay{
+  display:none;position:fixed;inset:0;z-index:900;
+  align-items:center;justify-content:center;
+  background:rgba(255,255,255,.15);backdrop-filter:blur(2px);
+  flex-direction:column;gap:8px;
+}
+.celebrate-overlay.show{display:flex}
+.cel-char{font-size:5rem;animation:bigBounce .5s cubic-bezier(.34,1.8,.64,1)}
+@keyframes bigBounce{from{transform:scale(0) rotate(-20deg)}to{transform:scale(1) rotate(0)}}
+.cel-text{
+  font-size:clamp(2rem,10vw,3.5rem);font-weight:900;
+  color:var(--c1);text-shadow:0 3px 0 rgba(255,107,157,.3);
+  animation:bigBounce .5s .1s cubic-bezier(.34,1.8,.64,1) both;
+}
+.cel-stars{font-size:2.5rem;letter-spacing:6px;animation:bigBounce .5s .2s cubic-bezier(.34,1.8,.64,1) both}
+
+/* ── 完了画面 ── */
+.complete-overlay{
+  display:none;position:fixed;inset:0;z-index:800;
+  background:linear-gradient(160deg,#fff9f0,#fff0f8);
+  align-items:center;justify-content:center;flex-direction:column;gap:16px;
+  padding:24px;
+}
+.complete-overlay.show{display:flex}
+.complete-char{font-size:6rem;animation:float 2s ease-in-out infinite}
+.complete-title{font-size:clamp(2rem,9vw,3rem);font-weight:900;color:var(--c1);text-align:center}
+.complete-sub{font-size:clamp(1rem,4.5vw,1.4rem);color:var(--muted);text-align:center}
+.complete-stars{font-size:2.8rem;letter-spacing:8px;margin:4px 0}
+.complete-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.complete-btn{
+  padding:14px 28px;border-radius:30px;font-size:1.1rem;font-weight:900;
+  color:#fff;box-shadow:var(--shadow);border:none;transition:transform .15s;
+}
+.complete-btn:active{transform:scale(.93)}
+
+/* ── 間違いフィードバック ── */
+.wrong-msg{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-size:clamp(1.5rem,7vw,2.5rem);font-weight:900;
+  color:var(--wrong);background:rgba(255,255,255,.92);
+  padding:12px 28px;border-radius:30px;box-shadow:var(--shadow);
+  z-index:700;display:none;animation:msgPop .3s cubic-bezier(.34,1.56,.64,1);
+  text-align:center;white-space:nowrap;
+}
+@keyframes msgPop{from{transform:translate(-50%,-50%) scale(0)}to{transform:translate(-50%,-50%) scale(1)}}
+
+/* ── コンフェッティ ── */
+.confetti-wrap{position:fixed;inset:0;pointer-events:none;z-index:910;overflow:hidden}
+.cp{position:absolute;border-radius:3px;animation:cFall linear forwards}
+@keyframes cFall{from{transform:translateY(-20px) rotate(0deg);opacity:1}to{transform:translateY(110vh) rotate(720deg);opacity:0}}
+
+/* ── レスポンシブ ── */
+@media(max-width:380px){
+  .modules-grid{grid-template-columns:repeat(2,1fr)}
+  .home-char{font-size:3.5rem}
+  .home-title{font-size:1.6rem}
+  .mod-ico{font-size:2rem}
+}
+@media(min-width:600px){
+  .modules-grid{grid-template-columns:repeat(3,1fr);max-width:540px;margin:0 auto}
+  .quiz-visual{font-size:8rem}
+  .choices-area{max-width:500px;margin:0 auto;width:100%}
+  .book-scene{max-width:500px}
+  .book-wrap{align-items:center}
+  .add-group{max-width:280px}
+}
+@media(min-width:900px){
+  .modules-grid{grid-template-columns:repeat(3,1fr);max-width:600px;margin:0 auto}
+  body{display:flex;align-items:center;justify-content:center}
+  .screen{position:relative;max-width:480px;width:100%;height:100dvh;
+    max-height:860px;border-radius:32px;box-shadow:0 20px 60px rgba(0,0,0,.2);
+    overflow:hidden}
+  .celebrate-overlay,.complete-overlay,.confetti-wrap,.wrong-msg{border-radius:32px}
+}
+@media(max-height:600px){
+  .home-char{font-size:2.5rem}
+  .home-header{padding:10px 16px 4px}
+  .modules-grid{gap:8px;padding:8px 12px 12px}
+  .module-btn{padding:10px 6px}
+  .choice-btn{min-height:56px}
+  .quiz-visual{font-size:3.5rem}
+  .book-illus{font-size:3.5rem}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════
+     ホーム画面
+══════════════════════════════ -->
+<div id="screen-home" class="screen active">
+  <div class="home-header">
+    <div class="home-char">🐻</div>
+    <div class="home-title">まなぼう！</div>
+    <div class="home-sub">くまちゃんといっしょに 🌟</div>
+  </div>
+  <div class="modules-grid" id="modules-grid"></div>
+</div>
+
+<!-- ══════════════════════════════
+     えほん画面
+══════════════════════════════ -->
+<div id="screen-story" class="screen">
+  <div class="s-header">
+    <button class="back-btn" onclick="goHome()">⬅️</button>
+    <div class="s-title" style="color:var(--c1)">📖 えほん</div>
+    <div style="width:52px"></div>
+  </div>
+  <div class="book-wrap">
+    <div class="page-indicator" id="page-dots"></div>
+    <div class="book-scene" id="book-scene" onclick="nextPage()">
+      <div class="book-illus" id="book-illus"></div>
+      <div class="book-text" id="book-text"></div>
+    </div>
+    <div class="book-tap-hint" id="book-tap-hint">👆 タップしてすすもう！</div>
+    <div class="book-nav">
+      <button class="book-nav-btn" style="background:var(--c4)" onclick="prevPage()">◀ もどる</button>
+      <button class="book-nav-btn" style="background:var(--c1)" onclick="nextPage()" id="next-page-btn">つぎへ ▶</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     クイズ画面（共通）
+══════════════════════════════ -->
+<div id="screen-quiz" class="screen">
+  <div class="s-header" id="quiz-header">
+    <button class="back-btn" onclick="goHome()">⬅️</button>
+    <div class="s-title" id="quiz-title">📝</div>
+    <div class="progress-stars" id="progress-stars"></div>
+  </div>
+  <div class="quiz-question-area">
+    <div class="quiz-label" id="quiz-label">もんだい</div>
+    <div id="quiz-visual-area"></div>
+  </div>
+  <div class="choices-area" id="choices-area"></div>
+</div>
+
+<!-- ── お祝い ── -->
+<div class="celebrate-overlay" id="celebrate">
+  <div class="cel-char">🎉</div>
+  <div class="cel-text" id="cel-text">やったー！</div>
+  <div class="cel-stars">⭐⭐⭐</div>
+</div>
+
+<!-- ── 間違い ── -->
+<div class="wrong-msg" id="wrong-msg">もう いっかい！</div>
+
+<!-- ── モジュール完了 ── -->
+<div class="complete-overlay" id="complete-overlay">
+  <div class="complete-char">🎊</div>
+  <div class="complete-title" id="complete-title">やったね！🌟</div>
+  <div class="complete-stars" id="complete-stars">⭐⭐⭐⭐⭐</div>
+  <div class="complete-sub" id="complete-sub">ぜんぶ できたよ！すごい！</div>
+  <div class="complete-btns">
+    <button class="complete-btn" style="background:var(--c3)" onclick="replayModule()">もう いちど</button>
+    <button class="complete-btn" style="background:var(--c1)" onclick="goHome()">ホームへ</button>
+  </div>
+</div>
+
+<!-- ── コンフェッティ ── -->
+<div class="confetti-wrap" id="confetti-wrap"></div>
+
+<script>
+// ══════════════════════════
+//  データ定義
+// ══════════════════════════
+
+// モジュール定義
+const MODULES = [
+  {id:'story',    label:'えほん',       icon:'📖',  color:'var(--c1)', bg:'linear-gradient(135deg,#ff6b9d,#ff9f7f)'},
+  {id:'hiragana', label:'もじ',         icon:'あ',  color:'var(--c2)', bg:'linear-gradient(135deg,#ffb84d,#ffd93d)'},
+  {id:'counting', label:'かず',         icon:'🔢',  color:'var(--c3)', bg:'linear-gradient(135deg,#6bcb77,#4ecdc4)'},
+  {id:'shapes',   label:'かたち',       icon:'🔷',  color:'var(--c4)', bg:'linear-gradient(135deg,#4d96ff,#38b2ff)'},
+  {id:'addition', label:'たしざん',     icon:'➕',  color:'var(--c5)', bg:'linear-gradient(135deg,#c77dff,#ff6b9d)'},
+  {id:'blocks',   label:'なんこ？',     icon:'🟦',  color:'var(--c6)', bg:'linear-gradient(135deg,#ff9f43,#ffb84d)'},
+];
+
+// えほんデータ（複数のストーリー）
+const ALL_STORIES = [
+  // ストーリー1: くまちゃんのはるの日
+  [
+    {illus:'☀️\n🌸🌼',  text:'はるの あさが やってきました。'},
+    {illus:'🐻\n😊',      text:'くまちゃんが めを さましました。'},
+    {illus:'🍎🍌🍊',      text:'くまちゃんは くだものを たべました。'},
+    {illus:'🌳🦋🐦',      text:'こうえんで あそびました。'},
+    {illus:'🐰🐱🐻',      text:'ともだちと なかよく あそんだよ。'},
+    {illus:'🌙⭐✨',      text:'よるに なりました。おほしさまが きれい。'},
+    {illus:'🛌🐻💤',      text:'おやすみなさい。いいゆめを。'},
+  ],
+  // ストーリー2: うさぎちゃんのおさんぽ
+  [
+    {illus:'🌤️\n🌿🌿',  text:'きもちのいい あさです。'},
+    {illus:'🐰\n✨',      text:'うさぎちゃんが おきました。'},
+    {illus:'🥕🥦🍞',     text:'おいしい あさごはんを たべたよ。'},
+    {illus:'🌻🌷🌸',     text:'おはなばたけを あるきました。'},
+    {illus:'🦋🐝\n🌈',   text:'ちょうちょと みつばちに であいました。'},
+    {illus:'🍵🍪\n🐰',   text:'おうちで おちゃを のみました。'},
+    {illus:'🌙🐰💤',     text:'たのしい いちにちでした。おやすみ！'},
+  ],
+  // ストーリー3: ねこちゃんのだいぼうけん
+  [
+    {illus:'🌞\n🏠',      text:'ある あさ、ねこちゃんは そとへ でかけました。'},
+    {illus:'🐱\n👀',      text:'めずらしいものを みつけました。'},
+    {illus:'🐟\n💦',      text:'かわで おさかなを みました。'},
+    {illus:'🌲🐿️\n🍄',   text:'もりで りすさんに であいました。'},
+    {illus:'🍄🌰🍂',     text:'きのこと どんぐりを ひろったよ。'},
+    {illus:'🏠💛\n🌇',   text:'ゆうがたに おうちへ かえりました。'},
+    {illus:'🍜🐱\n😋',   text:'おいしい ごはんを たべて にっこり！'},
+  ],
+  // ストーリー4: ぞうさんのがっこう
+  [
+    {illus:'🎒\n🌅',      text:'きょうは がっこうの ひです。'},
+    {illus:'🐘\n😄',      text:'ぞうさんは うれしそうに でかけました。'},
+    {illus:'📚✏️\n🖍️',   text:'じを かいて えを かきました。'},
+    {illus:'🔢➕\n🧮',   text:'かずの べんきょうも したよ。'},
+    {illus:'🐘🦒🐻\n🎵', text:'おともだちと うたを うたいました。'},
+    {illus:'🍱🥤\n😊',   text:'おひるごはんが おいしかった！'},
+    {illus:'🏠🐘\n⭐',   text:'またあした！たのしい がっこうでした。'},
+  ],
+];
+
+let STORY_PAGES = ALL_STORIES[0];
+
+// ひらがなデータ
+const HIRAGANA_DATA = [
+  {char:'あ', word:'あめ',    emoji:'🍬'}, {char:'い', word:'いちご', emoji:'🍓'},
+  {char:'う', word:'うし',    emoji:'🐄'}, {char:'え', word:'えほん', emoji:'📖'},
+  {char:'お', word:'おはな',  emoji:'🌸'}, {char:'か', word:'かめ',   emoji:'🐢'},
+  {char:'き', word:'きりん',  emoji:'🦒'}, {char:'く', word:'くも',   emoji:'☁️'},
+  {char:'け', word:'けーき',  emoji:'🎂'}, {char:'こ', word:'こあら', emoji:'🐨'},
+  {char:'さ', word:'さかな',  emoji:'🐟'}, {char:'し', word:'しろくま',emoji:'🐻‍❄️'},
+  {char:'す', word:'すいか',  emoji:'🍉'}, {char:'せ', word:'せみ',   emoji:'🦗'},
+  {char:'そ', word:'そら',    emoji:'🌈'},
+];
+
+// 形データ
+const SHAPES_DATA = [
+  {name:'まる',     symbol:'⭕', css:'shape-maru',   color:'#ff6b9d'},
+  {name:'さんかく', symbol:'▲', css:'shape-sankaku', color:'#ffb84d'},
+  {name:'しかく',   symbol:'⬛', css:'shape-shikaku', color:'#4d96ff'},
+  {name:'ほし',     symbol:'⭐', css:'shape-hoshi',   color:'#ffd93d'},
+  {name:'ハート',   symbol:'❤️', css:'shape-heart',   color:'#ff6b9d'},
+  {name:'ひし形',   symbol:'🔷', css:'shape-hishi',   color:'#4d96ff'},
+];
+
+// ブロックの色
+const BLOCK_COLORS = ['#ff6b9d','#ffb84d','#6bcb77','#4d96ff','#c77dff','#ff9f43','#4ecdc4','#ff6b6b'];
+
+// ══════════════════════════
+//  ステート
+// ══════════════════════════
+let currentModule = null;
+let questions = [];
+let qIndex = 0;
+let correctCount = 0;
+let storyPage = 0;
+let progress = JSON.parse(localStorage.getItem('kids-progress')||'{}');
+
+// ══════════════════════════
+//  ホーム画面
+// ══════════════════════════
+function renderHome(){
+  const grid = document.getElementById('modules-grid');
+  grid.innerHTML = MODULES.map(m => {
+    const stars = progress[m.id] || 0;
+    const starStr = '⭐'.repeat(stars) + (stars < 5 ? '☆'.repeat(5-stars) : '');
+    return `<button class="module-btn" style="background:${m.bg}" onclick="startModule('${m.id}')">
+      <div class="mod-ico">${m.icon}</div>
+      <div class="mod-lbl">${m.label}</div>
+      <div class="mod-stars">${stars > 0 ? starStr : ''}</div>
+    </button>`;
+  }).join('');
+}
+
+function goHome(){
+  showScreen('home');
+  renderHome();
+}
+
+// ══════════════════════════
+//  モジュール起動
+// ══════════════════════════
+function startModule(id){
+  currentModule = id;
+  if(id === 'story'){ startStory(); return; }
+  questions = generateQuestions(id);
+  qIndex = 0; correctCount = 0;
+  updateProgressStars();
+  showScreen('quiz');
+  showQuestion();
+}
+
+function replayModule(){
+  document.getElementById('complete-overlay').classList.remove('show');
+  startModule(currentModule);
+}
+
+// ══════════════════════════
+//  えほん
+// ══════════════════════════
+function startStory(){
+  storyPage = 0;
+  STORY_PAGES = ALL_STORIES[Math.floor(Math.random() * ALL_STORIES.length)];
+  showScreen('story');
+  renderPage();
+}
+
+function renderPage(){
+  const p = STORY_PAGES[storyPage];
+  document.getElementById('book-illus').textContent = p.illus;
+  document.getElementById('book-text').textContent = p.text;
+  document.getElementById('next-page-btn').textContent =
+    storyPage >= STORY_PAGES.length-1 ? 'おしまい！' : 'つぎへ ▶';
+
+  // ページドット
+  document.getElementById('page-dots').innerHTML =
+    STORY_PAGES.map((_,i) => `<div class="page-dot${i===storyPage?' active':''}"></div>`).join('');
+}
+
+function nextPage(){
+  if(storyPage < STORY_PAGES.length-1){
+    storyPage++;
+    document.getElementById('book-scene').style.animation='none';
+    void document.getElementById('book-scene').offsetWidth;
+    document.getElementById('book-scene').style.animation='questionIn .3s ease';
+    renderPage();
+  } else {
+    // 読み終わり
+    saveProgress('story', 5);
+    showComplete('えほん かんりょう！', '🌟 さいごまで よんだね！🌟');
+  }
+}
+
+function prevPage(){
+  if(storyPage > 0){ storyPage--; renderPage(); }
+}
+
+// ══════════════════════════
+//  クイズ問題生成
+// ══════════════════════════
+function generateQuestions(type){
+  const qs = [];
+  if(type === 'hiragana'){
+    const pool = shuffle([...HIRAGANA_DATA]).slice(0, 8);
+    pool.forEach(h => {
+      const others = HIRAGANA_DATA.filter(x=>x.char!==h.char);
+      const wrong = shuffle(others).slice(0,2);
+      const choices = shuffle([h.char, wrong[0].char, wrong[1].char]);
+      qs.push({type:'hiragana', data:h, choices, correct:h.char,
+        label:`この えもじは？`, labelSub:`（ ${h.emoji} ${h.word} ）`});
+    });
+  } else if(type === 'counting'){
+    for(let i=0;i<8;i++){
+      const n = rand(1,8);
+      const emoji = ['🍎','🌟','🐱','🐶','🍓','🎈','🌸','🦋','🐰','⭐'][rand(0,9)];
+      const choices = makeChoices(n, 1, 10);
+      qs.push({type:'counting', n, emoji, choices, correct:n, label:`いくつ あるかな？`});
+    }
+  } else if(type === 'shapes'){
+    const pool = shuffle([...SHAPES_DATA]).slice(0,5);
+    pool.forEach(s => {
+      const others = SHAPES_DATA.filter(x=>x.name!==s.name);
+      const wrong = shuffle(others).slice(0,2);
+      const choices = shuffle([s, wrong[0], wrong[1]]);
+      qs.push({type:'shapes', data:s, choices, correct:s.name, label:`このかたちは なに？`});
+    });
+  } else if(type === 'addition'){
+    const pairs = [[1,1],[1,2],[2,1],[1,3],[2,2],[3,1],[1,4],[2,3],[3,2],[4,1]];
+    shuffle(pairs).slice(0,8).forEach(([a,b])=>{
+      const ans = a+b;
+      const emoji = ['🍎','🌟','🐱','🎈','🍓','🐶','🌸','⭐'][rand(0,7)];
+      const choices = makeChoices(ans, 1, 8);
+      qs.push({type:'addition', a, b, emoji, choices, correct:ans,
+        label:`あわせると いくつ？`});
+    });
+  } else if(type === 'blocks'){
+    for(let i=0;i<8;i++){
+      const n = rand(1,9);
+      const color = BLOCK_COLORS[rand(0, BLOCK_COLORS.length-1)];
+      const choices = makeChoices(n, 1, 12);
+      qs.push({type:'blocks', n, color, choices, correct:n, label:`ブロックは なんこ？`});
+    }
+  }
+  return qs.slice(0, 5);
+}
+
+function makeChoices(correct, min, max){
+  const set = new Set([correct]);
+  while(set.size < 3){
+    let v = correct + (Math.random()<.5?1:-1) * rand(1,3);
+    v = Math.max(min, Math.min(max, v));
+    set.add(v);
+  }
+  return shuffle([...set]);
+}
+
+function rand(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=rand(0,i);[a[i],a[j]]=[a[j],a[i]]}return a; }
+
+// ══════════════════════════
+//  問題表示
+// ══════════════════════════
+const QUIZ_COLORS = ['#ff6b9d','#ff9f43','#6bcb77','#4d96ff','#c77dff','#ffb84d'];
+
+function showQuestion(){
+  if(qIndex >= questions.length){ showComplete(); return; }
+  const q = questions[qIndex];
+  const m = MODULES.find(x=>x.id===currentModule);
+
+  // ヘッダー色
+  document.getElementById('quiz-title').textContent = m.icon + ' ' + m.label;
+  document.getElementById('quiz-title').style.color = m.color;
+
+  // ラベル
+  document.getElementById('quiz-label').textContent = q.label;
+  if(q.labelSub){
+    document.getElementById('quiz-label').innerHTML =
+      `${q.label}<br><span style="font-size:.85em">${q.labelSub}</span>`;
+  }
+
+  // ビジュアル
+  renderQuizVisual(q);
+
+  // 選択肢
+  renderChoices(q);
+}
+
+function renderQuizVisual(q){
+  const area = document.getElementById('quiz-visual-area');
+  area.innerHTML = '';
+
+  if(q.type === 'hiragana'){
+    area.innerHTML = `<div class="hira-display quiz-visual">
+      <div class="hira-char">${q.data.char}</div>
+      <div class="hira-word">
+        <span class="hira-word-emoji">${q.data.emoji}</span>
+        <span class="hira-word-text">${q.data.word}</span>
+      </div>
+    </div>`;
+  } else if(q.type === 'counting'){
+    const objs = Array(q.n).fill(q.emoji).map((e,i)=>
+      `<span style="font-size:clamp(2rem,9vw,3.2rem);animation:blockIn .3s ${i*.05}s cubic-bezier(.34,1.56,.64,1) both">${e}</span>`
+    ).join('');
+    area.innerHTML = `<div class="quiz-visual" style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px;max-width:300px;margin:0 auto">${objs}</div>`;
+  } else if(q.type === 'shapes'){
+    area.innerHTML = `<div class="shape-display quiz-visual" style="font-size:clamp(4.5rem,22vw,8rem)">${q.data.symbol}</div>`;
+  } else if(q.type === 'addition'){
+    const aObjs = Array(q.a).fill(q.emoji).map(e=>`<span style="font-size:clamp(1.4rem,6vw,2rem)">${e}</span>`).join('');
+    const bObjs = Array(q.b).fill(q.emoji).map(e=>`<span style="font-size:clamp(1.4rem,6vw,2rem)">${e}</span>`).join('');
+    area.innerHTML = `<div class="add-display quiz-visual">
+      <div class="add-group">${aObjs}</div>
+      <div class="add-sign">＋</div>
+      <div class="add-group">${bObjs}</div>
+      <div class="add-eq">＝</div>
+      <div class="add-blank">？</div>
+    </div>`;
+  } else if(q.type === 'blocks'){
+    const blocks = Array(q.n).fill(0).map((_,i)=>
+      `<div class="block" style="background:${q.color};animation-delay:${i*.06}s"></div>`
+    ).join('');
+    area.innerHTML = `<div class="quiz-visual"><div class="blocks-grid">${blocks}</div></div>`;
+  }
+}
+
+function renderChoices(q){
+  const area = document.getElementById('choices-area');
+  const colors = shuffle([...QUIZ_COLORS]);
+  let html='';
+
+  if(q.type === 'hiragana'){
+    html = `<div class="choices-row">` +
+      q.choices.map((c,i)=>`
+        <button class="choice-btn" style="background:${colors[i]}"
+          data-val="${encodeURIComponent(c)}" data-correct="${encodeURIComponent(q.correct)}">
+          ${c}
+        </button>`).join('') +
+      `</div>`;
+  } else if(q.type === 'shapes'){
+    html = `<div class="choices-row">` +
+      q.choices.map((s,i)=>`
+        <button class="choice-btn" style="background:${colors[i]};font-size:clamp(.95rem,4.5vw,1.3rem)"
+          data-val="${encodeURIComponent(s.name)}" data-correct="${encodeURIComponent(q.correct)}">
+          ${s.symbol}<br>${s.name}
+        </button>`).join('') +
+      `</div>`;
+  } else {
+    // 数値選択肢
+    html = `<div class="choices-row">` +
+      q.choices.map((c,i)=>`
+        <button class="choice-btn" style="background:${colors[i]};font-size:clamp(1.6rem,8vw,2.8rem)"
+          data-val="${c}" data-correct="${q.correct}">
+          ${c}
+        </button>`).join('') +
+      `</div>`;
+  }
+  area.innerHTML = html;
+
+  // インラインonclickの代わりにaddEventListenerで登録（日本語がHTML属性に入るのを回避）
+  area.querySelectorAll('.choice-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const val = decodeURIComponent(btn.dataset.val);
+      const correct = decodeURIComponent(btn.dataset.correct);
+      checkAnswer(val, correct, btn);
+    });
+  });
+}
+
+// ══════════════════════════
+//  答え合わせ
+// ══════════════════════════
+let isChecking = false;
+
+function checkAnswer(val, correct, btn){
+  if(isChecking) return;
+  isChecking = true;
+
+  // すべてのボタンを無効化
+  document.querySelectorAll('.choice-btn').forEach(b=>b.disabled=true);
+
+  if(String(val) === String(correct)){
+    // 正解！
+    btn.classList.add('correct-flash');
+    correctCount++;
+    updateProgressStars();
+
+    // お祝い
+    const msgs = ['やったー！','すごい！','せいかい！','かんぺき！','えらい！'];
+    document.getElementById('cel-text').textContent = msgs[rand(0,4)];
+    showCelebrate();
+    if(correctCount >= 3) launchConfetti();
+
+    setTimeout(()=>{
+      hideCelebrate();
+      qIndex++;
+      if(qIndex >= questions.length){
+        showComplete();
+      } else {
+        isChecking = false;
+        showQuestion();
+      }
+    }, 1300);
+
+  } else {
+    // 間違い
+    btn.classList.add('wrong-flash');
+    const wMsg = document.getElementById('wrong-msg');
+    wMsg.style.display = 'block';
+    setTimeout(()=>{ wMsg.style.display='none'; }, 1000);
+
+    // ビジュアルをシェイク
+    const va = document.getElementById('quiz-visual-area');
+    va.querySelector('.quiz-visual')?.classList.add('shake');
+    setTimeout(()=>{
+      btn.classList.remove('wrong-flash');
+      va.querySelector('.quiz-visual')?.classList.remove('shake');
+      document.querySelectorAll('.choice-btn').forEach(b=>b.disabled=false);
+      isChecking = false;
+    }, 700);
+  }
+}
+
+// ══════════════════════════
+//  進捗・完了
+// ══════════════════════════
+function updateProgressStars(){
+  const el = document.getElementById('progress-stars');
+  if(!el) return;
+  el.innerHTML = Array(5).fill(0).map((_,i)=>`
+    <div class="pstar${i<correctCount?' on':''}">⭐</div>`).join('');
+}
+
+function showComplete(title, sub){
+  const t = title || ('🎊 ');
+  const s = sub || `${correctCount} もん せいかい！ すごい！`;
+  document.getElementById('complete-title').textContent = t || `もじ かんりょう！🌈`;
+  document.getElementById('complete-sub').textContent = s;
+  document.getElementById('complete-stars').textContent = '⭐'.repeat(Math.min(correctCount,5));
+  document.getElementById('complete-overlay').classList.add('show');
+  saveProgress(currentModule, correctCount);
+  launchConfetti();
+}
+
+function saveProgress(id, stars){
+  const best = progress[id] || 0;
+  progress[id] = Math.max(best, Math.min(stars, 5));
+  localStorage.setItem('kids-progress', JSON.stringify(progress));
+}
+
+// ══════════════════════════
+//  お祝いエフェクト
+// ══════════════════════════
+function showCelebrate(){
+  document.getElementById('celebrate').classList.add('show');
+}
+function hideCelebrate(){
+  document.getElementById('celebrate').classList.remove('show');
+}
+
+function launchConfetti(){
+  const wrap = document.getElementById('confetti-wrap');
+  wrap.innerHTML = '';
+  const colors = ['#ff6b9d','#ffb84d','#6bcb77','#4d96ff','#c77dff','#ff9f43','#fff','#ffd93d'];
+  for(let i=0;i<70;i++){
+    const el = document.createElement('div');
+    el.className = 'cp';
+    const size = 6 + Math.random()*10;
+    el.style.cssText = [
+      `left:${Math.random()*100}vw`,
+      `width:${size}px`, `height:${size}px`,
+      `background:${colors[rand(0,colors.length-1)]}`,
+      `border-radius:${Math.random()>.5?'50%':'3px'}`,
+      `animation-duration:${1.5+Math.random()*2.5}s`,
+      `animation-delay:${Math.random()*0.6}s`,
+      `opacity:${0.7+Math.random()*.3}`,
+    ].join(';');
+    wrap.appendChild(el);
+  }
+  setTimeout(()=>{ wrap.innerHTML=''; }, 4000);
+}
+
+// ══════════════════════════
+//  スクリーン切替
+// ══════════════════════════
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  document.getElementById('complete-overlay').classList.remove('show');
+  hideCelebrate();
+  document.getElementById('wrong-msg').style.display='none';
+}
+
+// ══════════════════════════
+//  初期化
+// ══════════════════════════
+renderHome();
+</script>
+</body>
+</html>
