@@ -25,8 +25,10 @@ body{background:#111;color:#fff;font-family:'MS Gothic','Courier New',monospace;
 @media(max-width:600px){
   body{justify-content:flex-start;padding-top:2px;}
   #gc{width:100vw;border-left:none;border-right:none;border-width:2px 0;}
-  #mapWrap{width:100vw;height:calc(100vw * 384 / 576);}
+  #mapWrap{width:100vw;height:75vw;}
   #mapWrap canvas{width:100%;height:100%;}
+  /* オーバーレイ（クラス選択・タイトル等）をフルスクリーン表示 */
+  .overlay{position:fixed;top:0;left:0;width:100vw;height:100dvh;height:100vh;overflow-y:auto;-webkit-overflow-scrolling:touch;z-index:50;}
   #dpad{display:flex;}
   #partyBar{gap:2px;padding:2px 3px;flex-wrap:wrap;}
   .charCard{font-size:10px;padding:2px 4px;}
@@ -45,10 +47,16 @@ body{background:#111;color:#fff;font-family:'MS Gothic','Courier New',monospace;
   .ovTitle{font-size:15px;padding:3px 12px;}
   .shopRow{font-size:11px;padding:4px 8px;}
   #shopList{max-height:140px;max-width:100%;}
-  .classCard{padding:5px 8px;max-width:100%;}
+  .classCard{padding:6px 10px;max-width:100%;width:100%;}
+  .classCard .cn{font-size:13px;}
+  .classCard .ce{font-size:24px;}
+  #classOv{padding:12px 10px 20px;}
+  #classList{width:100%;max-width:360px;}
   #storyBody{font-size:11px;}
   #storyTitle{font-size:17px;}
   #menuBody{font-size:11px;}
+  #shopList{max-height:45vh;}
+  #menuBody{max-height:50vh;overflow-y:auto;}
   #dpadGrid{grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);}
   .dpadBtn{font-size:22px;}
 }
@@ -604,7 +612,11 @@ function toggleBgm(){
 // ============================================================
 // TILE / MAP CONSTANTS
 // ============================================================
-const TS=32,VC=18,VR=12,MC=24,MR=18;
+const MC=24,MR=18;
+const TS=32;
+const isMobile=window.innerWidth<=600;
+const VC=isMobile?12:18;
+const VR=isMobile?9:12;
 const T={DEEP:0,SEA:1,BEACH:2,GRASS:3,FOREST:4,MOUNTAIN:5,SNOW:6,DESERT:7,SWAMP:8,
          TOWN:9,CASTLE:10,TOWER:11,CAVE:12,DUNGEON:13,SHRINE:14,BRIDGE:15};
 const TDATA={
@@ -799,6 +811,8 @@ function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
 // MAP & CANVAS
 // ============================================================
 const canvas=document.getElementById('mapCanvas');
+canvas.width=VC*TS;
+canvas.height=VR*TS;
 const ctx=canvas.getContext('2d');
 
 function drawMap(){
@@ -810,16 +824,17 @@ function drawMap(){
     ctx.fillStyle=td.c; ctx.fillRect(c*TS,r*TS,TS,TS);
     ctx.strokeStyle='rgba(0,0,0,.12)'; ctx.strokeRect(c*TS,r*TS,TS,TS);
   }}
-  ctx.font='18px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  const half=TS/2;
+  ctx.font=Math.round(TS*.56)+'px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
   for(let r=0;r<VR;r++){for(let c=0;c<VC;c++){
     const mx=cx+c,my=cy+r;
     if(mx<0||mx>=MC||my<0||my>=MR) continue;
     const icon=TICON[WMAP[my][mx]];
-    if(icon) ctx.fillText(icon,c*TS+16,r*TS+16);
+    if(icon) ctx.fillText(icon,c*TS+half,r*TS+half);
   }}
   const px=G.px-cx,py=G.py-cy;
   if(px>=0&&px<VC&&py>=0&&py<VR){
-    ctx.font='22px serif'; ctx.fillText(G.party[0]?.emoji||'🧙',px*TS+16,py*TS+14);
+    ctx.font=Math.round(TS*.69)+'px serif'; ctx.fillText(G.party[0]?.emoji||'🧙',px*TS+half,py*TS+Math.round(TS*.44));
   }
 }
 function updateCamera(){
