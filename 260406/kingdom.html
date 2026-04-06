@@ -1,0 +1,2163 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>キングダム 完全解説ガイド</title>
+<style>
+  :root {
+    --primary: #8B1A1A;
+    --primary-light: #C0392B;
+    --gold: #D4AF37;
+    --gold-light: #F0D060;
+    --dark: #1a1208;
+    --dark2: #2d2010;
+    --dark3: #3d2e14;
+    --text: #f5e6c8;
+    --text-muted: #c9a96e;
+    --accent: #4a7c59;
+    --accent2: #2e5e8e;
+    --bg: #0d0a04;
+    --card: #1e1508;
+    --border: #5a3e1a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Hiragino Kaku Gothic Pro', 'Meiryo', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ===== ヒーローセクション ===== */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+    background: radial-gradient(ellipse at center, #3d1a05 0%, #1a0a02 50%, #000 100%);
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 40px,
+        rgba(139,26,26,0.03) 40px,
+        rgba(139,26,26,0.03) 41px
+      );
+  }
+
+  .hero-particles {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  .particle {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: var(--gold);
+    border-radius: 50%;
+    animation: float linear infinite;
+    opacity: 0;
+  }
+
+  @keyframes float {
+    0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+    10% { opacity: 0.8; }
+    90% { opacity: 0.8; }
+    100% { transform: translateY(-100px) rotate(720deg); opacity: 0; }
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    padding: 2rem;
+  }
+
+  .hero-kanji {
+    font-size: clamp(80px, 20vw, 180px);
+    font-weight: 900;
+    color: transparent;
+    -webkit-text-stroke: 2px var(--gold);
+    text-shadow: 0 0 60px rgba(212,175,55,0.3);
+    line-height: 1;
+    letter-spacing: -0.05em;
+    animation: glow 3s ease-in-out infinite alternate;
+  }
+
+  @keyframes glow {
+    from { text-shadow: 0 0 30px rgba(212,175,55,0.3), 0 0 60px rgba(212,175,55,0.1); }
+    to { text-shadow: 0 0 60px rgba(212,175,55,0.6), 0 0 120px rgba(212,175,55,0.3), 0 0 180px rgba(139,26,26,0.4); }
+  }
+
+  .hero-subtitle {
+    font-size: clamp(14px, 3vw, 20px);
+    color: var(--gold-light);
+    letter-spacing: 0.3em;
+    margin: 1rem 0;
+    text-transform: uppercase;
+  }
+
+  .hero-desc {
+    font-size: clamp(13px, 2vw, 16px);
+    color: var(--text-muted);
+    max-width: 600px;
+    margin: 0 auto 2rem;
+  }
+
+  .hero-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+    margin: 1.5rem 0;
+  }
+
+  .badge {
+    padding: 0.4rem 1.2rem;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    background: rgba(212,175,55,0.08);
+    border-radius: 2px;
+  }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--text-muted);
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    animation: bounce 2s infinite;
+  }
+
+  .scroll-hint::after {
+    content: '';
+    display: block;
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, var(--gold), transparent);
+    margin: 0.5rem auto 0;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(-8px); }
+  }
+
+  /* ===== ナビゲーション ===== */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(13,10,4,0.95);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(10px);
+  }
+
+  .nav-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .nav-inner::-webkit-scrollbar { display: none; }
+
+  .nav-logo {
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--gold);
+    padding: 1rem 1.5rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border);
+  }
+
+  .nav-links {
+    display: flex;
+    list-style: none;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .nav-links::-webkit-scrollbar { display: none; }
+
+  .nav-links a {
+    display: block;
+    padding: 1rem 1.2rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 13px;
+    white-space: nowrap;
+    letter-spacing: 0.05em;
+    transition: color 0.2s, background 0.2s;
+  }
+
+  .nav-links a:hover {
+    color: var(--gold);
+    background: rgba(212,175,55,0.08);
+  }
+
+  /* ===== セクション共通 ===== */
+  section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 5rem 1.5rem;
+  }
+
+  .section-label {
+    font-size: 11px;
+    letter-spacing: 0.4em;
+    color: var(--primary-light);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .section-title {
+    font-size: clamp(28px, 6vw, 48px);
+    font-weight: 900;
+    color: var(--gold);
+    margin-bottom: 1rem;
+    position: relative;
+    display: inline-block;
+  }
+
+  .section-title::after {
+    content: '';
+    display: block;
+    height: 3px;
+    background: linear-gradient(to right, var(--primary), transparent);
+    margin-top: 0.5rem;
+  }
+
+  .section-desc {
+    color: var(--text-muted);
+    font-size: 15px;
+    margin-bottom: 3rem;
+    max-width: 700px;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* ===== 基本情報 ===== */
+  #overview {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: start;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 5rem 1.5rem;
+  }
+
+  .overview-text .section-title { font-size: clamp(24px, 5vw, 40px); }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+
+  .info-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 1.2rem;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .info-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--gold);
+  }
+
+  .info-card-label {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--text-muted);
+    margin-bottom: 0.3rem;
+  }
+
+  .info-card-value {
+    font-size: 15px;
+    color: var(--gold-light);
+    font-weight: 700;
+  }
+
+  .stat-box {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--dark) 100%);
+    border: 1px solid var(--primary-light);
+    padding: 2rem;
+    border-radius: 4px;
+    text-align: center;
+  }
+
+  .stat-number {
+    font-size: clamp(40px, 8vw, 72px);
+    font-weight: 900;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    letter-spacing: 0.3em;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+  }
+
+  .awards {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .award-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: rgba(212,175,55,0.06);
+    border: 1px solid rgba(212,175,55,0.2);
+    border-radius: 4px;
+    font-size: 13px;
+  }
+
+  .award-icon { font-size: 20px; }
+
+  /* ===== あらすじ ===== */
+  .story-timeline {
+    position: relative;
+    padding-left: 2rem;
+  }
+
+  .story-timeline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--gold), var(--primary), var(--accent));
+  }
+
+  .story-chapter {
+    position: relative;
+    margin-bottom: 2.5rem;
+    padding: 1.5rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    transition: border-color 0.3s;
+  }
+
+  .story-chapter:hover { border-color: var(--gold); }
+
+  .story-chapter::before {
+    content: '';
+    position: absolute;
+    left: -2.5rem;
+    top: 1.5rem;
+    width: 12px;
+    height: 12px;
+    background: var(--gold);
+    border-radius: 50%;
+    border: 2px solid var(--bg);
+  }
+
+  .chapter-number {
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--primary-light);
+    margin-bottom: 0.5rem;
+  }
+
+  .chapter-title {
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--gold);
+    margin-bottom: 0.75rem;
+  }
+
+  .chapter-text { font-size: 14px; color: var(--text); line-height: 1.8; }
+
+  /* ===== 登場人物 ===== */
+  .characters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .char-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+    cursor: pointer;
+  }
+
+  .char-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--gold);
+    box-shadow: 0 8px 32px rgba(212,175,55,0.15);
+  }
+
+  .char-header {
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .char-header.sei { background: linear-gradient(135deg, #4a1515 0%, #1a0a02 100%); }
+  .char-header.shin { background: linear-gradient(135deg, #1a2d4a 0%, #0a1020 100%); }
+  .char-header.ten { background: linear-gradient(135deg, #1a3a2a 0%, #0a1508 100%); }
+  .char-header.ouhon { background: linear-gradient(135deg, #2d1a4a 0%, #100a20 100%); }
+  .char-header.moten { background: linear-gradient(135deg, #2d2d10 0%, #141408 100%); }
+  .char-header.kanki { background: linear-gradient(135deg, #1a0a0a 0%, #050202 100%); }
+  .char-header.ouki { background: linear-gradient(135deg, #3d2000 0%, #1a0a00 100%); }
+  .char-header.riboku { background: linear-gradient(135deg, #0a1a2a 0%, #050a10 100%); }
+  .char-header.ousen { background: linear-gradient(135deg, #1a1a2a 0%, #080810 100%); }
+  .char-header.yotanwa { background: linear-gradient(135deg, #1a2a1a 0%, #080a08 100%); }
+
+  .char-emblem {
+    font-size: 60px;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+
+  .char-name-ja {
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--gold);
+  }
+
+  .char-name-read {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.2em;
+    margin-top: 0.2rem;
+  }
+
+  .char-role {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: rgba(212,175,55,0.12);
+    border: 1px solid rgba(212,175,55,0.3);
+    color: var(--gold-light);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    border-radius: 2px;
+    margin-top: 0.75rem;
+  }
+
+  .char-body { padding: 1.25rem 1.5rem; }
+
+  .char-desc { font-size: 13px; line-height: 1.7; color: var(--text); }
+
+  .char-stats {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .char-stat {
+    font-size: 11px;
+    padding: 0.2rem 0.6rem;
+    background: rgba(255,255,255,0.05);
+    border-radius: 2px;
+    color: var(--text-muted);
+  }
+
+  .char-stat.highlight {
+    background: rgba(212,175,55,0.1);
+    color: var(--gold-light);
+  }
+
+  /* ===== 人物相関図 ===== */
+  .relation-container {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2rem;
+    overflow: auto;
+  }
+
+  .relation-svg-wrap {
+    min-width: 700px;
+    overflow-x: auto;
+  }
+
+  svg.relation-map {
+    width: 100%;
+    max-width: 900px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+
+  .rel-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .rel-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .rel-legend-line {
+    width: 30px;
+    height: 2px;
+  }
+
+  /* ===== 年表 ===== */
+  .timeline-container {
+    position: relative;
+  }
+
+  .timeline-wrap {
+    position: relative;
+    padding: 0 1rem;
+  }
+
+  .timeline-wrap::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--gold), var(--primary));
+    transform: translateX(-50%);
+  }
+
+  .timeline-item {
+    display: flex;
+    justify-content: flex-end;
+    padding-right: calc(50% + 2rem);
+    margin-bottom: 2rem;
+    position: relative;
+  }
+
+  .timeline-item.right {
+    justify-content: flex-start;
+    padding-right: 0;
+    padding-left: calc(50% + 2rem);
+  }
+
+  .timeline-item::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 1.25rem;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--bg);
+    transform: translateX(-50%);
+  }
+
+  .timeline-item.history::after { background: var(--gold); }
+  .timeline-item.manga::after { background: var(--primary-light); }
+  .timeline-item.anime::after { background: var(--accent2); }
+  .timeline-item.movie::after { background: var(--accent); }
+
+  .timeline-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1rem 1.25rem;
+    max-width: 380px;
+    width: 100%;
+    transition: border-color 0.3s;
+  }
+
+  .timeline-card:hover { border-color: var(--gold); }
+
+  .timeline-year {
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--gold);
+  }
+
+  .timeline-tag {
+    display: inline-block;
+    font-size: 10px;
+    padding: 0.1rem 0.5rem;
+    border-radius: 2px;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+
+  .tag-history { background: rgba(212,175,55,0.15); color: var(--gold); }
+  .tag-manga { background: rgba(192,57,43,0.2); color: #e74c3c; }
+  .tag-anime { background: rgba(46,94,142,0.2); color: #5dade2; }
+  .tag-movie { background: rgba(74,124,89,0.2); color: #58d68d; }
+
+  .timeline-content {
+    font-size: 13px;
+    color: var(--text);
+    margin-top: 0.5rem;
+    line-height: 1.6;
+  }
+
+  /* ===== 地理 ===== */
+  .map-container {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2rem;
+  }
+
+  .countries-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+
+  .country-card {
+    background: var(--dark2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1.25rem;
+    transition: transform 0.2s, border-color 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .country-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--gold);
+  }
+
+  .country-flag {
+    font-size: 36px;
+    margin-bottom: 0.75rem;
+    display: block;
+  }
+
+  .country-name {
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--gold);
+  }
+
+  .country-read {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+  }
+
+  .country-power {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .power-label { font-size: 11px; color: var(--text-muted); }
+
+  .power-bar {
+    flex: 1;
+    height: 6px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .power-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 1s ease;
+  }
+
+  .country-desc { font-size: 12px; color: var(--text); line-height: 1.6; }
+
+  .country-capital {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+  }
+
+  /* 地図SVG */
+  .map-svg-container {
+    background: var(--dark2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1rem;
+    margin-bottom: 2rem;
+    overflow: auto;
+  }
+
+  .map-svg-container svg {
+    width: 100%;
+    max-width: 700px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+
+  /* ===== 用語集 ===== */
+  .glossary-search {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .glossary-search input {
+    flex: 1;
+    min-width: 200px;
+    padding: 0.75rem 1rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 14px;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .glossary-search input:focus { border-color: var(--gold); }
+  .glossary-search input::placeholder { color: var(--text-muted); }
+
+  .glossary-filters {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    padding: 0.5rem 1rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .filter-btn.active, .filter-btn:hover {
+    background: var(--primary);
+    border-color: var(--primary-light);
+    color: var(--gold);
+  }
+
+  .glossary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+  }
+
+  .glossary-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1.25rem;
+    transition: border-color 0.2s;
+  }
+
+  .glossary-item:hover { border-color: var(--gold); }
+
+  .glossary-item.hidden { display: none; }
+
+  .glossary-term {
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--gold);
+    margin-bottom: 0.25rem;
+  }
+
+  .glossary-read {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.2em;
+    margin-bottom: 0.75rem;
+  }
+
+  .glossary-tag {
+    display: inline-block;
+    font-size: 10px;
+    padding: 0.15rem 0.5rem;
+    border-radius: 2px;
+    margin-bottom: 0.75rem;
+  }
+
+  .gtag-system { background: rgba(212,175,55,0.12); color: var(--gold); }
+  .gtag-battle { background: rgba(192,57,43,0.15); color: #e74c3c; }
+  .gtag-rank { background: rgba(46,94,142,0.15); color: #5dade2; }
+  .gtag-place { background: rgba(74,124,89,0.15); color: #58d68d; }
+  .gtag-other { background: rgba(150,100,50,0.15); color: #d4a76a; }
+
+  .glossary-def { font-size: 13px; color: var(--text); line-height: 1.7; }
+
+  /* ===== 人気ランキング ===== */
+  .ranking-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .ranking-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1rem 1.25rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .ranking-item:hover {
+    border-color: var(--gold);
+    transform: translateX(4px);
+  }
+
+  .rank-num {
+    font-size: 28px;
+    font-weight: 900;
+    min-width: 50px;
+    text-align: center;
+  }
+
+  .rank-1 { color: #FFD700; }
+  .rank-2 { color: #C0C0C0; }
+  .rank-3 { color: #CD7F32; }
+  .rank-other { color: var(--text-muted); font-size: 20px; }
+
+  .rank-emoji { font-size: 32px; }
+
+  .rank-info { flex: 1; }
+
+  .rank-name { font-size: 18px; font-weight: 700; color: var(--gold-light); }
+
+  .rank-desc { font-size: 12px; color: var(--text-muted); margin-top: 0.2rem; }
+
+  .rank-bar-wrap {
+    width: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+  }
+
+  .rank-score { font-size: 12px; color: var(--text-muted); }
+
+  .rank-bar {
+    width: 100%;
+    height: 4px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .rank-bar-fill {
+    height: 100%;
+    background: linear-gradient(to right, var(--primary), var(--gold));
+    border-radius: 2px;
+  }
+
+  /* ===== フッター ===== */
+  footer {
+    background: var(--dark);
+    border-top: 1px solid var(--border);
+    padding: 3rem 1.5rem;
+    text-align: center;
+  }
+
+  .footer-logo {
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--gold);
+    margin-bottom: 1rem;
+  }
+
+  .footer-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 2;
+  }
+
+  /* ===== レスポンシブ ===== */
+  @media (max-width: 768px) {
+    #overview {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    .info-grid { grid-template-columns: 1fr 1fr; }
+
+    .timeline-wrap::before { left: 0; transform: none; }
+
+    .timeline-item {
+      padding-right: 0;
+      padding-left: 2rem;
+      justify-content: flex-start;
+    }
+
+    .timeline-item.right {
+      padding-left: 2rem;
+    }
+
+    .timeline-item::after {
+      left: 0;
+      transform: translateX(-50%);
+    }
+
+    .timeline-card { max-width: 100%; }
+
+    .relation-svg-wrap { overflow-x: auto; }
+
+    .nav-logo { padding: 0.75rem 1rem; font-size: 16px; }
+
+    .nav-links a { padding: 0.75rem 0.9rem; font-size: 12px; }
+  }
+
+  @media (max-width: 480px) {
+    section { padding: 3rem 1rem; }
+    #overview { padding: 3rem 1rem; }
+    .info-grid { grid-template-columns: 1fr; }
+    .hero-kanji { -webkit-text-stroke: 1px var(--gold); }
+  }
+
+  /* ===== アニメーション ===== */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .slide-left {
+    opacity: 0;
+    transform: translateX(-30px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .slide-left.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* ===== スクロールバー ===== */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+  /* ===== ハイライト ===== */
+  .highlight-box {
+    background: linear-gradient(135deg, rgba(139,26,26,0.2), rgba(212,175,55,0.08));
+    border: 1px solid rgba(212,175,55,0.3);
+    border-radius: 4px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+  }
+
+  .highlight-box p { font-size: 15px; line-height: 1.8; }
+
+  .quote {
+    border-left: 3px solid var(--gold);
+    padding: 1rem 1.5rem;
+    margin: 1.5rem 0;
+    font-style: italic;
+    color: var(--gold-light);
+    font-size: 16px;
+    background: rgba(212,175,55,0.04);
+  }
+
+  .battles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .battle-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1.5rem;
+    border-top: 3px solid var(--primary);
+    transition: border-top-color 0.3s, transform 0.3s;
+  }
+
+  .battle-card:hover {
+    border-top-color: var(--gold);
+    transform: translateY(-3px);
+  }
+
+  .battle-name {
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+  }
+
+  .battle-detail { font-size: 12px; color: var(--text-muted); margin-bottom: 0.75rem; }
+  .battle-desc { font-size: 13px; color: var(--text); line-height: 1.7; }
+</style>
+</head>
+<body>
+
+<!-- ===== ヒーロー ===== -->
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-particles" id="particles"></div>
+  <div class="hero-content">
+    <div class="hero-kanji">キングダム</div>
+    <div class="hero-subtitle">Kingdom — The Epic of China's Unification</div>
+    <p class="hero-desc">
+      古代中国・春秋戦国時代末期。<br>
+      天下の大将軍を夢見る少年・信と、<br>
+      中華統一を目指す秦王・嬴政の壮大な物語。
+    </p>
+    <div class="hero-badges">
+      <span class="badge">原作 原泰久</span>
+      <span class="badge">週刊ヤングジャンプ</span>
+      <span class="badge">2006年〜連載中</span>
+      <span class="badge">累計1.2億部突破</span>
+      <span class="badge">手塚治虫文化賞</span>
+    </div>
+  </div>
+  <div class="scroll-hint">SCROLL</div>
+</div>
+
+<!-- ===== ナビゲーション ===== -->
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo">⚔ 王国</div>
+    <ul class="nav-links">
+      <li><a href="#overview">基本情報</a></li>
+      <li><a href="#story">あらすじ</a></li>
+      <li><a href="#characters">登場人物</a></li>
+      <li><a href="#relations">人物相関図</a></li>
+      <li><a href="#timeline">年表</a></li>
+      <li><a href="#battles">主要な戦い</a></li>
+      <li><a href="#geography">地理・国家</a></li>
+      <li><a href="#glossary">用語集</a></li>
+      <li><a href="#ranking">人気ランキング</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ===== 基本情報 ===== -->
+<div id="overview">
+  <div class="overview-text fade-in">
+    <div class="section-label">ABOUT</div>
+    <h2 class="section-title">作品について</h2>
+    <p class="section-desc">
+      『キングダム』は原泰久が描く大河歴史漫画。紀元前3世紀の中国を舞台に、史実をベースとした壮大なスケールで中華統一の物語を描く。
+    </p>
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="info-card-label">作者</div>
+        <div class="info-card-value">原 泰久</div>
+      </div>
+      <div class="info-card">
+        <div class="info-card-label">連載誌</div>
+        <div class="info-card-value">週刊ヤングジャンプ</div>
+      </div>
+      <div class="info-card">
+        <div class="info-card-label">連載開始</div>
+        <div class="info-card-value">2006年9月〜</div>
+      </div>
+      <div class="info-card">
+        <div class="info-card-label">単行本</div>
+        <div class="info-card-value">78巻（2026年4月現在）</div>
+      </div>
+      <div class="info-card">
+        <div class="info-card-label">出版社</div>
+        <div class="info-card-value">集英社</div>
+      </div>
+      <div class="info-card">
+        <div class="info-card-label">ジャンル</div>
+        <div class="info-card-value">歴史・アクション</div>
+      </div>
+    </div>
+    <div class="awards">
+      <div class="award-item">
+        <span class="award-icon">🏆</span>
+        <span>第17回 手塚治虫文化賞 マンガ大賞（2013年）</span>
+      </div>
+      <div class="award-item">
+        <span class="award-icon">📚</span>
+        <span>ebookjapan 少年・青年マンガ 4年連続1位（2022〜2025）</span>
+      </div>
+      <div class="award-item">
+        <span class="award-icon">🎬</span>
+        <span>実写映画第4弾 興行収入80億円（2024年）</span>
+      </div>
+    </div>
+  </div>
+  <div class="overview-right fade-in">
+    <div style="display:grid;gap:1rem;">
+      <div class="stat-box">
+        <div class="stat-number">1.2<span style="font-size:0.5em">億</span></div>
+        <div class="stat-label">累計発行部数（2025年10月時点）</div>
+      </div>
+      <div class="stat-box" style="background:linear-gradient(135deg,#1a2d4a 0%,#0a1020 100%); border-color:#2e5e8e;">
+        <div class="stat-number">78</div>
+        <div class="stat-label">単行本巻数（連載継続中）</div>
+      </div>
+      <div class="stat-box" style="background:linear-gradient(135deg,#1a3a1a 0%,#0a1508 100%); border-color:#4a7c59;">
+        <div class="stat-number">5</div>
+        <div class="stat-label">実写映画（第5弾 2026年7月公開予定）</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ===== あらすじ ===== -->
+<section id="story">
+  <div class="section-label">STORY</div>
+  <h2 class="section-title">あらすじ</h2>
+  <p class="section-desc">天下の大将軍を目指す少年・信と、中華統一を目指す秦王・嬴政。二人の出会いから始まる壮大な歴史絵巻。</p>
+
+  <div class="highlight-box fade-in">
+    <p>舞台は紀元前3世紀の古代中国。戦国七雄が覇権を争う乱世の中、秦国のとある村に二人の孤児の少年がいた。信と漂——二人は剣技を磨き、いつか「天下の大将軍」になる夢を共に語り合っていた。</p>
+  </div>
+
+  <div class="story-timeline fade-in">
+    <div class="story-chapter">
+      <div class="chapter-number">CHAPTER 01</div>
+      <div class="chapter-title">⚡ 出会い — 運命の邂逅</div>
+      <p class="chapter-text">親友の漂が大臣・昌文君に見出だされ仕官するも、一ヶ月後に深手を負って帰還。「この地図の示す場所へ行け」という言葉を遺し息を引き取る。信が地図の場所を訪ねると、そこには反乱によって玉座を追われた秦王・嬴政がいた。漂は嬴政の影武者として命を落としていたのだ。</p>
+    </div>
+    <div class="story-chapter">
+      <div class="chapter-number">CHAPTER 02</div>
+      <div class="chapter-title">🏔 山の民との同盟 — 咸陽奪還へ</div>
+      <p class="chapter-text">信は嬴政とともに、山の民の王・楊端和のもとへ。嬴政は「王の道」を説いて楊端和の心を動かし、同盟を結ぶことに成功。山の民の力を借りて、反乱勢力が占拠する秦の都・咸陽へ進軍する。激戦の末、嬴政は玉座を奪還。信は「三百人将」の地位を与えられる。</p>
+    </div>
+    <div class="story-chapter">
+      <div class="chapter-number">CHAPTER 03</div>
+      <div class="chapter-title">⚔ 武功を重ねる信 — 飛信隊の誕生</div>
+      <p class="chapter-text">信は次々と戦場に赴き、武功を積み上げていく。軍師・河了貂と出会い、飛信隊を結成。秦の将軍たちとともに魏・趙・楚など列国との戦いを繰り広げる。王騎将軍の教えを受け、百将・千人将へと昇格。大将軍への道を着実に歩む。</p>
+    </div>
+    <div class="story-chapter">
+      <div class="chapter-number">CHAPTER 04</div>
+      <div class="chapter-title">💫 王騎の死 — 夢の継承</div>
+      <p class="chapter-text">趙との馬陽の戦いで、秦の六大将軍・王騎が趙の猛将・龐煖の手により命を落とす。死の間際、王騎は信に大将軍の槍と夢を託す。「お前はいつかこの槍を必要とする時がくる」——その言葉が信の魂に刻まれる。</p>
+    </div>
+    <div class="story-chapter">
+      <div class="chapter-number">CHAPTER 05</div>
+      <div class="chapter-title">🌟 合従軍の危機 — 秦存亡の瀬戸際</div>
+      <p class="chapter-text">趙の李牧の策謀により、韓・魏・趙・楚・燕・斉の六国が「合従軍」を結成し秦へ総攻撃。関の要衝・函谷関が陥落の危機に瀕する。信・嬴政・河了貂・王賁・蒙恬たちの奮闘により、秦はかろうじて存亡の危機を乗り越える。</p>
+    </div>
+    <div class="story-chapter">
+      <div class="chapter-number">CHAPTER 06</div>
+      <div class="chapter-title">🔥 中華統一へ — 韓攻略完成</div>
+      <p class="chapter-text">嬴政の中華統一戦略が本格化。戦国七雄の中で最も弱小な韓の攻略を皮切りに、秦の版図は拡大していく。78巻時点で韓攻略が完成し、宿敵・趙への進攻が始まった。信は大将軍の夢に向かって、さらなる高みへと駆け上がっていく。</p>
+    </div>
+  </div>
+
+  <div class="quote fade-in">「俺は天下の大将軍になる——」<br><small style="font-size:14px;color:var(--text-muted)">— 信</small></div>
+</section>
+
+<hr class="divider">
+
+<!-- ===== 登場人物 ===== -->
+<section id="characters">
+  <div class="section-label">CHARACTERS</div>
+  <h2 class="section-title">登場人物</h2>
+  <p class="section-desc">史実の人物をベースに描かれる、個性豊かなキャラクターたち。</p>
+
+  <div class="characters-grid">
+    <!-- 信 -->
+    <div class="char-card fade-in">
+      <div class="char-header shin">
+        <div class="char-emblem">⚔</div>
+        <div class="char-name-ja">信</div>
+        <div class="char-name-read">しん / Xin</div>
+        <div class="char-role">主人公 / 飛信隊隊長</div>
+      </div>
+      <div class="char-body">
+        <p class="char-desc">戦災孤児出身の少年。「天下の大将軍」を夢見て戦場を駆け抜ける。類いまれな武勇と不屈の精神で次々と強敵を打ち倒し、百将から千人将へと昇格。秦王・嬴政の親友でもある。</p>
+        <div class="char-stats">
+          <span class="char-stat highlight">武力: 最高峰</span>
+          <span class="char-stat">直感型武人</span>
+          <span class="char-stat">飛信隊</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 嬴政 -->
+    <div class="char-card fade-in">
+      <div class="char-header sei">
+        <div class="char-emblem">👑</div>
+        <div class="char-name-ja">嬴政</div>
+        <div class="char-name-read">えいせい / Ying Zheng</div>
+        <div class="char-role">秦王 / 後の始皇帝</div>
+      </div>
+      <div class="char-body">
+        <p class="char-desc">秦の第31代国王。「中華統一」という前人未到の夢を抱く。冷静沈着で王としての威厳を持ちながら、信に対しては本音をさらけ出す唯一の友人関係を築く。史実における始皇帝のモデル。</p>
+        <div class="char-stats">
+          <span class="char-stat highlight">カリスマ: 絶対的</span>
+          <span class="char-stat">戦略的思考</span>
+          <span class="char-stat">秦王</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 河了貂 -->
+    <div class="char-card fade-in">
+      <div class="char-header ten">
+        <div class="char-emblem">📜</div>
+        <div class="char-name-ja">河了貂</div>
+        <div class="char-name-read">かりょうてん / He Liao Diao</div>
+        <div class="char-role">飛信隊軍師 / 娘軍師</div>
+      </div>
+      <div class="char-body">
+        <p class="char-desc">飛信隊の軍師。当初は男装して信たちと旅をする。鬼神・媧燐に軍師として弟子入りし、その才能を開花させた。料理も得意で、隊員たちに慕われる存在。オリジナルキャラクター（史実には非実在）。</p>
+        <div class="char-stats">
+          <span class="char-stat highlight">軍略: 高い</span>
+          <span class="char-stat">戦場観察力</span>
+          <span class="char-stat">娘軍師</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 王賁 -->
+    <div class="char-card fade-in">
+      <div class="char-header ouhon">
+        <div class="char-emblem">🔱</div>
+        <div class="char-name-ja">王賁</div>
+        <div class="char-name-read">おうほん / Wang Ben</div>
+        <div class="char-role">玉鳳隊隊長 / 将軍</div>
+      </div>
+      <div class="char-body">
+        <p class="char-desc">秦の大将軍・王翦の息子。槍術の達人で、秀才型の武将。信とはライバル関係にあり互いに切磋琢磨する。冷静な判断力と高い武力を兼ね備え、名家出身の誇りを胸に戦場に立つ。</p>
+        <div class="char-stats">
+          <span class="char-stat highlight">武力: S級</span>
+          <span class="char-stat">槍術の達人</span>
+          <span class="char-stat">玉鳳隊</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 蒙恬 -->
+    <div class="char-card fade-in">
+      <div class="char-header moten">
+        <div class="char-emblem">🌟</div>
+        <div class="char-name-ja">蒙恬</div>
+        <div class="char-name-read">もうてん / Meng Tian</div>
+        <div class="char-role">楽華隊隊長 / 将軍</div>
+      </div>
+      <div class="char-body">
+        <p class="char-desc">蒙武の息子で、信の同世代の武将。楽華隊を率いる。明るい性格で仲間への気配りも忘れない。軍略と武力のバランスが高く、信・王賁とともに秦の次世代を担う三人衆のひとり。</p>
+        <div class="char-stats">
+          <span class="char-stat highlight">バランス型</span>
+          <span class="char-stat">楽華隊</span>
+          <span class="char-stat">次世代筆頭</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 王騎 -->
+    <div class="char-card fade-in">
+      <div class="char-header ouki">
+        <div class="char-emblem">🦁</div>
+        <div class="char-name-ja">王騎</div>
+        <div class="char-name-read">おうき / Wang Qi</div>
+        <div class="char-role">秦 六大将軍 / 大将軍</div>
+      </div>
+      <div class="char-body">
+        <p class="char-desc">「秦の六大将軍」の一角を担う最強の武将。独特の口調と豪快な人柄で圧倒的な存在感を放つ。馬陽の戦いで趙の龐煖との一騎打ちで命を落とし、信に大将軍の槍と夢を託す。</p>
+        <div class="char-stats">
+          <span class="char-stat highlight">武力: 伝説級</span>
+          <span class="char-stat">六大将軍</span>
+          <span class="char-stat">信の師</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 桓騎 -->
+    <div class="char-card fade-in">
+      <div class="char-header kanki">
+        <div class="char-emblem">💀</div>
+        <div class="char-name-ja">桓騎</div>
+        <div class="char-name-read">かんき / Huan Yi</div>
+        <div class="char-role">秦軍 副将 / 元盗賊団頭領</div>
+      </div>
+      <div class="char-body">
+        <p class="char-desc">「化け物」と評される戦の天才。元盗賊団の頭領であり、非道な手段も平然と行う。しかしその戦略的センスは飛び抜けており、奇想天外な戦術で強敵を打ち破る。謎多き人物。</p>
+        <div class="char-stats">
+          <span class="char-stat highlight">奇略: 最高峰</span>
+          <span class="char-stat">非情の戦略家</span>
+          <span class="char-stat">型破り</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 李牧 -->
+    <div class="char-card fade-in">
+      <div class="char-header riboku">
+        <div class="char-emblem">🌙</div>
+        <div class="char-name-ja">李牧</div>
+        <div class="char-name-read">りぼく / Li Mu</div>
+        <div class="char-role">趙軍 大将軍 / 三大天</div>
+      </div>
+      <div class="char-body">
+        <p class="char-desc">趙国最強の武将にして軍師。「戦国四名将」のひとりでもある。天才的な頭脳で秦を苦しめ続ける、物語最大の敵役。合従軍を組織し秦を窮地に追い込んだ張本人。温和な外見の裏に冷徹な策略家の顔を持つ。</p>
+        <div class="char-stats">
+          <span class="char-stat highlight">知略: 絶対的</span>
+          <span class="char-stat">三大天</span>
+          <span class="char-stat">最大のライバル</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 王翦 -->
+    <div class="char-card fade-in">
+      <div class="char-header ousen">
+        <div class="char-emblem">🗡</div>
+        <div class="char-name-ja">王翦</div>
+        <div class="char-name-read">おうせん / Wang Jian</div>
+        <div class="char-role">秦軍 大将軍 / 六大将軍</div>
+      </div>
+      <div class="char-body">
+        <p class="char-desc">王賁の父。秦軍最強格の大将軍。完璧な用兵術と圧倒的な統率力を誇る。自らの目的のためにのみ動き、秦王・嬴政との間にも独特の緊張感を保つ謎多き存在。史実では中華統一に最も貢献した将軍。</p>
+        <div class="char-stats">
+          <span class="char-stat highlight">総合: 最高峰</span>
+          <span class="char-stat">完璧な将</span>
+          <span class="char-stat">六大将軍</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 楊端和 -->
+    <div class="char-card fade-in">
+      <div class="char-header yotanwa">
+        <div class="char-emblem">🐉</div>
+        <div class="char-name-ja">楊端和</div>
+        <div class="char-name-read">ようたんわ / Yang Duan He</div>
+        <div class="char-role">山の民 女王</div>
+      </div>
+      <div class="char-body">
+        <p class="char-desc">山界（さんかい）を統べる山の民の女王。美しい外見と圧倒的な武力を兼ね備える。嬴政に「王の道」を説かれ秦と同盟を結ぶ。以降、秦の重要な戦いに助力し続ける頼もしき同盟者。</p>
+        <div class="char-stats">
+          <span class="char-stat highlight">武力: S級</span>
+          <span class="char-stat">山の民女王</span>
+          <span class="char-stat">秦の同盟国</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ===== 人物相関図 ===== -->
+<section id="relations">
+  <div class="section-label">RELATIONSHIP</div>
+  <h2 class="section-title">人物相関図</h2>
+  <p class="section-desc">主要登場人物の関係性を図解で確認しよう。</p>
+
+  <div class="relation-container fade-in">
+    <div class="relation-svg-wrap">
+      <svg class="relation-map" viewBox="0 0 900 600" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow-gold" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#D4AF37"/>
+          </marker>
+          <marker id="arrow-red" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#C0392B"/>
+          </marker>
+          <marker id="arrow-blue" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#5dade2"/>
+          </marker>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+            <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        <!-- 背景 -->
+        <rect width="900" height="600" fill="#0d0a04" rx="4"/>
+
+        <!-- 秦国エリア -->
+        <rect x="20" y="20" width="560" height="420" fill="rgba(139,26,26,0.08)" stroke="rgba(139,26,26,0.3)" stroke-width="1" rx="4" stroke-dasharray="5,3"/>
+        <text x="290" y="455" fill="#C0392B" font-size="13" text-anchor="middle" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif" opacity="0.7">秦 国</text>
+
+        <!-- 趙国エリア -->
+        <rect x="610" y="20" width="270" height="280" fill="rgba(46,94,142,0.08)" stroke="rgba(46,94,142,0.3)" stroke-width="1" rx="4" stroke-dasharray="5,3"/>
+        <text x="745" y="315" fill="#5dade2" font-size="13" text-anchor="middle" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif" opacity="0.7">趙 国</text>
+
+        <!-- 嬴政 -->
+        <circle cx="300" cy="100" r="42" fill="#3d1a05" stroke="#D4AF37" stroke-width="2" filter="url(#glow)"/>
+        <text x="300" y="96" fill="#D4AF37" font-size="16" text-anchor="middle" font-weight="bold" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">嬴政</text>
+        <text x="300" y="112" fill="#c9a96e" font-size="10" text-anchor="middle" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">秦王・始皇帝</text>
+
+        <!-- 信 -->
+        <circle cx="150" cy="250" r="40" fill="#1a2d4a" stroke="#5dade2" stroke-width="2"/>
+        <text x="150" y="246" fill="#f5e6c8" font-size="16" text-anchor="middle" font-weight="bold" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">信</text>
+        <text x="150" y="262" fill="#c9a96e" font-size="10" text-anchor="middle" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">飛信隊隊長</text>
+
+        <!-- 河了貂 -->
+        <circle cx="150" cy="370" r="36" fill="#1a3a2a" stroke="#58d68d" stroke-width="1.5"/>
+        <text x="150" y="366" fill="#f5e6c8" font-size="13" text-anchor="middle" font-weight="bold" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">河了貂</text>
+        <text x="150" y="382" fill="#c9a96e" font-size="10" text-anchor="middle" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">飛信隊軍師</text>
+
+        <!-- 王騎 -->
+        <circle cx="420" cy="200" r="38" fill="#3d2000" stroke="#D4AF37" stroke-width="2"/>
+        <text x="420" y="196" fill="#D4AF37" font-size="14" text-anchor="middle" font-weight="bold" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">王騎</text>
+        <text x="420" y="212" fill="#c9a96e" font-size="10" text-anchor="middle" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">六大将軍</text>
+
+        <!-- 王翦 -->
+        <circle cx="450" cy="350" r="36" fill="#1a1a2a" stroke="#9b59b6" stroke-width="1.5"/>
+        <text x="450" y="346" fill="#f5e6c8" font-size="14" text-anchor="middle" font-weight="bold" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">王翦</text>
+        <text x="450" y="362" fill="#c9a96e" font-size="10" text-anchor="middle" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">大将軍</text>
+
+        <!-- 王賁 -->
+        <circle cx="340" cy="370" r="34" fill="#2d1a4a" stroke="#9b59b6" stroke-width="1.5"/>
+        <text x="340" y="366" fill="#f5e6c8" font-size="14" text-anchor="middle" font-weight="bold" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">王賁</text>
+        <text x="340" y="382" fill="#c9a96e" font-size="10" text-anchor="middle" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">玉鳳隊隊長</text>
+
+        <!-- 蒙恬 -->
+        <circle cx="80" cy="140" r="34" fill="#2d2d10" stroke="#f1c40f" stroke-width="1.5"/>
+        <text x="80" y="136" fill="#f5e6c8" font-size="14" text-anchor="middle" font-weight="bold" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">蒙恬</text>
+        <text x="80" y="152" fill="#c9a96e" font-size="10" text-anchor="middle" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">楽華隊隊長</text>
+
+        <!-- 楊端和 -->
+        <circle cx="80" cy="400" r="34" fill="#1a2a1a" stroke="#58d68d" stroke-width="1.5"/>
+        <text x="80" y="396" fill="#f5e6c8" font-size="11" text-anchor="middle" font-weight="bold" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">楊端和</text>
+        <text x="80" y="412" fill="#c9a96e" font-size="10" text-anchor="middle" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">山の民女王</text>
+
+        <!-- 趙エリア：李牧 -->
+        <circle cx="700" cy="130" r="40" fill="#0a1a2a" stroke="#e74c3c" stroke-width="2" filter="url(#glow)"/>
+        <text x="700" y="126" fill="#e74c3c" font-size="16" text-anchor="middle" font-weight="bold" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">李牧</text>
+        <text x="700" y="142" fill="#c9a96e" font-size="10" text-anchor="middle" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">趙軍大将軍</text>
+
+        <!-- 桓騎 -->
+        <circle cx="520" cy="130" r="34" fill="#1a0a0a" stroke="#e74c3c" stroke-width="1.5"/>
+        <text x="520" y="126" fill="#f5e6c8" font-size="14" text-anchor="middle" font-weight="bold" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">桓騎</text>
+        <text x="520" y="142" fill="#c9a96e" font-size="10" text-anchor="middle" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">副将</text>
+
+        <!-- 漂 -->
+        <circle cx="290" cy="250" r="30" fill="#151515" stroke="#777" stroke-width="1" stroke-dasharray="4,2"/>
+        <text x="290" y="246" fill="#aaa" font-size="14" text-anchor="middle" font-weight="bold" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">漂</text>
+        <text x="290" y="262" fill="#888" font-size="10" text-anchor="middle" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">†故人</text>
+
+        <!-- ===== 関係線 ===== -->
+        <!-- 嬴政↔信：親友 -->
+        <line x1="258" y1="122" x2="186" y2="224" stroke="#D4AF37" stroke-width="2" stroke-dasharray="0" marker-end="url(#arrow-gold)"/>
+        <line x1="186" y1="232" x2="258" y2="130" stroke="#D4AF37" stroke-width="2" marker-end="url(#arrow-gold)"/>
+        <text x="205" y="178" fill="#D4AF37" font-size="11" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">親友・互いに夢を共有</text>
+
+        <!-- 信→河了貂：仲間 -->
+        <line x1="150" y1="290" x2="150" y2="334" stroke="#58d68d" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+        <text x="158" y="315" fill="#58d68d" font-size="10" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">仲間</text>
+
+        <!-- 王騎→信：師 -->
+        <line x1="390" y1="218" x2="188" y2="240" stroke="#D4AF37" stroke-width="1.5" marker-end="url(#arrow-gold)"/>
+        <text x="290" y="222" fill="#D4AF37" font-size="10" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">夢を継承</text>
+
+        <!-- 王翦→王賁：親子 -->
+        <line x1="430" y1="354" x2="374" y2="360" stroke="#9b59b6" stroke-width="1.5" marker-end="url(#arrow-gold)"/>
+        <text x="395" y="347" fill="#9b59b6" font-size="10" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">親子</text>
+
+        <!-- 信↔王賁：ライバル -->
+        <line x1="184" y1="268" x2="308" y2="358" stroke="#f39c12" stroke-width="1.5" stroke-dasharray="5,3"/>
+        <text x="235" y="330" fill="#f39c12" font-size="10" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">ライバル</text>
+
+        <!-- 秦↔趙：敵対 -->
+        <line x1="590" y1="200" x2="665" y2="155" stroke="#e74c3c" stroke-width="2" marker-end="url(#arrow-red)"/>
+        <text x="610" y="180" fill="#e74c3c" font-size="11" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">最大の敵</text>
+
+        <!-- 嬴政→楊端和：同盟 -->
+        <line x1="264" y1="112" x2="108" y2="374" stroke="#58d68d" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrow-blue)"/>
+        <text x="148" y="245" fill="#58d68d" font-size="10" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif" transform="rotate(-70,148,245)">同盟</text>
+
+        <!-- 信↔蒙恬：仲間 -->
+        <line x1="114" y1="152" x2="120" y2="214" stroke="#f1c40f" stroke-width="1.5" marker-end="url(#arrow-gold)"/>
+        <text x="86" y="190" fill="#f1c40f" font-size="10" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">仲間</text>
+
+        <!-- 漂→信：夢の継承 -->
+        <line x1="264" y1="244" x2="188" y2="244" stroke="#777" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrow-gold)"/>
+        <text x="215" y="238" fill="#777" font-size="10" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">夢を託す</text>
+
+        <!-- ラベルエリア -->
+        <rect x="620" y="420" width="260" height="160" fill="rgba(0,0,0,0.5)" rx="4"/>
+        <text x="750" y="445" fill="#D4AF37" font-size="12" text-anchor="middle" font-weight="bold" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">凡 例</text>
+        <line x1="635" y1="465" x2="680" y2="465" stroke="#D4AF37" stroke-width="2"/>
+        <text x="690" y="469" fill="#f5e6c8" font-size="11" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">友情・信頼</text>
+        <line x1="635" y1="490" x2="680" y2="490" stroke="#e74c3c" stroke-width="2"/>
+        <text x="690" y="494" fill="#f5e6c8" font-size="11" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">敵対関係</text>
+        <line x1="635" y1="515" x2="680" y2="515" stroke="#f39c12" stroke-width="2" stroke-dasharray="5,3"/>
+        <text x="690" y="519" fill="#f5e6c8" font-size="11" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">ライバル</text>
+        <line x1="635" y1="540" x2="680" y2="540" stroke="#58d68d" stroke-width="2" stroke-dasharray="5,3"/>
+        <text x="690" y="544" fill="#f5e6c8" font-size="11" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">同盟関係</text>
+        <line x1="635" y1="565" x2="680" y2="565" stroke="#777" stroke-width="2" stroke-dasharray="3,3"/>
+        <text x="690" y="569" fill="#f5e6c8" font-size="11" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">†故人との縁</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ===== 年表 ===== -->
+<section id="timeline">
+  <div class="section-label">TIMELINE</div>
+  <h2 class="section-title">年表</h2>
+  <p class="section-desc">史実の出来事と作品の展開を時系列で整理。</p>
+
+  <div class="timeline-wrap fade-in">
+    <div class="timeline-item history">
+      <div class="timeline-card">
+        <div class="timeline-year">前403年 <span class="timeline-tag tag-history">史実</span></div>
+        <div class="timeline-content">晋が韓・魏・趙に分裂。これが戦国時代の実質的な幕開け。周王朝の権威が形骸化する。</div>
+      </div>
+    </div>
+    <div class="timeline-item right history">
+      <div class="timeline-card">
+        <div class="timeline-year">前338年 <span class="timeline-tag tag-history">史実</span></div>
+        <div class="timeline-content">商鞅の改革による秦国の富国強兵が完成。農業・軍事の二重政策で秦が急速に台頭。</div>
+      </div>
+    </div>
+    <div class="timeline-item history">
+      <div class="timeline-card">
+        <div class="timeline-year">前260年 <span class="timeline-tag tag-history">史実</span></div>
+        <div class="timeline-content">長平の戦い。秦が趙の45万の兵を生き埋めにした史上最大規模の戦争。趙の国力が激減。</div>
+      </div>
+    </div>
+    <div class="timeline-item right history">
+      <div class="timeline-card">
+        <div class="timeline-year">前247年 <span class="timeline-tag tag-history">史実</span></div>
+        <div class="timeline-content">嬴政（13歳）が秦王に即位。作品内では信との出会いの時期に重なる。</div>
+      </div>
+    </div>
+    <div class="timeline-item history">
+      <div class="timeline-card">
+        <div class="timeline-year">前241年 <span class="timeline-tag tag-history">史実</span></div>
+        <div class="timeline-content">韓・趙・魏・楚・燕が合従軍を結成し秦を攻める（第4次合従）。函谷関で撃退される。</div>
+      </div>
+    </div>
+    <div class="timeline-item right history">
+      <div class="timeline-card">
+        <div class="timeline-year">前230年 <span class="timeline-tag tag-history">史実</span></div>
+        <div class="timeline-content">秦が韓を滅ぼす。七雄の中で最初に消滅した国。これが中華統一の第一歩。</div>
+      </div>
+    </div>
+    <div class="timeline-item history">
+      <div class="timeline-card">
+        <div class="timeline-year">前221年 <span class="timeline-tag tag-history">史実</span></div>
+        <div class="timeline-content">秦が斉を滅ぼし、中華統一完成。嬴政が「始皇帝」を称号とする。郡県制・度量衡統一などの改革を断行。</div>
+      </div>
+    </div>
+    <div class="timeline-item right manga">
+      <div class="timeline-card">
+        <div class="timeline-year">2006年 <span class="timeline-tag tag-manga">漫画</span></div>
+        <div class="timeline-content">週刊ヤングジャンプにて『キングダム』連載開始（2006年9月）。原泰久デビュー作品。</div>
+      </div>
+    </div>
+    <div class="timeline-item anime">
+      <div class="timeline-card">
+        <div class="timeline-year">2012〜14年 <span class="timeline-tag tag-anime">アニメ</span></div>
+        <div class="timeline-content">第1・2シリーズ放送。第1シリーズは2012年6月〜2013年2月。アニメ独特のCGスタイルが話題に。</div>
+      </div>
+    </div>
+    <div class="timeline-item right manga">
+      <div class="timeline-card">
+        <div class="timeline-year">2013年 <span class="timeline-tag tag-manga">漫画</span></div>
+        <div class="timeline-content">第17回手塚治虫文化賞マンガ大賞を受賞。歴史漫画として最高の評価を獲得。</div>
+      </div>
+    </div>
+    <div class="timeline-item movie">
+      <div class="timeline-card">
+        <div class="timeline-year">2019年 <span class="timeline-tag tag-movie">映画</span></div>
+        <div class="timeline-content">実写映画第1弾公開（主演：山﨑賢人）。大ヒットとなり実写映画シリーズがスタート。</div>
+      </div>
+    </div>
+    <div class="timeline-item right anime">
+      <div class="timeline-card">
+        <div class="timeline-year">2021〜24年 <span class="timeline-tag tag-anime">アニメ</span></div>
+        <div class="timeline-content">第3・4・5シリーズ放送。フルアニメーションで描かれクオリティが大幅向上。</div>
+      </div>
+    </div>
+    <div class="timeline-item manga">
+      <div class="timeline-card">
+        <div class="timeline-year">2023年 <span class="timeline-tag tag-manga">漫画</span></div>
+        <div class="timeline-content">累計発行部数1億部突破（70巻発売時点）。集英社青年誌初の快挙。</div>
+      </div>
+    </div>
+    <div class="timeline-item right movie">
+      <div class="timeline-card">
+        <div class="timeline-year">2024年 <span class="timeline-tag tag-movie">映画</span></div>
+        <div class="timeline-content">実写映画第4弾『キングダム 大将軍の帰還』公開。興行収入80億円の大ヒット。</div>
+      </div>
+    </div>
+    <div class="timeline-item anime">
+      <div class="timeline-card">
+        <div class="timeline-year">2025年 <span class="timeline-tag tag-anime">アニメ</span></div>
+        <div class="timeline-content">第6シリーズ放送（NHK総合 2025年10月〜12月）。合従軍編に突入。累計1.2億部突破。</div>
+      </div>
+    </div>
+    <div class="timeline-item right movie">
+      <div class="timeline-card">
+        <div class="timeline-year">2026年 <span class="timeline-tag tag-movie">映画</span></div>
+        <div class="timeline-content">実写映画第5弾『キングダム 魂の決戦』公開予定（2026年7月17日）。合従軍編を映画化。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ===== 主要な戦い ===== -->
+<section id="battles">
+  <div class="section-label">BATTLES</div>
+  <h2 class="section-title">主要な戦い</h2>
+  <p class="section-desc">キングダムを彩る、歴史に残る名戦いを振り返る。</p>
+
+  <div class="battles-grid">
+    <div class="battle-card fade-in">
+      <div class="battle-name">⚔ 咸陽奪還の戦い</div>
+      <div class="battle-detail">紀元前247年頃 / 秦 vs 成蜣・竭氏の反乱軍</div>
+      <p class="battle-desc">異母弟・成蜣と丞相・竭氏に玉座を追われた嬴政が、山の民・楊端和との同盟を結んで咸陽奪還に挑む。信が初めて本格的な戦場を経験した戦い。嬴政の「王の道」が示された歴史的一戦。</p>
+    </div>
+    <div class="battle-card fade-in">
+      <div class="battle-name">🔥 馬陽の戦い</div>
+      <div class="battle-detail">紀元前244年頃 / 秦 vs 趙</div>
+      <p class="battle-desc">秦の六大将軍・王騎が最高司令官として指揮した秦趙決戦。趙の猛将・龐煖との一騎打ちで王騎が致命傷を負い命を落とす。信が王騎から大将軍の槍と夢を継承した感動の一幕。</p>
+    </div>
+    <div class="battle-card fade-in">
+      <div class="battle-name">🌊 合従軍の戦い</div>
+      <div class="battle-detail">紀元前241年頃 / 秦 vs 六国連合軍</div>
+      <p class="battle-desc">李牧の策謀により韓・魏・趙・楚・燕・斉が合従軍を編成し秦へ総攻撃。函谷関が陥落の危機に。信・嬴政・河了貂らの奮戦により奇跡の反撃が生まれた、物語最大の見せ場の一つ。</p>
+    </div>
+    <div class="battle-card fade-in">
+      <div class="battle-name">⚡ 蛇甘平原の戦い</div>
+      <div class="battle-detail">秦 vs 魏</div>
+      <p class="battle-desc">信が「百将」として初めて指揮を執った重要な戦い。魏の将・凱孟との一騎打ちを制した信が、初の武功を立てた戦場。飛信隊結成前の信の成長を描く重要なエピソード。</p>
+    </div>
+    <div class="battle-card fade-in">
+      <div class="battle-name">🏔 函谷関の戦い</div>
+      <div class="battle-detail">秦 vs 合従軍（函谷関防衛戦）</div>
+      <p class="battle-desc">天険・函谷関で繰り広げられた秦の存亡をかけた籠城戦。壁将軍率いる守備軍と合従軍の激突。関の内側で嬴政自ら民に語りかけ士気を高める、嬴政の人間としての魅力が光る場面。</p>
+    </div>
+    <div class="battle-card fade-in">
+      <div class="battle-name">💫 鄴攻略戦</div>
+      <div class="battle-detail">秦 vs 趙（鄴の地）</div>
+      <p class="battle-desc">桓騎が非情な戦略で趙の鄴を落とした戦い。桓騎の本質と戦の残酷さが描かれた問題作。信が桓騎の戦法に疑問を抱きながらも共に戦う複雑な内面が描かれた名エピソード。</p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ===== 地理・国家 ===== -->
+<section id="geography">
+  <div class="section-label">GEOGRAPHY</div>
+  <h2 class="section-title">地理・戦国七雄</h2>
+  <p class="section-desc">キングダムの舞台となる古代中国の七つの国（戦国七雄）を徹底解説。</p>
+
+  <!-- 地図 -->
+  <div class="map-svg-container fade-in">
+    <svg viewBox="0 0 700 420" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="drop">
+          <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.5)"/>
+        </filter>
+      </defs>
+      <!-- 背景 -->
+      <rect width="700" height="420" fill="#0a1a08" rx="4"/>
+      <!-- 中原の地 -->
+      <ellipse cx="350" cy="210" rx="280" ry="170" fill="rgba(74,124,89,0.1)" stroke="rgba(74,124,89,0.2)" stroke-width="1"/>
+
+      <!-- 秦（西） -->
+      <ellipse cx="120" cy="200" rx="90" ry="110" fill="rgba(139,26,26,0.35)" stroke="#C0392B" stroke-width="2" filter="url(#drop)"/>
+      <text x="120" y="190" fill="#D4AF37" font-size="22" text-anchor="middle" font-weight="bold" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">秦</text>
+      <text x="120" y="210" fill="#c9a96e" font-size="11" text-anchor="middle" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">都：咸陽</text>
+      <text x="120" y="225" fill="#D4AF37" font-size="11" text-anchor="middle" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">★最強</text>
+
+      <!-- 魏（中） -->
+      <ellipse cx="320" cy="210" rx="60" ry="70" fill="rgba(52,152,219,0.25)" stroke="#3498db" stroke-width="1.5"/>
+      <text x="320" y="204" fill="#5dade2" font-size="18" text-anchor="middle" font-weight="bold" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">魏</text>
+      <text x="320" y="222" fill="#c9a96e" font-size="10" text-anchor="middle" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">大梁</text>
+
+      <!-- 韓（魏南） -->
+      <ellipse cx="310" cy="300" rx="50" ry="55" fill="rgba(200,100,50,0.2)" stroke="#d4855c" stroke-width="1.5"/>
+      <text x="310" y="295" fill="#d4855c" font-size="18" text-anchor="middle" font-weight="bold" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">韓</text>
+      <text x="310" y="313" fill="#c9a96e" font-size="10" text-anchor="middle" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">新鄭</text>
+      <text x="310" y="326" fill="#d4855c" font-size="10" text-anchor="middle" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">最初に滅亡</text>
+
+      <!-- 趙（北） -->
+      <ellipse cx="380" cy="120" rx="80" ry="80" fill="rgba(46,94,142,0.3)" stroke="#2e5e8e" stroke-width="2"/>
+      <text x="380" y="114" fill="#5dade2" font-size="20" text-anchor="middle" font-weight="bold" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">趙</text>
+      <text x="380" y="132" fill="#c9a96e" font-size="10" text-anchor="middle" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">邯鄲</text>
+
+      <!-- 楚（南） -->
+      <ellipse cx="420" cy="340" rx="140" ry="60" fill="rgba(100,60,10,0.3)" stroke="#8B6914" stroke-width="2"/>
+      <text x="420" y="338" fill="#D4AF37" font-size="22" text-anchor="middle" font-weight="bold" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">楚</text>
+      <text x="420" y="356" fill="#c9a96e" font-size="10" text-anchor="middle" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">寿春 / 領土最大</text>
+
+      <!-- 燕（北東） -->
+      <ellipse cx="560" cy="100" rx="70" ry="65" fill="rgba(100,50,150,0.2)" stroke="#8e44ad" stroke-width="1.5"/>
+      <text x="560" y="95" fill="#a569bd" font-size="18" text-anchor="middle" font-weight="bold" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">燕</text>
+      <text x="560" y="113" fill="#c9a96e" font-size="10" text-anchor="middle" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">薊</text>
+
+      <!-- 斉（東） -->
+      <ellipse cx="580" cy="220" rx="85" ry="90" fill="rgba(46,160,67,0.2)" stroke="#27ae60" stroke-width="1.5"/>
+      <text x="580" y="214" fill="#58d68d" font-size="20" text-anchor="middle" font-weight="bold" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">斉</text>
+      <text x="580" y="232" fill="#c9a96e" font-size="10" text-anchor="middle" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">臨淄</text>
+
+      <!-- 函谷関 -->
+      <circle cx="215" cy="200" r="8" fill="#D4AF37" opacity="0.8"/>
+      <text x="215" y="185" fill="#D4AF37" font-size="10" text-anchor="middle" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">函谷関</text>
+
+      <!-- 凡例 -->
+      <rect x="10" y="360" width="680" height="50" fill="rgba(0,0,0,0.4)" rx="3"/>
+      <text x="350" y="392" fill="#c9a96e" font-size="11" text-anchor="middle" font-family="Hiragino Kaku Gothic Pro,Meiryo,sans-serif">★ 戦国七雄の大まかな位置関係（イメージ図）。実際の地形とは異なります。</text>
+    </svg>
+  </div>
+
+  <div class="countries-grid">
+    <div class="country-card fade-in">
+      <span class="country-flag">🔴</span>
+      <div class="country-name">秦</div>
+      <div class="country-read">しん / Qin</div>
+      <div class="country-power">
+        <span class="power-label">国力</span>
+        <div class="power-bar"><div class="power-fill" style="width:100%;background:linear-gradient(90deg,#8B1A1A,#D4AF37);"></div></div>
+      </div>
+      <p class="country-desc">物語の主人公・信と秦王・嬴政の国。西方に位置し、商鞅の改革により急速に国力を高めた。都は咸陽。農業・軍事の徹底的な整備で最強国へと成長し、最終的に中華を統一する。</p>
+      <div class="country-capital">都：咸陽（かんよう）</div>
+    </div>
+    <div class="country-card fade-in">
+      <span class="country-flag">🔵</span>
+      <div class="country-name">趙</div>
+      <div class="country-read">ちょう / Zhao</div>
+      <div class="country-power">
+        <span class="power-label">国力</span>
+        <div class="power-bar"><div class="power-fill" style="width:80%;background:linear-gradient(90deg,#2e5e8e,#5dade2);"></div></div>
+      </div>
+      <p class="country-desc">秦の最大のライバル国。北方の強国で、異民族の騎馬戦術を導入し軍事力を強化。李牧という天才軍師・武将を擁し秦を苦しめ続ける。都は邯鄲。</p>
+      <div class="country-capital">都：邯鄲（かんたん）</div>
+    </div>
+    <div class="country-card fade-in">
+      <span class="country-flag">🟤</span>
+      <div class="country-name">楚</div>
+      <div class="country-read">そ / Chu</div>
+      <div class="country-power">
+        <span class="power-label">国力</span>
+        <div class="power-bar"><div class="power-fill" style="width:85%;background:linear-gradient(90deg,#8B6914,#D4AF37);"></div></div>
+      </div>
+      <p class="country-desc">七雄中で最も広大な領土を誇る南方の大国。兵力は七雄最多。独自の文化を持ち、中原の国々とは異なる独特の存在感を放つ。都を何度も移している。</p>
+      <div class="country-capital">都：寿春（じゅしゅん）</div>
+    </div>
+    <div class="country-card fade-in">
+      <span class="country-flag">🔷</span>
+      <div class="country-name">魏</div>
+      <div class="country-read">ぎ / Wei</div>
+      <div class="country-power">
+        <span class="power-label">国力</span>
+        <div class="power-bar"><div class="power-fill" style="width:60%;background:linear-gradient(90deg,#1a4a8a,#3498db);"></div></div>
+      </div>
+      <p class="country-desc">戦国時代初期は最強国だったが、秦の圧力に押されて衰退。しかし経済・文化の先進国として影響力は絶大。中原の中心に位置するため、周囲の国々との外交が生死を分ける。</p>
+      <div class="country-capital">都：大梁（たいりょう）</div>
+    </div>
+    <div class="country-card fade-in">
+      <span class="country-flag">🟢</span>
+      <div class="country-name">斉</div>
+      <div class="country-read">せい / Qi</div>
+      <div class="country-power">
+        <span class="power-label">国力</span>
+        <div class="power-bar"><div class="power-fill" style="width:75%;background:linear-gradient(90deg,#145a32,#27ae60);"></div></div>
+      </div>
+      <p class="country-desc">東方の大国。鉄と塩の豊富な資源を持ち、中華最大の商業国家として繁栄。文化的にも先進的で、稷下の学が栄えた。秦と並ぶ強国として最後まで抵抗した。</p>
+      <div class="country-capital">都：臨淄（りんし）</div>
+    </div>
+    <div class="country-card fade-in">
+      <span class="country-flag">🟣</span>
+      <div class="country-name">燕</div>
+      <div class="country-read">えん / Yan</div>
+      <div class="country-power">
+        <span class="power-label">国力</span>
+        <div class="power-bar"><div class="power-fill" style="width:40%;background:linear-gradient(90deg,#4a1070,#8e44ad);"></div></div>
+      </div>
+      <p class="country-desc">北東部の国で、七雄の中では比較的国力が弱い。内乱後に斉に領土を大きく奪われた。荊軻による秦王暗殺計画（史実）で有名。山岳地帯に守られた独自の地政学的立場を持つ。</p>
+      <div class="country-capital">都：薊（けい）</div>
+    </div>
+    <div class="country-card fade-in">
+      <span class="country-flag">🟠</span>
+      <div class="country-name">韓</div>
+      <div class="country-read">かん / Han</div>
+      <div class="country-power">
+        <span class="power-label">国力</span>
+        <div class="power-bar"><div class="power-fill" style="width:20%;background:linear-gradient(90deg,#6e2800,#d4855c);"></div></div>
+      </div>
+      <p class="country-desc">七雄中で最も国力が弱い最弱国。領土が狭く資源も乏しい。中原の中に挟まれた地政学的不利もある。前230年に七雄中で最初に秦に滅ぼされた。弩（ど）の技術は七雄随一。</p>
+      <div class="country-capital">都：新鄭（しんてい）</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ===== 用語集 ===== -->
+<section id="glossary">
+  <div class="section-label">GLOSSARY</div>
+  <h2 class="section-title">用語集</h2>
+  <p class="section-desc">キングダムを読むうえで知っておきたい重要用語を解説。検索や絞り込みで調べよう。</p>
+
+  <div class="glossary-search">
+    <input type="text" id="glossarySearch" placeholder="用語を検索..." oninput="filterGlossary()">
+    <div class="glossary-filters">
+      <button class="filter-btn active" onclick="setFilter('all', this)">すべて</button>
+      <button class="filter-btn" onclick="setFilter('system', this)">制度・政治</button>
+      <button class="filter-btn" onclick="setFilter('battle', this)">戦術・戦略</button>
+      <button class="filter-btn" onclick="setFilter('rank', this)">階級・位</button>
+      <button class="filter-btn" onclick="setFilter('place', this)">地名・場所</button>
+      <button class="filter-btn" onclick="setFilter('other', this)">その他</button>
+    </div>
+  </div>
+
+  <div class="glossary-grid" id="glossaryGrid">
+    <div class="glossary-item" data-category="rank">
+      <div class="glossary-term">大将軍</div>
+      <div class="glossary-read">たいしょうぐん</div>
+      <span class="glossary-tag gtag-rank">階級</span>
+      <p class="glossary-def">軍の最高指揮官の称号。秦では「六大将軍」制度があり、国の頂点に立つ武将に与えられた。信の究極の目標がこの地位。</p>
+    </div>
+    <div class="glossary-item" data-category="rank">
+      <div class="glossary-term">六大将軍</div>
+      <div class="glossary-read">ろくだいしょうぐん</div>
+      <span class="glossary-tag gtag-rank">階級</span>
+      <p class="glossary-def">秦に存在した最強の六人の大将軍たちの総称。王騎、摎、白起らが名を連ねる。かつての六大将軍はすでに多くが故人となっている。</p>
+    </div>
+    <div class="glossary-item" data-category="rank">
+      <div class="glossary-term">三大天</div>
+      <div class="glossary-read">さんだいてん</div>
+      <span class="glossary-tag gtag-rank">階級</span>
+      <p class="glossary-def">趙国最強の三将軍のこと。廉頗・藺相如・趙奢に始まり、物語内では李牧・龐煖などがこの称号を持つ。秦の六大将軍に相当する地位。</p>
+    </div>
+    <div class="glossary-item" data-category="rank">
+      <div class="glossary-term">千人将</div>
+      <div class="glossary-read">せんにんしょう</div>
+      <span class="glossary-tag gtag-rank">階級</span>
+      <p class="glossary-def">千人の兵を指揮する将。百将の上位にあたる位。信が成長の過程で達した重要な階級。この位から「将軍」と呼ばれる資格が生まれる。</p>
+    </div>
+    <div class="glossary-item" data-category="battle">
+      <div class="glossary-term">合従連衡</div>
+      <div class="glossary-read">がっしょうれんこう</div>
+      <span class="glossary-tag gtag-battle">戦略</span>
+      <p class="glossary-def">戦国時代の外交戦略。合従は複数国が連合して強国（主に秦）に対抗する策。連衡は秦と個別に同盟を結ぶ策。李牧が合従軍を率いて秦を攻めた。</p>
+    </div>
+    <div class="glossary-item" data-category="battle">
+      <div class="glossary-term">奇策</div>
+      <div class="glossary-read">きさく</div>
+      <span class="glossary-tag gtag-battle">戦術</span>
+      <p class="glossary-def">常識を超えた奇抜な戦術のこと。桓騎が得意とする型破りな戦い方もこれに属する。正攻法（正策）と組み合わせることで効果を発揮する。</p>
+    </div>
+    <div class="glossary-item" data-category="battle">
+      <div class="glossary-term">包囲殲滅</div>
+      <div class="glossary-read">ほういせんめつ</div>
+      <span class="glossary-tag gtag-battle">戦術</span>
+      <p class="glossary-def">敵軍を四方から囲んで全滅させる戦術。長平の戦いで秦が趙に使用した戦術としても有名。キングダムでは李牧や王翦がよく用いる高度な策。</p>
+    </div>
+    <div class="glossary-item" data-category="system">
+      <div class="glossary-term">郡県制</div>
+      <div class="glossary-read">ぐんけんせい</div>
+      <span class="glossary-tag gtag-system">制度</span>
+      <p class="glossary-def">秦が中華統一後に整備した行政制度。全土を郡と県に分割し中央から官吏を派遣して統治する。封建制に代わる画期的なシステムで、後世の中国に大きな影響を与えた。</p>
+    </div>
+    <div class="glossary-item" data-category="system">
+      <div class="glossary-term">商鞅の変法</div>
+      <div class="glossary-read">しょうおうのへんぽう</div>
+      <span class="glossary-tag gtag-system">制度</span>
+      <p class="glossary-def">前4世紀に秦の宰相・商鞅が行った大規模改革。農業生産と軍事力を一体化させ、功績に応じた階級制度（二十等爵制）を整備。この改革が秦強大化の礎となった。</p>
+    </div>
+    <div class="glossary-item" data-category="system">
+      <div class="glossary-term">丞相</div>
+      <div class="glossary-read">じょうしょう</div>
+      <span class="glossary-tag gtag-system">制度</span>
+      <p class="glossary-def">秦における最高官職。王の次に高い地位にある文官のトップ。物語序盤に竭氏が丞相として登場し反乱に加担する。後に昌平君などが就任する。</p>
+    </div>
+    <div class="glossary-item" data-category="place">
+      <div class="glossary-term">咸陽</div>
+      <div class="glossary-read">かんよう</div>
+      <span class="glossary-tag gtag-place">地名</span>
+      <p class="glossary-def">秦国の都（みやこ）。渭河の北岸に位置し、秦の政治・軍事の中枢。中華統一後は始皇帝が阿房宮を建設した場所でもある。物語の最重要拠点。</p>
+    </div>
+    <div class="glossary-item" data-category="place">
+      <div class="glossary-term">函谷関</div>
+      <div class="glossary-read">かんこくかん</div>
+      <span class="glossary-tag gtag-place">地名</span>
+      <p class="glossary-def">秦国東部の天険（難攻不落の要衝）。黄河と山々に挟まれた狭い回廊に位置し、東方からの敵軍の侵入を防ぐ秦最重要の防衛拠点。合従軍に一度陥落の危機を迎えた。</p>
+    </div>
+    <div class="glossary-item" data-category="place">
+      <div class="glossary-term">邯鄲</div>
+      <div class="glossary-read">かんたん</div>
+      <span class="glossary-tag gtag-place">地名</span>
+      <p class="glossary-def">趙国の都。秦と趙の争いの最終目標地でもある。「邯鄲の夢」という成語でも有名。趙の政治・軍事の中心地で、李牧が守護する堅城。</p>
+    </div>
+    <div class="glossary-item" data-category="other">
+      <div class="glossary-term">中華統一</div>
+      <div class="glossary-read">ちゅうかとういつ</div>
+      <span class="glossary-tag gtag-other">テーマ</span>
+      <p class="glossary-def">キングダムの核心テーマ。七つに分かれた国を一つにまとめること。嬴政が掲げる前人未到の夢であり、信はその夢の中の「天下の大将軍」を目指して戦い続ける。</p>
+    </div>
+    <div class="glossary-item" data-category="other">
+      <div class="glossary-term">飛信隊</div>
+      <div class="glossary-read">ひしんたい</div>
+      <span class="glossary-tag gtag-other">組織</span>
+      <p class="glossary-def">信が率いる部隊の名称。「飛ぶ信」の飛信隊。軍師・河了貂を擁し、個性豊かな隊員たちが集まる。独自の戦術と結束力で強大な敵軍を次々と打ち破る信の象徴的な集団。</p>
+    </div>
+    <div class="glossary-item" data-category="battle">
+      <div class="glossary-term">一騎打ち</div>
+      <div class="glossary-read">いっきうち</div>
+      <span class="glossary-tag gtag-battle">戦術</span>
+      <p class="glossary-def">大将同士が1対1で戦う決闘。キングダムでは一騎打ちが戦の流れを左右する重要な場面として描かれる。王騎vs龐煖、信vs各将など名勝負が多い。</p>
+    </div>
+    <div class="glossary-item" data-category="other">
+      <div class="glossary-term">王の道</div>
+      <div class="glossary-read">おうのみち</div>
+      <span class="glossary-tag gtag-other">理念</span>
+      <p class="glossary-def">嬴政が信念として持つ政治哲学。単なる武力による支配ではなく、人々の心をつかんで国をまとめあげる統治の在り方。楊端和や他国の王を説得する際にも語られた核心的概念。</p>
+    </div>
+    <div class="glossary-item" data-category="system">
+      <div class="glossary-term">始皇帝</div>
+      <div class="glossary-read">しこうてい</div>
+      <span class="glossary-tag gtag-system">称号</span>
+      <p class="glossary-def">秦の嬴政が中華統一後に自ら名乗った称号。「始」は「最初の」「皇帝」は三皇五帝に由来する最高位の称号。以降の中国皇帝制度の原点となった歴史的な称号。</p>
+    </div>
+    <div class="glossary-item" data-category="battle">
+      <div class="glossary-term">遊軍</div>
+      <div class="glossary-read">ゆうぐん</div>
+      <span class="glossary-tag gtag-battle">戦術</span>
+      <p class="glossary-def">本隊から独立して自由に動く機動部隊のこと。飛信隊はしばしばこの役割を担い、決定的な局面での突破口を開く遊軍として活躍することが多い。</p>
+    </div>
+    <div class="glossary-item" data-category="other">
+      <div class="glossary-term">戦国四名将</div>
+      <div class="glossary-read">せんごくしめいしょう</div>
+      <span class="glossary-tag gtag-other">称号</span>
+      <p class="glossary-def">史実における戦国時代最強の四武将。秦の白起・王翦、趙の廉頗・李牧の四名。キングダムでは王翦と李牧がそれぞれ秦と趙の最強武将として登場する。</p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ===== 人気ランキング ===== -->
+<section id="ranking">
+  <div class="section-label">RANKING</div>
+  <h2 class="section-title">人気キャラランキング</h2>
+  <p class="section-desc">読者・ファンの間で特に人気の高いキャラクターを独自集計でランキング。</p>
+
+  <div class="ranking-list">
+    <div class="ranking-item fade-in">
+      <div class="rank-num rank-1">1</div>
+      <div class="rank-emoji">⚔</div>
+      <div class="rank-info">
+        <div class="rank-name">信</div>
+        <div class="rank-desc">主人公。その成長と熱さに心打たれるファン続出。「天下の大将軍」への道が止まらない。</div>
+      </div>
+      <div class="rank-bar-wrap">
+        <span class="rank-score">人気No.1</span>
+        <div class="rank-bar"><div class="rank-bar-fill" style="width:100%"></div></div>
+      </div>
+    </div>
+    <div class="ranking-item fade-in">
+      <div class="rank-num rank-2">2</div>
+      <div class="rank-emoji">🦁</div>
+      <div class="rank-info">
+        <div class="rank-name">王騎</div>
+        <div class="rank-desc">圧倒的な存在感と死の美学。「んー？」の独特な口調も大人気。実写でも映画界隈を席巻。</div>
+      </div>
+      <div class="rank-bar-wrap">
+        <span class="rank-score">殿堂入り</span>
+        <div class="rank-bar"><div class="rank-bar-fill" style="width:92%"></div></div>
+      </div>
+    </div>
+    <div class="ranking-item fade-in">
+      <div class="rank-num rank-3">3</div>
+      <div class="rank-emoji">🌙</div>
+      <div class="rank-info">
+        <div class="rank-name">李牧</div>
+        <div class="rank-desc">最強の敵役。その知略と人柄から、敵ながらファンが続出する人気キャラ。</div>
+      </div>
+      <div class="rank-bar-wrap">
+        <span class="rank-score">敵役1位</span>
+        <div class="rank-bar"><div class="rank-bar-fill" style="width:85%"></div></div>
+      </div>
+    </div>
+    <div class="ranking-item fade-in">
+      <div class="rank-num rank-other">4</div>
+      <div class="rank-emoji">👑</div>
+      <div class="rank-info">
+        <div class="rank-name">嬴政</div>
+        <div class="rank-desc">カリスマ的な王者の風格と、信への友情が見せるギャップが魅力。実写の吉沢亮も話題。</div>
+      </div>
+      <div class="rank-bar-wrap">
+        <span class="rank-score">主役級</span>
+        <div class="rank-bar"><div class="rank-bar-fill" style="width:80%"></div></div>
+      </div>
+    </div>
+    <div class="ranking-item fade-in">
+      <div class="rank-num rank-other">5</div>
+      <div class="rank-emoji">💀</div>
+      <div class="rank-info">
+        <div class="rank-name">桓騎</div>
+        <div class="rank-desc">謎多き型破りな戦略家。その圧倒的な強さと哲学的な言動にファンが急増中。</div>
+      </div>
+      <div class="rank-bar-wrap">
+        <span class="rank-score">急上昇</span>
+        <div class="rank-bar"><div class="rank-bar-fill" style="width:72%"></div></div>
+      </div>
+    </div>
+    <div class="ranking-item fade-in">
+      <div class="rank-num rank-other">6</div>
+      <div class="rank-emoji">📜</div>
+      <div class="rank-info">
+        <div class="rank-name">河了貂</div>
+        <div class="rank-desc">飛信隊の頭脳。成長する姿と信への感情が描かれ、女性ファンを中心に大人気。</div>
+      </div>
+      <div class="rank-bar-wrap">
+        <span class="rank-score">人気急上昇</span>
+        <div class="rank-bar"><div class="rank-bar-fill" style="width:65%"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== フッター ===== -->
+<footer>
+  <div class="footer-logo">⚔ キングダム 完全解説ガイド</div>
+  <p class="footer-text">
+    本ページは『キングダム』（原泰久 著 / 集英社）のファン向け解説ページです。<br>
+    すべての著作権は原泰久氏および集英社に帰属します。<br>
+    ©原泰久／集英社<br><br>
+    週刊ヤングジャンプ連載中 · 2006年〜 · 累計1.2億部突破
+  </p>
+</footer>
+
+<script>
+  // ===== パーティクル生成 =====
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 50; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.cssText = `
+      left: ${Math.random() * 100}%;
+      width: ${1 + Math.random() * 3}px;
+      height: ${1 + Math.random() * 3}px;
+      animation-duration: ${5 + Math.random() * 15}s;
+      animation-delay: ${Math.random() * 10}s;
+    `;
+    container.appendChild(p);
+  }
+
+  // ===== Intersection Observer でフェードイン =====
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade-in, .slide-left').forEach(el => observer.observe(el));
+
+  // ===== 用語集 フィルター =====
+  let currentFilter = 'all';
+
+  function setFilter(cat, btn) {
+    currentFilter = cat;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filterGlossary();
+  }
+
+  function filterGlossary() {
+    const q = document.getElementById('glossarySearch').value.toLowerCase();
+    document.querySelectorAll('.glossary-item').forEach(item => {
+      const cat = item.dataset.category;
+      const text = item.textContent.toLowerCase();
+      const catMatch = currentFilter === 'all' || cat === currentFilter;
+      const textMatch = q === '' || text.includes(q);
+      item.classList.toggle('hidden', !(catMatch && textMatch));
+    });
+  }
+
+  // ===== ナビリンク スムーズスクロール =====
+  document.querySelectorAll('a[href^="#"]').forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(link.getAttribute('href'));
+      if (target) {
+        const offset = 60;
+        const top = target.getBoundingClientRect().top + window.scrollY - offset;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }
+    });
+  });
+
+  // ===== パワーバーアニメーション =====
+  const barObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const fills = entry.target.querySelectorAll('.power-fill');
+        fills.forEach(f => {
+          const w = f.style.width;
+          f.style.width = '0%';
+          setTimeout(() => { f.style.width = w; }, 100);
+        });
+      }
+    });
+  }, { threshold: 0.3 });
+
+  document.querySelectorAll('.country-card').forEach(card => barObserver.observe(card));
+</script>
+</body>
+</html>
