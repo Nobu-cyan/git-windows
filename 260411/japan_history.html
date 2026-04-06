@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>日本史 大探求</title>
+<style>
+:root{
+  --bg:#06080d;--card:rgba(255,255,255,.055);--border:rgba(201,162,39,.26);
+  --gold:#c9a227;--gold2:#ffd700;--crimson:#8b1a1a;
+  --cream:#f0e8d8;--muted:rgba(240,232,216,.48);
+  --shadow:0 8px 32px rgba(0,0,0,.7);--r:16px;
+  --era-c:var(--gold);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;touch-action:manipulation}
+body{font-family:-apple-system,'Hiragino Mincho ProN','Yu Mincho',serif;background:var(--bg);color:var(--cream);user-select:none}
+button{cursor:pointer;font-family:inherit;border:none;outline:none;color:inherit}
+button:active{filter:brightness(.8)}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at 15% 40%,rgba(201,162,39,.04) 0%,transparent 55%),
+             radial-gradient(ellipse at 85% 65%,rgba(139,26,26,.05) 0%,transparent 50%)}
+.screen{display:none;position:fixed;inset:0;flex-direction:column;overflow:hidden;z-index:1}
+.screen.active{display:flex}
+.s-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0}
+.s-body::-webkit-scrollbar{display:none}
+
+/* ═══ ホーム ═══ */
+#screen-home{background:linear-gradient(175deg,#06080d 0%,#0b1020 100%)}
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:11px 15px 8px;flex-shrink:0;
+  border-bottom:1px solid var(--border);
+  background:rgba(6,8,13,.93);backdrop-filter:blur(12px);
+}
+.player-wrap{display:flex;align-items:center;gap:10px}
+.avatar{
+  width:46px;height:46px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,#c9a227,#8b1a1a);
+  display:flex;align-items:center;justify-content:center;font-size:1.3rem;
+  border:2px solid var(--gold);box-shadow:0 0 16px rgba(201,162,39,.4);
+}
+.player-lvl{font-size:.7rem;color:var(--gold);font-weight:800;letter-spacing:.05em;margin-bottom:3px}
+.xp-row{display:flex;align-items:center;gap:6px}
+.xp-bg{width:90px;height:5px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:3px;transition:width .6s ease}
+.xp-label{font-size:.62rem;color:var(--muted)}
+.streak{
+  display:flex;align-items:center;gap:4px;
+  background:rgba(255,140,0,.11);border:1px solid rgba(255,140,0,.28);
+  padding:6px 10px;border-radius:20px;font-size:.78rem;color:#ff9944;font-weight:800;
+}
+.home-hero{padding:22px 16px 14px;text-align:center;flex-shrink:0;position:relative}
+.home-hero::after{
+  content:'';position:absolute;bottom:0;left:16%;right:16%;
+  height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+.home-ttl{
+  font-size:clamp(1.9rem,8vw,3rem);font-weight:900;letter-spacing:.12em;
+  color:var(--gold);text-shadow:0 0 24px rgba(201,162,39,.45),0 2px 8px rgba(0,0,0,.7);
+}
+.home-sub{font-size:.8rem;color:var(--muted);margin-top:5px;letter-spacing:.1em}
+.home-collect{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  margin:10px 16px 0;background:rgba(255,255,255,.04);border:1px solid var(--border);
+  border-radius:30px;padding:7px 16px;font-size:.75rem;color:var(--muted);
+}
+.collect-n{font-size:1rem;font-weight:900;color:var(--gold)}
+.era-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px 14px 24px}
+.era-card{
+  border-radius:var(--r);padding:18px 14px 14px;
+  display:flex;flex-direction:column;align-items:flex-start;gap:4px;
+  position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.1);
+  transition:transform .2s,box-shadow .2s;text-align:left;
+}
+.era-card:active{transform:scale(.95)!important}
+.era-card::before{content:'';position:absolute;inset:0;background:linear-gradient(160deg,rgba(255,255,255,.1) 0%,transparent 55%)}
+.era-card::after{content:attr(data-bg);position:absolute;right:-6px;bottom:-10px;font-size:4rem;opacity:.15;line-height:1}
+.ec-icon{font-size:1.9rem;line-height:1;position:relative;z-index:1}
+.ec-years{font-size:.62rem;color:rgba(255,255,255,.42);letter-spacing:.04em;position:relative;z-index:1}
+.ec-title{font-size:1.05rem;font-weight:900;color:#fff;letter-spacing:.04em;position:relative;z-index:1}
+.ec-sub{font-size:.68rem;opacity:.62;position:relative;z-index:1}
+.ec-stars{font-size:.7rem;letter-spacing:2px;margin-top:4px;position:relative;z-index:1;min-height:14px}
+.ec-diff{position:absolute;top:8px;right:9px;z-index:2;font-size:.6rem;color:rgba(255,255,255,.5);font-weight:700}
+
+/* ═══ 難易度モーダル ═══ */
+.diff-modal{
+  position:fixed;inset:0;z-index:200;display:none;
+  align-items:flex-end;justify-content:center;
+  background:rgba(0,0,0,.7);backdrop-filter:blur(4px);
+}
+.diff-modal.open{display:flex}
+.diff-sheet{
+  width:100%;max-width:480px;background:#0e1220;
+  border-radius:24px 24px 0 0;border-top:1px solid var(--border);
+  padding:20px 16px 32px;
+}
+.diff-title{text-align:center;font-size:1rem;font-weight:900;color:var(--gold);letter-spacing:.06em;margin-bottom:4px}
+.diff-subtitle{text-align:center;font-size:.76rem;color:var(--muted);margin-bottom:16px}
+.diff-options{display:flex;flex-direction:column;gap:10px}
+.diff-btn{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 16px;border-radius:14px;border:1px solid var(--border);
+  background:rgba(255,255,255,.05);transition:all .15s;text-align:left;
+}
+.diff-btn:active{transform:scale(.97)}
+.diff-stars{font-size:1.1rem;min-width:56px}
+.diff-info{flex:1}
+.diff-lbl{font-size:.95rem;font-weight:800;color:var(--cream)}
+.diff-desc{font-size:.72rem;color:var(--muted);margin-top:2px}
+.diff-xp{font-size:.8rem;font-weight:800;color:var(--gold);min-width:60px;text-align:right}
+.diff-cancel{width:100%;margin-top:10px;padding:12px;border-radius:12px;background:transparent;
+  color:var(--muted);font-size:.85rem;font-weight:700}
+
+/* ═══ 時代詳細 ═══ */
+#screen-era{background:var(--bg)}
+.era-hdr{
+  flex-shrink:0;padding:11px 15px 10px;
+  border-bottom:1px solid var(--border);
+  background:rgba(6,8,13,.95);backdrop-filter:blur(10px);
+}
+.era-hdr-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.back-btn{
+  width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.07);
+  display:flex;align-items:center;justify-content:center;font-size:1rem;
+  border:1px solid var(--border);flex-shrink:0;transition:background .15s;
+}
+.back-btn:active{background:rgba(255,255,255,.14)}
+.era-hdr-title{font-size:1.4rem;font-weight:900;color:var(--era-c);letter-spacing:.06em}
+.era-hdr-period{font-size:.73rem;color:var(--muted);margin-top:2px}
+.era-atm{
+  font-size:.79rem;line-height:1.75;color:rgba(240,232,216,.75);
+  padding:8px 12px;background:rgba(255,255,255,.04);
+  border-radius:10px;border-left:3px solid var(--era-c);
+}
+.tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;background:rgba(6,8,13,.96)}
+.tab-btn{
+  flex:1;padding:11px 4px;font-size:.8rem;font-weight:700;
+  color:var(--muted);letter-spacing:.04em;background:transparent;
+  border-bottom:2px solid transparent;transition:all .2s;
+}
+.tab-btn.on{color:var(--era-c);border-bottom-color:var(--era-c)}
+.tab-pane{display:none;padding:14px}
+.tab-pane.on{display:block}
+
+/* 年表 */
+.tl-item{display:flex;gap:10px;margin-bottom:14px;position:relative}
+.tl-item:not(:last-child)::before{content:'';position:absolute;left:47px;top:20px;bottom:-14px;width:1px;background:linear-gradient(180deg,var(--border),transparent)}
+.tl-year{min-width:44px;font-size:.7rem;font-weight:800;color:var(--era-c);text-align:right;padding-top:2px}
+.tl-dot{width:16px;height:16px;border-radius:50%;flex-shrink:0;border:2px solid var(--era-c);background:var(--bg);margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:.5rem}
+.tl-box{flex:1}
+.tl-t{font-size:.88rem;font-weight:800;color:var(--cream);margin-bottom:2px}
+.tl-d{font-size:.74rem;color:var(--muted);line-height:1.55}
+
+/* 人物カード */
+.fig-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.fig-card{border-radius:14px;overflow:hidden;border:1px solid var(--border);cursor:pointer;transition:transform .18s;background:var(--card)}
+.fig-card:active{transform:scale(.94)}
+.fig-port{height:145px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.fig-port::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.08) 3px,rgba(0,0,0,.08) 4px);z-index:2}
+.fig-port-inner{position:relative;z-index:1;text-align:center}
+.fig-main-e{font-size:3.2rem;line-height:1;filter:drop-shadow(0 3px 10px rgba(0,0,0,.6))}
+.fig-sub-e{font-size:1rem;letter-spacing:4px;margin-top:3px;opacity:.9}
+.fig-mon{position:absolute;bottom:7px;right:8px;z-index:3;width:27px;height:27px;border-radius:50%;background:rgba(0,0,0,.6);border:1px solid var(--era-c);display:flex;align-items:center;justify-content:center;font-size:.78rem;color:var(--era-c);font-weight:900}
+.fig-rar{position:absolute;top:6px;left:7px;z-index:3;font-size:.55rem;color:var(--gold2);letter-spacing:1px}
+.fig-info{padding:8px 10px 10px}
+.fig-name{font-size:.9rem;font-weight:900;color:var(--cream)}
+.fig-ttl{font-size:.67rem;color:var(--era-c);margin-top:2px;line-height:1.3}
+
+/* クイズタブ */
+.quiz-tab-wrap{padding:4px 0}
+.best-box{background:rgba(201,162,39,.07);border:1px solid rgba(201,162,39,.18);border-radius:12px;padding:14px;margin-bottom:14px;text-align:center}
+.best-label{font-size:.75rem;color:var(--muted);margin-bottom:6px}
+.best-scores{display:flex;justify-content:center;gap:16px;margin-bottom:4px}
+.best-col{text-align:center}
+.best-diff-lbl{font-size:.65rem;color:var(--muted)}
+.best-val{font-size:1.2rem;font-weight:900;color:var(--gold)}
+.quiz-start-btn{
+  display:block;width:100%;padding:18px;border-radius:14px;
+  font-size:1.05rem;font-weight:900;letter-spacing:.05em;color:#fff;
+  box-shadow:var(--shadow);transition:transform .15s;text-align:center;
+}
+.quiz-start-btn:active{transform:scale(.97)}
+.quiz-tab-note{margin-top:12px;font-size:.74rem;color:var(--muted);text-align:center;line-height:1.75}
+
+/* ═══ 人物詳細 ═══ */
+#screen-fig{background:var(--bg)}
+.fig-dp{height:200px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;flex-shrink:0}
+.fig-dp::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.07) 3px,rgba(0,0,0,.07) 4px);z-index:2}
+.fig-dp::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,var(--bg) 100%);z-index:3}
+.fig-dp-inner{position:relative;z-index:1;text-align:center}
+.fig-dp-main{font-size:5.5rem;line-height:1;filter:drop-shadow(0 4px 14px rgba(0,0,0,.65))}
+.fig-dp-sub{font-size:1.6rem;letter-spacing:8px;margin-top:4px;opacity:.9}
+.fig-body{padding:0 15px 28px;margin-top:-24px;position:relative;z-index:4}
+.fig-nm{font-size:1.75rem;font-weight:900;color:var(--era-c);letter-spacing:.07em}
+.fig-rdg{font-size:.73rem;color:var(--muted);margin-top:2px;letter-spacing:.06em}
+.fig-badge-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:8px 0 4px}
+.fig-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(201,162,39,.1);border:1px solid rgba(201,162,39,.25);
+  padding:3px 10px;border-radius:20px;font-size:.72rem;color:var(--era-c);
+}
+.fig-yrs{font-size:.75rem;color:var(--muted);margin-bottom:11px}
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:10px 0}
+.section-ttl{font-size:.72rem;color:var(--era-c);font-weight:800;margin-bottom:7px;letter-spacing:.06em}
+.fig-bio{font-size:.83rem;line-height:1.8;color:rgba(240,232,216,.82);padding:10px 12px;background:rgba(255,255,255,.04);border-radius:10px;border-left:3px solid var(--era-c);margin-bottom:12px}
+.fig-episode{font-size:.8rem;line-height:1.8;color:rgba(240,232,216,.78);padding:10px 12px;background:rgba(201,162,39,.06);border-radius:10px;border:1px solid rgba(201,162,39,.14);margin-bottom:12px;font-style:italic}
+.stat-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.stat-lbl{width:36px;font-size:.68rem;color:var(--muted)}
+.stat-bg{flex:1;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden}
+.stat-bar{height:100%;border-radius:3px;transition:width 1s ease}
+.stat-v{width:26px;font-size:.68rem;color:var(--cream);text-align:right;font-weight:700}
+.ach-item{display:flex;align-items:flex-start;gap:7px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.77rem;line-height:1.55;color:rgba(240,232,216,.76)}
+.ach-item::before{content:'▸';color:var(--era-c);flex-shrink:0;margin-top:1px}
+.fig-legacy{font-size:.8rem;line-height:1.75;color:rgba(240,232,216,.72);padding:10px 12px;background:rgba(100,100,200,.06);border-radius:10px;border:1px solid rgba(100,100,200,.14);margin-bottom:12px}
+.fig-conn{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.conn-tag{padding:4px 10px;border-radius:20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);font-size:.72rem;color:var(--muted)}
+.fig-quote{background:rgba(201,162,39,.06);border:1px solid rgba(201,162,39,.14);border-radius:12px;padding:14px 16px;font-size:.82rem;line-height:1.75;color:rgba(240,232,216,.7);font-style:italic;text-align:center;position:relative}
+.fig-quote::before{content:'❝';position:absolute;top:-2px;left:8px;font-size:1.5rem;color:var(--gold);opacity:.38;line-height:1}
+.fig-quote-ctx{font-size:.68rem;color:var(--muted);margin-top:6px;font-style:normal}
+.locked-block{
+  padding:14px;border-radius:10px;border:1px dashed rgba(201,162,39,.25);
+  background:rgba(201,162,39,.04);text-align:center;margin-bottom:12px;
+}
+.locked-icon{font-size:1.5rem;margin-bottom:4px}
+.locked-txt{font-size:.78rem;color:var(--muted)}
+.locked-lv{font-size:.82rem;color:var(--gold);font-weight:800;margin-top:2px}
+.lv-bar-wrap{height:4px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;margin-top:8px}
+.lv-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:3px}
+
+/* ═══ クイズ ═══ */
+#screen-quiz{background:var(--bg)}
+.quiz-topbar{display:flex;align-items:center;gap:10px;padding:10px 13px;flex-shrink:0;border-bottom:1px solid var(--border)}
+.quiz-topbar .back-btn{width:40px;height:40px;font-size:.95rem}
+.qz-info{flex:1}
+.qz-era-lbl{font-size:.82rem;color:var(--era-c);font-weight:700}
+.qz-diff-lbl{font-size:.68rem;color:var(--muted);margin-top:1px}
+.qz-xp-badge{font-size:.72rem;background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.2);padding:4px 9px;border-radius:12px;color:var(--gold);font-weight:800;white-space:nowrap}
+.prog-bar-bg{width:100%;height:4px;background:rgba(255,255,255,.07);flex-shrink:0}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--era-c),var(--gold2));transition:width .4s ease}
+.quiz-body{flex:1;display:flex;flex-direction:column;padding:16px 15px 12px;gap:12px;min-height:0;overflow:hidden}
+.q-num-row{display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.q-num{font-size:.77rem;color:var(--muted);letter-spacing:.05em}
+.q-combo{font-size:.75rem;font-weight:800;color:#ff9944;display:none}
+.q-combo.show{display:block}
+.q-text{font-size:clamp(.92rem,4vw,1.22rem);font-weight:800;color:var(--cream);line-height:1.52;background:rgba(255,255,255,.04);border-radius:12px;padding:13px;border-left:3px solid var(--era-c);flex-shrink:0}
+.q-hint{font-size:.75rem;color:var(--muted);text-align:center;flex-shrink:0}
+.choices-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;flex-shrink:0}
+.choice-btn{padding:14px 10px;border-radius:12px;font-size:.87rem;font-weight:800;line-height:1.4;text-align:center;background:rgba(255,255,255,.07);border:1px solid var(--border);color:var(--cream);transition:all .15s}
+.choice-btn:active:not(:disabled){transform:scale(.95)}
+.choice-btn.correct{background:rgba(107,203,119,.2)!important;border-color:#6bcb77!important;color:#6bcb77!important}
+.choice-btn.wrong{background:rgba(255,107,107,.18)!important;border-color:#ff6b6b!important;color:#ff6b6b!important}
+.choice-btn:disabled{cursor:default}
+
+/* 解説パネル */
+.exp-panel{
+  position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:0 auto;
+  background:#0e1220;border-top:1px solid var(--border);
+  border-radius:20px 20px 0 0;padding:16px 16px 24px;
+  transform:translateY(100%);transition:transform .35s cubic-bezier(.34,1.2,.64,1);
+  z-index:50;max-height:55%;overflow-y:auto;
+}
+.exp-panel.show{transform:translateY(0)}
+.exp-result-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.exp-mark{font-size:1.5rem;font-weight:900}
+.exp-correct-ans{font-size:.8rem;font-weight:800;color:var(--cream)}
+.exp-text{font-size:.8rem;line-height:1.78;color:rgba(240,232,216,.78);margin-bottom:12px}
+.exp-next-btn{
+  width:100%;padding:14px;border-radius:12px;font-size:.9rem;font-weight:800;
+  color:#fff;background:linear-gradient(135deg,var(--gold),#a07010);
+  box-shadow:var(--shadow);
+}
+
+/* ═══ 結果 ═══ */
+#screen-result{background:var(--bg);align-items:center;justify-content:center}
+.result-wrap{padding:28px 20px;text-align:center;width:100%;max-width:420px}
+.res-era{font-size:.78rem;color:var(--muted);margin-bottom:6px;letter-spacing:.05em}
+.res-title{font-size:1.9rem;font-weight:900;color:var(--era-c)}
+.res-score{font-size:clamp(3.5rem,13vw,5rem);font-weight:900;color:var(--cream);margin:10px 0 4px}
+.res-score span{font-size:1.4rem;color:var(--muted)}
+.res-stars{font-size:2.2rem;letter-spacing:8px;margin:6px 0}
+.res-xp{display:inline-flex;align-items:center;gap:5px;background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.25);padding:7px 18px;border-radius:20px;margin:8px 0;font-size:.9rem;color:var(--gold);font-weight:800}
+.res-msg{font-size:.84rem;color:var(--muted);line-height:1.65;margin:8px 0 20px}
+.res-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.res-btn{padding:13px 22px;border-radius:30px;font-size:.92rem;font-weight:800;color:#fff;box-shadow:var(--shadow);transition:transform .15s}
+.res-btn:active{transform:scale(.95)}
+.achievement-popup{
+  position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-80px);
+  background:rgba(201,162,39,.95);color:#120d00;
+  padding:10px 20px;border-radius:30px;font-size:.83rem;font-weight:800;
+  transition:transform .3s ease;z-index:300;white-space:nowrap;box-shadow:var(--shadow);
+  display:flex;align-items:center;gap:6px;
+}
+.achievement-popup.show{transform:translateX(-50%) translateY(0)}
+.confetti-wrap{position:fixed;inset:0;pointer-events:none;z-index:100;overflow:hidden}
+.cp{position:absolute;border-radius:2px;animation:cFall linear forwards}
+@keyframes cFall{from{transform:translateY(-20px) rotate(0deg);opacity:1}to{transform:translateY(110vh) rotate(540deg);opacity:0}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.fadeUp{animation:fadeUp .32s ease both}
+@keyframes qIn{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
+.qIn{animation:qIn .28s cubic-bezier(.34,1.4,.64,1) both}
+
+/* レスポンシブ */
+@media(max-width:380px){.era-grid{grid-template-columns:1fr}.home-ttl{font-size:1.8rem}}
+@media(min-width:600px){.era-grid{grid-template-columns:repeat(3,1fr)}.fig-grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:900px){
+  body{display:flex;align-items:center;justify-content:center}
+  .screen,.diff-sheet,.exp-panel{max-width:480px}
+  .screen{position:relative;width:100%;height:100dvh;max-height:900px;border-radius:28px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.85)}
+  .diff-sheet{border-radius:24px;margin-bottom:0}
+  .diff-modal{border-radius:28px;overflow:hidden}
+  .confetti-wrap,.achievement-popup{border-radius:28px}
+  .exp-panel{border-radius:20px 20px 0 0;left:50%;transform:translateX(-50%) translateY(100%)}
+  .exp-panel.show{transform:translateX(-50%) translateY(0)}
+}
+@media(max-height:640px){
+  .fig-dp{height:150px}.fig-dp-main{font-size:3.5rem}.home-hero{padding:12px 16px 10px}
+}
+</style>
+</head>
+<body>
+
+<!-- ホーム -->
+<div id="screen-home" class="screen active">
+  <div class="topbar">
+    <div class="player-wrap">
+      <div class="avatar">⚔️</div>
+      <div>
+        <div class="player-lvl" id="lvl-txt">Lv.1 史学生</div>
+        <div class="xp-row">
+          <div class="xp-bg"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+          <div class="xp-label" id="xp-label">0/200XP</div>
+        </div>
+      </div>
+    </div>
+    <div class="streak">🔥 <span id="streak-num">0</span> 日</div>
+  </div>
+  <div class="s-body">
+    <div class="home-hero">
+      <div class="home-ttl">日本史 大探求</div>
+      <div class="home-sub">歴史の英雄たちと出会い、時代の真実を学ぼう</div>
+    </div>
+    <div class="home-collect">
+      人物図鑑 <span class="collect-n" id="collect-n">0</span> / 20 コンプリート
+    </div>
+    <div class="era-grid" id="era-grid"></div>
+  </div>
+</div>
+
+<!-- 時代詳細 -->
+<div id="screen-era" class="screen">
+  <div class="era-hdr">
+    <div class="era-hdr-row">
+      <button class="back-btn" onclick="goHome()">◀</button>
+      <div>
+        <div class="era-hdr-title" id="era-ttl"></div>
+        <div class="era-hdr-period" id="era-period"></div>
+      </div>
+    </div>
+    <div class="era-atm" id="era-atm"></div>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn on" onclick="switchTab('nen')">📜 年表</button>
+    <button class="tab-btn" onclick="switchTab('jin')">⚔️ 人物</button>
+    <button class="tab-btn" onclick="switchTab('qz')">🎯 クイズ</button>
+  </div>
+  <div class="s-body">
+    <div class="tab-pane on" id="tab-nen"></div>
+    <div class="tab-pane" id="tab-jin"></div>
+    <div class="tab-pane" id="tab-qz"></div>
+  </div>
+</div>
+
+<!-- 人物詳細 -->
+<div id="screen-fig" class="screen">
+  <div style="flex-shrink:0;padding:10px 14px 8px;border-bottom:1px solid var(--border);background:rgba(6,8,13,.95)">
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="back-btn" onclick="backToEra()">◀</button>
+      <div style="font-size:.78rem;color:var(--muted)">人物詳細</div>
+    </div>
+  </div>
+  <div class="s-body">
+    <div class="fig-dp" id="fig-dp"></div>
+    <div class="fig-body" id="fig-body"></div>
+  </div>
+</div>
+
+<!-- クイズ -->
+<div id="screen-quiz" class="screen">
+  <div class="quiz-topbar">
+    <button class="back-btn" onclick="backToEra()">◀</button>
+    <div class="qz-info">
+      <div class="qz-era-lbl" id="qz-era-lbl"></div>
+      <div class="qz-diff-lbl" id="qz-diff-lbl"></div>
+    </div>
+    <div class="qz-xp-badge" id="qz-xp-badge">+0 XP</div>
+  </div>
+  <div class="prog-bar-bg"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  <div class="quiz-body">
+    <div class="q-num-row">
+      <div class="q-num" id="q-num">第1問</div>
+      <div class="q-combo" id="q-combo">🔥 コンボ×1</div>
+    </div>
+    <div class="q-text" id="q-text"></div>
+    <div class="q-hint" id="q-hint"></div>
+    <div class="choices-grid" id="choices-grid"></div>
+  </div>
+</div>
+
+<!-- 結果 -->
+<div id="screen-result" class="screen">
+  <div class="result-wrap">
+    <div class="res-era" id="res-era"></div>
+    <div class="res-title" id="res-title">クイズ完了！</div>
+    <div class="res-score"><span id="res-correct">0</span><span id="res-total"> / 6</span></div>
+    <div class="res-stars" id="res-stars"></div>
+    <div class="res-xp">＋<span id="res-xp">0</span> XP 獲得！</div>
+    <div class="res-msg" id="res-msg"></div>
+    <div class="res-btns">
+      <button class="res-btn" style="background:#2d2d3a" onclick="replayQuiz()">もう一度</button>
+      <button class="res-btn" style="background:var(--crimson)" onclick="backToEra()">時代へ戻る</button>
+      <button class="res-btn" style="background:linear-gradient(135deg,var(--gold),#906010)" onclick="goHome()">ホームへ</button>
+    </div>
+  </div>
+</div>
+
+<!-- 難易度モーダル -->
+<div class="diff-modal" id="diff-modal" onclick="closeDiffModal(event)">
+  <div class="diff-sheet">
+    <div class="diff-title">🎯 難易度を選ぼう</div>
+    <div class="diff-subtitle">難しいほど多くのXPを獲得できる</div>
+    <div class="diff-options">
+      <button class="diff-btn" onclick="startQuiz('easy')">
+        <div class="diff-stars">⭐</div>
+        <div class="diff-info">
+          <div class="diff-lbl">初級　やさしい</div>
+          <div class="diff-desc">基本的な人物・出来事を確認。歴史入門に最適</div>
+        </div>
+        <div class="diff-xp">+10 XP/問</div>
+      </button>
+      <button class="diff-btn" onclick="startQuiz('normal')">
+        <div class="diff-stars">⭐⭐</div>
+        <div class="diff-info">
+          <div class="diff-lbl">中級　ふつう</div>
+          <div class="diff-desc">歴史の流れ・因果関係を問う。読み応えあり</div>
+        </div>
+        <div class="diff-xp">+20 XP/問</div>
+      </button>
+      <button class="diff-btn" onclick="startQuiz('hard')">
+        <div class="diff-stars">⭐⭐⭐</div>
+        <div class="diff-info">
+          <div class="diff-lbl">上級　むずかしい</div>
+          <div class="diff-desc">専門的な知識・細部まで問う難問揃い</div>
+        </div>
+        <div class="diff-xp">+35 XP/問</div>
+      </button>
+    </div>
+    <button class="diff-cancel" onclick="closeDiffModal()">キャンセル</button>
+  </div>
+</div>
+
+<!-- 解説パネル -->
+<div class="exp-panel" id="exp-panel">
+  <div class="exp-result-row">
+    <div class="exp-mark" id="exp-mark"></div>
+    <div class="exp-correct-ans" id="exp-correct-ans"></div>
+  </div>
+  <div class="exp-text" id="exp-text"></div>
+  <button class="exp-next-btn" onclick="nextQuestion()">次の問題へ ▶</button>
+</div>
+
+<div class="confetti-wrap" id="confetti-wrap"></div>
+<div class="achievement-popup" id="ach-popup">🏆 <span id="ach-txt"></span></div>
+
+<script>
+// ═══════════════════════════════════════
+//  データ
+// ═══════════════════════════════════════
+const ERAS = [
+{
+  id:'medieval',title:'中世',sub:'鎌倉・室町時代',years:'1185〜1467年',
+  atm:'武士が初めて日本を動かした282年間。源頼朝の鎌倉幕府成立から始まり、二度の元寇撃退、南北朝の動乱、そして室町幕府の成立へ。貴族文化から武士文化へ、日本社会の根幹が大きく塗り替えられた。',
+  grad:'linear-gradient(140deg,#2d1800,#5c3a10)',ec:'#c8a84b',icon:'🏯',bg:'🏯',
+  figures:[
+    {id:'yoritomo',name:'源 頼朝',rdg:'みなもと の よりとも',ttl:'鎌倉幕府 初代将軍',yrs:'1147〜1199年',
+     e1:'🦅',e2:'⚔️🌊',pbg:'linear-gradient(150deg,#180e00,#3d2200)',mon:'❧',rar:'★★★★★',
+     bio:'源平合戦を制し、1185年に全国に守護・地頭を置く権利を朝廷から認めさせた。1192年には征夷大将軍に就任し、鎌倉幕府を開いて日本初の本格的な武家政権を打ち立てた。政治家としての手腕は非常に高く、弟・義経を追い詰めるなど権力維持への執念も見せた。以後700年近く続く武士による統治の礎を築いた人物である。',
+     ep:'弟・義経が平家討滅の立役者でありながら、頼朝はその功を認めるどころか全国に追捕の命を下した。二人の確執は武力より政治を重んじた頼朝と、戦場の天才として生きた義経の、根本的な価値観の違いから生まれたものだった。',
+     lgc:'武家政権の原型を作り、公家政治から武家政治への転換点となった。守護・地頭制度は後の江戸幕府の藩制度の先駆けでもある。',
+     conn:['北条政子（妻）','源義経（弟・確執あり）','北条時政（義父・盟友）'],
+     ach:['1185年 壇ノ浦の戦いで平家を滅ぼす','1192年 征夷大将軍就任','守護・地頭制度の整備'],
+     quote:'弓矢取る身としては命を惜しむべからず',
+     qctx:'義経を討つ決意を示した言葉とも解釈される',
+     stats:{武力:75,知略:92,魅力:68,人望:80}},
+    {id:'masako',name:'北条 政子',rdg:'ほうじょう まさこ',ttl:'尼将軍・鎌倉幕府の守護者',yrs:'1157〜1225年',
+     e1:'🌸',e2:'👑📜',pbg:'linear-gradient(150deg,#1a0018,#3a0038)',mon:'✿',rar:'★★★★★',
+     bio:'源頼朝の妻として幕府の基盤固めを内側から支え、頼朝の死後は剃髪して「尼将軍」と呼ばれた。1221年の承久の乱では、後鳥羽上皇の幕府打倒軍に対し御家人たちを前に「頼朝公の御恩は山より高く海より深い」と感動的な演説を行い、武士たちの心を一つにまとめて幕府側の圧勝を導いた。北条氏による執権政治の礎を築いた実質的な権力者でもある。',
+     ep:'承久の乱の前夜、幕府の重臣たちが上皇方の大軍を前に迷いを見せていた。政子は自ら集会の場に出て「今こそ頼朝公のご恩に報いる時です」と訴えた。その言葉は武士たちの魂を揺さぶり、東国武士団は一致団結して上洛軍として出発した。',
+     lgc:'武家政権が朝廷の権威を凌駕する転換点を作った。以降、幕府は朝廷より強い実質的権力を持つようになる。',
+     conn:['源頼朝（夫）','北条義時（弟）','源実朝（次男）'],
+     ach:['1221年 承久の乱で御家人を鼓舞','北条執権政治の礎を築く','源実朝暗殺後の幕府安定に尽力'],
+     quote:'頼朝公の御恩は山より高く、海より深い。今こそその恩に報いよ',
+     qctx:'承久の乱前、御家人を前にした歴史的演説より',
+     stats:{武力:38,知略:90,魅力:95,人望:92}},
+    {id:'hojo-tokimune',name:'北条 時宗',rdg:'ほうじょう ときむね',ttl:'8代執権・元寇の撃退者',yrs:'1251〜1284年',
+     e1:'⛩️',e2:'🌊💨',pbg:'linear-gradient(150deg,#001420,#002d3d)',mon:'✧',rar:'★★★★',
+     bio:'鎌倉幕府8代執権として、史上空前の大帝国・元（モンゴル）の2度にわたる日本侵攻を撃退した英雄。わずか18歳で執権に就任し、元の使者を斬首するという強硬姿勢で対決姿勢を示した。文永の役（1274年）と弘安の役（1281年）を通じて、「神風」と呼ばれた暴風雨の力も借りながら日本の独立を守り切った。33歳の若さで没した。',
+     ep:'元のフビライ・ハンからの降伏勧告の使者を鎌倉に迎えた時宗は、家臣の反対を押し切って使者を斬首した。「頭を下げれば日本は元の属国になる」という信念のもと、若き執権は世界最強の軍事国家に真っ向から挑んだ。',
+     lgc:'元寇の撃退は「神国日本」という意識を強め、後の神道・武士道の精神的基盤となった。一方で御家人への論功行賞が困難となり、鎌倉幕府衰退の遠因にもなった。',
+     conn:['北条政子（曾祖母の影響受ける）','無学祖元（精神的師）'],
+     ach:['1274年 文永の役（元寇1度目）を撃退','1281年 弘安の役（元寇2度目）を撃退','円覚寺を建立し元寇の戦没者を弔う'],
+     quote:'坐断天下，放行鐵棒（座りて天下を断じ、鉄棒を放行す）',
+     qctx:'師・無学祖元から授かった言葉。断固たる決意を示す',
+     stats:{武力:82,知略:80,魅力:76,人望:85}},
+    {id:'ashikaga',name:'足利 尊氏',rdg:'あしかが たかうじ',ttl:'室町幕府 初代将軍',yrs:'1305〜1358年',
+     e1:'⚡',e2:'🗡️🌿',pbg:'linear-gradient(150deg,#001808,#003a20)',mon:'⚜️',rar:'★★★★',
+     bio:'後醍醐天皇の討幕運動に加担するも、建武の新政の論功行賞に不満を持ち反旗を翻した。1336年に光明天皇を擁立して室町幕府を開き初代将軍に就任。南北朝の動乱の中、弟・直義との「観応の擾乱」も経験するなど波乱の生涯を送った。武芸に秀で人望も厚かった一方、優柔不断な面もあったと伝わる。',
+     ep:'幕府に反旗を翻した直後、京都での戦いに敗れて九州まで落ち延びた尊氏。しかし九州の武士たちに「再起して天下を取れ」と支持され、たった数ヶ月で軍勢を立て直し、多々良浜の戦いで菊池武敏軍を破り、電光石火で京都を奪還した。その不屈の精神と武士への求心力が尊氏の真骨頂だった。',
+     lgc:'南北朝動乱を通じて武家政権の優位が確立した。室町幕府は地方の守護大名を通じた分権的な支配体制をとり、後の戦国時代の遠因となった。',
+     conn:['後醍醐天皇（主君→対立）','足利直義（弟・後に対立）','楠木正成（宿敵）'],
+     ach:['1336年 室町幕府を開く','1338年 征夷大将軍就任','南北朝動乱を主導し武家の時代を確立'],
+     quote:'世の中は　常にもがもな　渚こぐ　あまの小舟の　綱手かなしも',
+     qctx:'平穏な世を願った心情を詠んだ和歌。動乱の中での内面的な葛藤が垣間見える',
+     stats:{武力:88,知略:72,魅力:82,人望:86}},
+  ],
+  events:[
+    {y:1185,t:'壇ノ浦の戦い',d:'源義経率いる水軍が平家を滅ぼした。幼き安徳天皇も海に沈む。源平合戦に終止符が打たれた。',i:'⚔️'},
+    {y:1192,t:'鎌倉幕府成立',d:'源頼朝が征夷大将軍に就任。武士が日本の実質的支配者となる歴史的転換点。',i:'🏯'},
+    {y:1221,t:'承久の乱',d:'後鳥羽上皇が倒幕を企てるも、北条政子の演説で一致団結した幕府軍が圧勝。上皇は隠岐に流された。',i:'📜'},
+    {y:1274,t:'文永の役',d:'モンゴル・高麗連合軍約28000人が博多湾に上陸。集団戦法・火薬に苦しむも暴風雨で撃退。',i:'🌊'},
+    {y:1281,t:'弘安の役',d:'14万の大軍が再侵攻。2ヶ月の攻防の末、台風（神風）で元軍が壊滅。日本の独立が守られた。',i:'💨'},
+    {y:1333,t:'鎌倉幕府滅亡',d:'足利尊氏・新田義貞が倒幕に参加。後醍醐天皇が建武の新政を開始するも2年で崩壊。',i:'🔥'},
+    {y:1336,t:'室町幕府成立',d:'足利尊氏が京都に幕府を開く。後醍醐天皇は吉野に逃れ南北朝時代（56年間）が始まる。',i:'🌿'},
+    {y:1392,t:'南北朝の統一',d:'3代将軍・足利義満が南北朝を合一。幕府の権威が最高潮に達し、日明貿易も始まる。',i:'☀️'},
+  ],
+  quiz:{
+    easy:[
+      {q:'鎌倉幕府を開いたのは誰？',c:['源頼朝','平清盛','足利尊氏','源義経'],a:0,h:'武家政権の創始者',exp:'源頼朝（1147〜1199）は1192年に征夷大将軍となり鎌倉に幕府を開いた。それまで朝廷（天皇・貴族）が支配していた日本に、初めて武士による本格的な政権が誕生した歴史的瞬間だった。'},
+      {q:'「尼将軍」と呼ばれたのは？',c:['北条政子','日野富子','淀殿','細川ガラシャ'],a:0,h:'源頼朝の妻',exp:'北条政子は頼朝の死後に出家し「尼御台所」と呼ばれた。承久の乱では「頼朝公の御恩は山より高く海より深い」と演説し御家人を鼓舞。この功績から「尼将軍」の異名を持つ。'},
+      {q:'元寇のモンゴル軍を撃退した自然現象は？',c:['暴風雨（神風）','大地震','津波','噴火'],a:0,h:'「神風」とも呼ばれた',exp:'1274年と1281年の2度にわたる元軍の来襲の際、台風が元の艦隊を壊滅させた。この「神風」の奇跡が「日本は神に守られた国」という意識を強め、「神国」思想の原点となった。'},
+      {q:'室町幕府を開いたのは？',c:['足利尊氏','足利義満','北条時宗','後醍醐天皇'],a:0,h:'室町幕府初代将軍',exp:'足利尊氏（1305〜1358）は1336年に光明天皇を擁立して室町幕府を開き初代将軍に就任。南北朝動乱という不安定な時代に、60年以上続く室町幕府の礎を築いた。'},
+      {q:'元寇のとき鎌倉幕府の執権だったのは？',c:['北条時宗','北条義時','北条時政','北条高時'],a:0,h:'18歳で執権に就任',exp:'北条時宗（1251〜1284）は18歳の若さで8代執権に就任し、世界最強のモンゴル帝国の2度の侵攻を撃退した。元の使者を斬首するという強硬姿勢で日本の独立を守り、33歳の若さで没した。'},
+      {q:'鎌倉幕府が滅亡したのは何年？',c:['1333年','1221年','1281年','1336年'],a:0,h:'建武の新政が始まった年',exp:'後醍醐天皇の倒幕運動に足利尊氏・新田義貞が参加し、1333年に鎌倉幕府は滅亡。その後天皇親政「建武の新政」が始まるが、武士の不満から2年後に崩壊し室町幕府が開かれた。'},
+    ],
+    normal:[
+      {q:'承久の乱で幕府が勝てた最大の理由は？',c:['北条政子の演説で御家人が結束した','朝廷に武力がなかった','天候が幕府に味方した','元軍の援助があった'],a:0,h:'「尼将軍」の功績',exp:'後鳥羽上皇の倒幕宣言に武士たちが動揺する中、北条政子が「頼朝公の御恩に報いよ」と演説し御家人を一致団結させた。この心理戦こそが勝敗を分けた。幕府軍は圧倒的な兵力差で上皇方を打ち破った。'},
+      {q:'元寇が鎌倉幕府の衰退を招いた理由として最も適切なのは？',c:['御家人への十分な恩賞が与えられなかった','元軍により多くの武士が戦死した','元との貿易で経済が混乱した','天皇家との対立が深まった'],a:0,h:'戦いに勝っても…',exp:'元寇は「敵を撃退した」防衛戦であり、新たな土地を獲得したわけではない。そのため武士たちへの恩賞として与える土地がなく、御家人の生活は苦しくなる一方だった。この不満が幕府への求心力低下につながった。'},
+      {q:'南北朝時代が始まった直接のきっかけは？',c:['後醍醐天皇が吉野に逃れ別の朝廷を立てた','武田信玄が京都を制圧した','足利尊氏が二つの幕府を作った','源氏と平氏が分裂した'],a:0,h:'1336年の出来事',exp:'足利尊氏が光明天皇（北朝）を擁立したのに対し、後醍醐天皇は吉野（奈良県）に逃れて南朝を立てた。こうして天皇が二人存在する異例の事態が56年間続いた。1392年、3代将軍義満の下でようやく統一された。'},
+      {q:'守護と地頭制度の最大の意義は？',c:['武士が全国の土地と人を管理できるようになった','朝廷の貴族が富を独占した','商人の力が強まった','農民の生活が豊かになった'],a:0,h:'頼朝が整備した制度',exp:'源頼朝は全国の国々に守護（軍事・警察）と地頭（土地管理・徴税）を置く権利を朝廷から認めさせた。これにより武士が全国の統治に関与できるようになり、公家支配から武家支配への転換が制度的に確立された。'},
+      {q:'足利尊氏が一度九州まで落ち延びながら巻き返せた理由は？',c:['地方の武士たちの支持を得られたから','元軍が加勢したから','後醍醐天皇が和睦を申し出たから','足利一族の財力で傭兵を集めたから'],a:0,h:'武士からの人望',exp:'尊氏は九州へ逃れた際も地方武士に「天下を取り戻せる」と訴え、多々良浜の戦いで菊池武敏軍を大破。その後わずか数ヶ月で大軍を率いて再上洛した。この経験は尊氏の人望と武士たちの幕府再興への意志を示している。'},
+      {q:'鎌倉幕府の最高権力者「執権」を世襲したのはどの氏族？',c:['北条氏','源氏','平氏','藤原氏'],a:0,h:'政子の実家',exp:'源頼朝の外戚だった北条氏は、頼朝の死後に執権（将軍の補佐役）の職を世襲し実質的な最高権力者となった。将軍は飾りの存在となり、北条氏による寡頭政治が鎌倉時代を通じて続いた。'},
+    ],
+    hard:[
+      {q:'源頼朝が義経を追い詰めた政治的理由として最も適切なのは？',c:['義経が朝廷から独自に官位を受けたため幕府の秩序を乱した','義経が平家の遺臣を匿っていた','義経が独自に外交交渉を行った','義経が関東の御家人を直接支配しようとした'],a:0,h:'官位と主従関係',exp:'義経は朝廷から頼朝の許可なく「従五位下」の官位と検非違使の職を受けた。武家政権にとって朝廷との窓口は頼朝一人であるべきで、義経の行動は幕府秩序の根幹を揺るがすものだった。これが頼朝が義経を反逆者として追った最大の理由とされる。'},
+      {q:'北条氏が「執権」として権力を握れた制度的根拠は？',c:['侍所・政所・問注所の長官職を独占した','将軍を暗殺して実権を奪った','朝廷の権限委任を受けた','武力で他の御家人を屈服させた'],a:0,h:'幕府の三機関',exp:'北条氏は幕府の政務機関である政所・問注所の別当（長官）と侍所（軍事・警察）の長官を兼ねることで制度的に権力を集中させた。将軍は形式上の最高権力者だったが実権は執権が握り、特に承久の乱後は北条氏の権威が絶対的なものとなった。'},
+      {q:'元寇において元軍が苦戦した「てつはう」とは？',c:['火薬を使った爆弾兵器','日本刀より長い長刀','鎌倉武士の水軍','神社の神威'],a:0,h:'元軍の新兵器',exp:'「てつはう」は元軍が使用した陶製の爆弾で、内部に火薬・鉄片・石灰が詰まっていた。炸裂音と煙で馬が怯え武士を苦しめた。日本側はこの新型兵器に初め苦しんだが、竹崎季長らの奮戦と神風により撃退に成功した。'},
+      {q:'「観応の擾乱」（1350〜52年）で対立したのは？',c:['足利尊氏と弟・直義','南朝と北朝','鎌倉幕府と室町幕府','守護大名間の争い'],a:0,h:'室町幕府初期の内乱',exp:'足利尊氏と弟・直義の間で政策の主導権をめぐる内紛が発生した。直義派が南朝と手を結ぶなど複雑な展開を見せ、最終的に直義は尊氏に降伏後に死去（毒殺説あり）。この内乱により幕府の権威は大きく傷ついた。'},
+      {q:'南北朝統一（1392年）を実現した将軍は誰で、その条件は？',c:['足利義満・両朝交互に皇位継承する約束（実際は守られず）','足利義詮・南朝天皇の処刑','足利尊氏・南朝への土地割譲','足利義持・南朝廃止'],a:0,h:'3代将軍',exp:'足利義満は南朝の後亀山天皇に「両統迭立（南北両朝が交互に天皇位を継ぐ）」を約束して三種の神器を返還させた。しかし実際にはこの約束は守られず北朝が継続。南朝の末裔は後に「後南朝」として細々と抵抗を続けた。'},
+      {q:'元寇後に幕府が定めた「徳政令（永仁の徳政令・1297年）」の目的と結果は？',c:['困窮した御家人の借金を帳消しにしようとしたが金融が麻痺した','農民への土地分配を行い成功した','元軍への賠償金支払いに充てた','守護大名の力を弱めることに成功した'],a:0,h:'弘安の役の16年後',exp:'元寇後、恩賞を得られず困窮した御家人が土地を売ったり借金を重ねていた。幕府は御家人の借金を帳消しにする徳政令を出したが、今後は御家人への貸し付けを拒否する金融業者が続出し経済が混乱。かえって御家人の生活は悪化し幕府への不満が高まった。'},
+    ]
+  }
+},
+{
+  id:'sengoku',title:'戦国時代',sub:'天下統一への戦い',years:'1467〜1615年',
+  atm:'応仁の乱から大坂夏の陣まで約150年。「下克上」の時代、実力だけが支配の正当性となった。信長の革命、秀吉の太閤政治、家康の天下泰平。三英傑が織り成す壮大な歴史ドラマが今も私たちを魅了して止まない。',
+  grad:'linear-gradient(140deg,#1a0000,#480000)',ec:'#ff6b6b',icon:'⚔️',bg:'⚔️',
+  figures:[
+    {id:'nobunaga',name:'織田 信長',rdg:'おだ のぶなが',ttl:'天下布武・革命の英雄',yrs:'1534〜1582年',
+     e1:'🔥',e2:'⚔️🏯',pbg:'linear-gradient(150deg,#1a0000,#480000)',mon:'❋',rar:'★★★★★',
+     bio:'「天下布武」を掲げ、従来の常識を悉く打ち破った革命的武将。鉄砲の集団運用、楽市楽座による経済自由化、関所の廃止など次々と前代未聞の改革を断行した。桶狭間の奇跡的な勝利から始まり、室町幕府を滅ぼし、武田軍・浅井朝倉連合軍を破り、天下統一まであと一歩のところまで迫った。合理主義者であり、能楽・茶の湯・南蛮文化にも深い関心を持った多面的な人物。',
+     ep:'桶狭間の前夜、わずか2000の兵で25000の今川軍に挑もうとする信長に、家臣たちは「死にに行くようなもの」と諌めた。しかし信長は「人間五十年、化天のうちを比ぶれば夢幻の如くなり」と敦盛を舞い、夜明けとともに出陣。この一世一代の勝負が天下取りへの扉を開いた。',
+     lgc:'楽市楽座・関所撤廃・鉄砲活用など信長の政策は近代日本経済・軍事の先駆けとなった。彼が果たせなかった天下統一は秀吉・家康に引き継がれ江戸260年の平和につながった。',
+     conn:['豊臣秀吉（家臣・後継者）','明智光秀（家臣→敵）','徳川家康（同盟者）','武田信玄（宿敵）'],
+     ach:['1560年 桶狭間の戦いで今川義元を奇襲討取','1575年 長篠の戦いで鉄砲三段撃ちを披露','楽市楽座・関所廃止で経済を革命','1582年 本能寺の変で明智光秀に討たれる'],
+     quote:'是非に及ばず',
+     qctx:'本能寺を包囲した明智の軍勢に「謀反か」と問われた際の言葉。一切の迷いのない覚悟を示した',
+     stats:{武力:95,知略:92,魅力:88,人望:82}},
+    {id:'hideyoshi',name:'豊臣 秀吉',rdg:'とよとみ ひでよし',ttl:'太閤・日本史最大の出世頭',yrs:'1537〜1598年',
+     e1:'🌟',e2:'👑🏯',pbg:'linear-gradient(150deg,#1a1000,#4a2d00)',mon:'✤',rar:'★★★★★',
+     bio:'農民の子として生まれ、草鞋取りから関白太政大臣まで上り詰めた日本史上最大のサクセスストーリーの主人公。抜群の交渉力・人心掌握術・先見の明で信長に重用され、本能寺の変後はわずか11日で仇の明智光秀を山崎の戦いで討取。1590年に全国統一を達成した。太閤検地・刀狩りで近世社会の身分制度の基盤を作り、朝鮮出兵という歴史的汚点も残した。',
+     ep:'秀吉が信長に認められたのは「草鞋取り」の時代。信長の草鞋を懐で温めていたという逸話が有名だが、最も印象的なのは墨俣一夜城の築城だ。敵地に1晩で城を建てるという不可能に思えた任務を、事前に部材を準備するという発想の転換で見事にやり遂げ、信長に「この男は使える」と確信させた。',
+     lgc:'太閤検地により全国の土地が統一的に把握され、刀狩りで兵農分離が進んだ。この二大政策が江戸時代の安定した封建社会の土台となった。朝鮮出兵は失敗に終わったが、その影響は現代にまで及んでいる。',
+     conn:['織田信長（主君・恩人）','徳川家康（同僚→後継者）','明智光秀（敵）','石田三成（家臣・懐刀）'],
+     ach:['1582年 山崎の戦いで明智光秀を11日で討取','1590年 天下統一達成','太閤検地・刀狩りで近世社会の基盤を構築','関白・太政大臣に就任'],
+     quote:'人の下にも人はなし、人の上にも人はなし',
+     qctx:'身分に関わらず能力と努力で道は開けるという信念を示した言葉とされる',
+     stats:{武力:82,知略:97,魅力:99,人望:95}},
+    {id:'ieyasu',name:'徳川 家康',rdg:'とくがわ いえやす',ttl:'江戸幕府 初代将軍・天下人',yrs:'1543〜1616年',
+     e1:'🌿',e2:'🐢🏯',pbg:'linear-gradient(150deg,#001a0a,#003d20)',mon:'❧',rar:'★★★★★',
+     bio:'「鳴かぬなら鳴くまで待とうホトトギス」の忍耐の人。6歳から人質生活を余儀なくされ、長篠でも多大な犠牲を払いながら着実に力を蓄えた。関ヶ原の戦いに勝利し1603年に征夷大将軍となり江戸幕府を開設。1615年の大坂夏の陣で豊臣家を滅ぼし、以後265年続く「天下泰平」の礎を築いた。73歳という長命も手伝って最終的な天下を掌中にした。',
+     ep:'関ヶ原の戦いの直前、家康は前日の夜に一人で野宿をしたという。家臣が「なぜ陣屋に戻らないのか」と問うと「明日天下が決まる。今夜は大地に感謝して眠りたい」と答えたという。25万の大軍を擁して尚、地に足のついた姿勢を失わなかった家康らしい逸話だ。',
+     lgc:'260年以上続いた江戸時代は、家康の制度設計の賜物。参勤交代・武家諸法度・鎖国体制などにより国内の平和を維持した。現代の東京（江戸）の都市構造も家康の都市計画に基づいている。',
+     conn:['織田信長（同盟者）','豊臣秀吉（主従関係）','石田三成（宿敵）','本多正信（懐刀）'],
+     ach:['1600年 関ヶ原の戦いに勝利','1603年 江戸幕府を開く','1615年 大坂夏の陣で豊臣家を滅ぼす','武家諸法度・参勤交代制度を整備'],
+     quote:'人の一生は重荷を負うて遠き道を行くがごとし。急ぐべからず',
+     qctx:'家康の遺訓とされる言葉。忍耐と着実さを旨とした生涯哲学',
+     stats:{武力:88,知略:99,魅力:74,人望:80}},
+    {id:'shingen',name:'武田 信玄',rdg:'たけだ しんげん',ttl:'甲斐の虎・風林火山',yrs:'1521〜1573年',
+     e1:'⛰️',e2:'🌀⚡',pbg:'linear-gradient(150deg,#0d0018,#2a0050)',mon:'◆',rar:'★★★★★',
+     bio:'「風林火山（疾如風、徐如林、侵掠如火、不動如山）」を旗印に甲斐国を統治した名将中の名将。孫子の兵法を実践した戦略家であり、川中島では上杉謙信と5度激突した。信玄堤（治水工事）・棒道（軍用道路）・甲州法度（法律整備）など内政でも卓越した手腕を見せた。「人は城、人は石垣、人は堀」という言葉通り人材登用を重視した。晩年の西上作戦中に病死。',
+     ep:'信玄と謙信の川中島の戦い（第4次・1561年）で、謙信が単騎信玄の本陣に斬り込んだという有名な逸話がある。謙信の一刀を信玄は軍配で受け止めた。この二人の一騎打ちは史実かどうか不明だが、両雄の激突の象徴として今も語り継がれる。',
+     lgc:'信玄の死は天下統一の流れを大きく変えた。西上作戦が成功していれば信長を窮地に追い込めたという説もある。「人は城」という人材重視の哲学は現代のビジネスにも通じる経営理念として評価される。',
+     conn:['上杉謙信（宿敵・ライバル）','武田勝頼（後継者・嫡男）','山本勘助（軍師）'],
+     ach:['川中島の戦いで上杉謙信と5度激突','信玄堤による甲斐の治水','甲州法度による法治国家の建設','1572年 西上作戦で三方ヶ原の戦いに勝利'],
+     quote:'人は城、人は石垣、人は堀、情けは味方、仇は敵なり',
+     qctx:'城よりも人こそが最大の防衛力という統治哲学。信頼と仁義による人材結集を説いた',
+     stats:{武力:97,知略:93,魅力:88,人望:94}},
+  ],
+  events:[
+    {y:1467,t:'応仁の乱',d:'将軍家の後継者問題から始まった10年の大乱。京都が焦土と化し、守護大名たちが領国に帰って自立し戦国時代の幕が開いた。',i:'🔥'},
+    {y:1543,t:'種子島に鉄砲伝来',d:'ポルトガル人が種子島に漂着し火縄銃を伝えた。信長がこれを戦術に組み込み、騎馬中心の戦闘を根底から変えた。',i:'💥'},
+    {y:1560,t:'桶狭間の戦い',d:'信長がわずか2000の兵で今川義元率いる25000の大軍を奇襲。「弱者が強者を倒す」戦国最大の番狂わせ。',i:'⚡'},
+    {y:1573,t:'武田信玄の死',d:'西上作戦の途中、信玄が持病の悪化で病没（53歳）。「3年間は死を秘せよ」と遺言したという。信長はこれに歓喜したとも伝わる。',i:'⛰️'},
+    {y:1575,t:'長篠の戦い',d:'信長・家康連合が鉄砲三段撃ちで武田の騎馬軍団を壊滅。旧来の戦術が近代的な火力戦術に敗れた。',i:'💥'},
+    {y:1582,t:'本能寺の変',d:'明智光秀が「敵は本能寺にあり」と全軍を転進。信長は包囲されて炎上する本能寺の中で自刃した。',i:'🔥'},
+    {y:1600,t:'関ヶ原の戦い',d:'石田三成（西軍）対徳川家康（東軍）。わずか6時間で東軍が勝利し徳川時代の扉が開いた。',i:'⚔️'},
+    {y:1615,t:'大坂夏の陣',d:'豊臣秀頼が大坂城で自刃。戦国時代に終止符が打たれ265年の江戸時代が始まる。',i:'🏯'},
+  ],
+  quiz:{
+    easy:[
+      {q:'「天下布武」を掲げ全国統一を目指したのは？',c:['織田信長','豊臣秀吉','徳川家康','武田信玄'],a:0,h:'比叡山を焼き討ちにした',exp:'「天下布武」とは「武力で天下を統一する」という意味の信長の政治スローガン。この言葉を印章として使い、既存の権威（仏教・朝廷）を恐れず合理的に改革を進めた。'},
+      {q:'本能寺の変で信長を討ったのは？',c:['明智光秀','豊臣秀吉','徳川家康','柴田勝家'],a:0,h:'「敵は本能寺にあり」',exp:'1582年6月2日未明、家臣の明智光秀が約1万3千の兵を率いて本能寺を包囲。動機は諸説あり「怨恨説・野望説・朝廷黒幕説」などがあるが400年以上経った今もはっきりとはわからない。'},
+      {q:'農民から天下人になった人物は？',c:['豊臣秀吉','織田信長','徳川家康','明智光秀'],a:0,h:'「太閤」とも呼ばれた',exp:'秀吉は農民（木下弥右衛門の子）として生まれ、草鞋取りから信長に仕え、最終的に関白・太政大臣まで上り詰めた。日本史上最大の立身出世物語として今も語り継がれる。'},
+      {q:'「風林火山」の旗印の武将は？',c:['武田信玄','上杉謙信','毛利元就','島津義弘'],a:0,h:'甲斐の虎',exp:'「疾如風、徐如林、侵掠如火、不動如山（速さは風のごとく、静かさは林のごとく、攻めることは火のごとく、動かぬことは山のごとし）」は孫子の言葉で、信玄の軍旗に記された。'},
+      {q:'関ヶ原の戦いで勝利したのは？',c:['徳川家康（東軍）','石田三成（西軍）','豊臣秀頼','上杉景勝'],a:0,h:'1600年 東軍の大将',exp:'1600年9月15日、約17万対10万の大決戦。小早川秀秋の裏切りにより西軍が崩壊し、わずか6時間で東軍が勝利。この結果が江戸時代265年の幕を開けた。'},
+      {q:'江戸幕府を開いたのは何年？',c:['1603年','1600年','1615年','1590年'],a:0,h:'関ヶ原の戦いの3年後',exp:'徳川家康は関ヶ原に勝利した後、1603年に征夷大将軍となり江戸（現・東京）に幕府を開いた。「徳川の天下」が代々続くよう、わずか2年後には息子秀忠に将軍職を譲り渡した。'},
+    ],
+    normal:[
+      {q:'長篠の戦いで信長が用いた革新的な戦術は？',c:['鉄砲の三段撃ちによる連続射撃','騎兵による突撃','夜襲による奇襲作戦','水を引いた堀による包囲戦'],a:0,h:'鉄砲を活用した戦術',exp:'信長は鉄砲隊を3列に分け、1列が射撃中に他の列が装填するという三段撃ちを採用。当時最強と言われた武田の騎馬軍団が次々と倒され、旧来の騎馬中心の戦術が火力戦術に完全に敗れた転換点となった。'},
+      {q:'秀吉の「太閤検地」の最大の意義は？',c:['全国の土地を統一的に測量し石高制の基盤を作った','農民に土地を分配して独立させた','外国との貿易量を把握するためだった','戦争のための兵員数を調査した'],a:0,h:'農民・大名の土地をすべて把握',exp:'太閤検地では全国の田畑を直接測量し収穫量（石高）を統一規格で表した。これにより「大名の力＝石高」という近世的な身分秩序が確立。武士・農民・商人の身分が明確に分かれる近世封建社会の制度的基盤となった。'},
+      {q:'武田信玄が「人は城」と言った背景にある統治哲学は？',c:['城壁より人の忠誠心を防衛の要と考えた','城の建設費を家臣の俸禄に回した','城は弱点になると考えた','山岳地帯では城が無意味だったから'],a:0,h:'信玄の人材重視の姿勢',exp:'信玄は「固い城壁より、忠義で団結した家臣団の方が国を守る力になる」と考えていた。実際、信玄は人材育成・家臣への厚遇・甲州法度による公正な統治で家臣の忠誠を勝ち取った。この哲学は現代のリーダーシップ論にも通じる。'},
+      {q:'家康が豊臣家を完全に滅ぼしたのはなぜ大坂冬の陣でなく夏の陣が必要だったか？',c:['冬の陣の和睦条件を豊臣側が破ったため','冬の陣で攻め落とせなかったから','年齢的に急ぐ必要があったから','朝廷の許可が遅れたから'],a:0,h:'冬の陣の和睦後',exp:'大坂冬の陣（1614年）は和睦で終わったが、その条件として大坂城の外堀を埋めることになった。しかし秀頼方は内堀まで埋められて抗議。家康はこれを口実に翌年の夏の陣で豊臣家を完全に滅ぼした。'},
+      {q:'上杉謙信が「敵に塩を送った」逸話の背景は？',c:['今川氏に塩の流通を止められた武田に、義として塩を送った','武田との同盟の証として送った','塩の余剰分を処分するためだった','朝廷の命令で送らざるを得なかった'],a:0,h:'義を重んじた謙信らしい逸話',exp:'今川氏が武田領への塩の流通を止め、武田の民が苦しんだ際、謙信は「戦は武器でするものであって塩で苦しめるものではない」と言い、武田領に塩を送ったとされる。ただし史実としての確証は薄く、両者の関係を美化した後世の創作という説もある。'},
+      {q:'秀吉の朝鮮出兵（1592〜98年）の最大の影響は？',c:['朝鮮・明との国交断絶と日本の国力消耗','秀吉が朝鮮を支配下に置いた','明との貿易が拡大した','関ヶ原の戦いの直接原因となった'],a:0,h:'秀吉晩年の失策',exp:'文禄・慶長の役は2度とも失敗に終わり、多大な犠牲者と国力の消耗をもたらした。特に朝鮮との関係悪化は現代まで続く。また出兵に消極的だった徳川家康と積極推進した石田三成の確執が深まり、秀吉の死後の関ヶ原の遠因となった。'},
+    ],
+    hard:[
+      {q:'信長が比叡山延暦寺を焼き討ちにした政治的・戦略的理由は？',c:['浅井・朝倉の支援をしていた宗教勢力の武装解除と見せしめ効果','仏教を廃絶して神道国家を作ろうとした','延暦寺の僧兵が民衆を虐待していた','領地内に大きな利益をもたらす荘園があった'],a:0,h:'1571年の事件',exp:'延暦寺は信長と対立する浅井・朝倉氏に加担していた。信長は「宗教的権威だから不可侵」という従来の常識を覆し焼き討ちを断行。これにより「信長は神仏をも恐れない」という強烈な印象を全国に与え、他の宗教勢力（一向宗・本願寺など）への警告にもなった。'},
+      {q:'「本能寺の変」の動機として最も近年の有力な説は？',c:['信長が光秀を中国方面から毛利攻めに転用しようとして光秀の面子を潰したため','光秀が天下を取りたいという野望から','朝廷・公家衆との黒幕説','武田遺臣からの脅迫によるもの'],a:0,h:'明智光秀の感情的な側面',exp:'近年注目される「中国大返し説」。秀吉が苦戦する中国方面への転進命令が光秀に下り、せっかく整えた丹波・山陰の地盤を失う危機感と、信長から繰り返し受けた侮辱的な扱いへの怨念が重なって引き金を引いたという説。ただし歴史上最大の謎の一つであることに変わりはない。'},
+      {q:'武田信玄の西上作戦（1572〜73年）が天下統一に与えた可能性は？',c:['家康を三方ヶ原で破り信長包囲網が成立しかけたが信玄の病死で瓦解した','信玄が上洛できなかったので影響は小さかった','信長と信玄は密かに同盟していたので脅威ではなかった','秀吉が信玄を撃退した'],a:0,h:'信玄最大の賭け',exp:'信玄は浅井・朝倉・本願寺・足利義昭と連携した「信長包囲網」の中核として西上。三方ヶ原で家康を大敗させたが翌年病死。もし信玄が生きて上洛していれば信長は挟撃されていた可能性があり、歴史の最大のifの一つとされる。'},
+      {q:'関ヶ原の戦いで小早川秀秋の裏切りが決定的だったが、その直前家康が行った行動は？',c:['鉄砲で小早川陣地を威嚇射撃し催促した','直接使者を送り脅した','人質を確保した','秀忠軍の到着を待った'],a:0,h:'「問鉄砲」と呼ばれる',exp:'東軍優勢が続く中、松尾山に布陣した小早川秀秋が動かないことに業を煮やした家康は、小早川の陣地に向けて鉄砲を撃ちかけた（問鉄砲）。これで覚悟を決めた秀秋が西軍の大谷吉継陣に突撃し、戦局が一気に決した。'},
+      {q:'江戸幕府が「参勤交代制度」を設けた最大の政治的意図は？',c:['大名が国元と江戸を行き来する費用で財力を消耗させる','大名に江戸の文化を学ばせる','将軍と大名の絆を深める','参勤途中の街道沿いの経済を活性化する'],a:0,h:'大名統制の巧みな仕組み',exp:'大名は隔年で江戸に参勤し、家族は江戸に常駐させた。往復の費用と江戸での生活費が大名財政を圧迫し、「軍事クーデターを起こす余力を奪う」という卓越した統制策だった。一方で街道・宿場の整備が進み日本の交通インフラ発展にも貢献した。'},
+      {q:'秀吉が「刀狩り」（1588年）を実施した複合的な意図として最も包括的なのは？',c:['農民から武器を取り上げ一揆を防ぎ兵農分離を制度化した','戦争に使う鉄を集めるためだった','武士だけが刀を持てる特権を与えた','農民を武士に転身させないためだけだった'],a:0,h:'近世身分制度の確立',exp:'刀狩りの理由として秀吉は「集めた刀で大仏を造る」と宣伝したが、真の目的は①農民の武装解除による一揆防止②武士と農民の身分的分離の固定化。これにより「武士＝支配者、農民＝被支配者」という近世的身分秩序が制度として確立された。'},
+    ]
+  }
+},
+{
+  id:'shinsengumi',title:'幕末・新選組',sub:'動乱の志士たち',years:'1853〜1869年',
+  atm:'ペリー来航から明治維新まで16年間の幕末。「尊王攘夷」「開国倒幕」の旗印のもと各藩の志士たちが命を燃やした。新選組の剣と坂本龍馬の志が交錯した、日本近代化前夜の壮絶な16年間。',
+  grad:'linear-gradient(140deg,#000814,#001636)',ec:'#4d96ff',icon:'🌸',bg:'🌸',
+  figures:[
+    {id:'kondo',name:'近藤 勇',rdg:'こんどう いさみ',ttl:'新選組局長・幕末最後の武士',yrs:'1834〜1868年',
+     e1:'🌸',e2:'⚔️🔵',pbg:'linear-gradient(150deg,#000a1a,#00183d)',mon:'誠',rar:'★★★★★',
+     bio:'農民の子として生まれ、天然理心流の剣客から新選組局長まで上り詰めた幕末の剣士。「誠」の旗印のもと200名余りの隊士を率いて京都の治安維持に当たり、池田屋事件では長州藩士・尊攘派浪士を一挙に壊滅させ幕府の名を高めた。戊辰戦争では幕府方として戦い、流山で官軍に包囲され投降。三条河原で斬首刑に処された。',
+     ep:'池田屋事件（1863年）当夜、近藤は7〜8名の小隊で長州藩士ら20〜30名が密議する池田屋に踏み込んだ。ほとんどの隊士がまだ到着していない中、「先に乗り込んで証拠を押さえる」という判断で突入。その大胆さと剣の腕前で局面を制した。この一夜が新選組を歴史の表舞台に押し上げた。',
+     lgc:'農民出身ながら武士道を体現した近藤の生き様は、明治以降も「武士の鑑」として語り継がれた。新選組は幕末に敗れた側だが、その「誠」の精神は現代でも多くの人を魅了し続けている。',
+     conn:['土方歳三（副長・盟友）','沖田総司（一番隊組長・愛弟子）','山南敬助（副長助勤）'],
+     ach:['新選組局長として京都の治安を守る','1863年 池田屋事件で長州藩士を壊滅','戊辰戦争で幕府方として奮戦','1868年 流山で投降・斬首刑'],
+     quote:'士道に背かず',
+     qctx:'局中法度第一条の言葉。武士道に背くことを最大の禁忌とした新選組の精神',
+     stats:{武力:92,知略:70,魅力:84,人望:88}},
+    {id:'hijikata',name:'土方 歳三',rdg:'ひじかた としぞう',ttl:'鬼の副長・最後まで戦い続けた男',yrs:'1835〜1869年',
+     e1:'❄️',e2:'⚔️🌸',pbg:'linear-gradient(150deg,#00060f,#00102d)',mon:'❆',rar:'★★★★★',
+     bio:'「鬼の副長」と恐れられた新選組の実質的な指揮官。石田散薬売りの商家出身ながら、厳格な「局中法度」を制定して隊の規律を維持した。剣の腕前は近藤・沖田に次ぐと言われ、組織運営の才能は抜群。戊辰戦争では江戸・宇都宮・会津・函館と戦い続け、1869年の五稜郭の戦いで新政府軍の銃弾に倒れた。享年34歳。',
+     ep:'函館・五稜郭での戦いの最中、土方の姿を見た外国人記者が「彼は死ぬとわかっていながら戦い続けている。それでも顔に絶望はなく、むしろ穏やかだった」と記している。最期の突撃の前夜、土方は部下に「武士として死ねることを嬉しく思う」と語ったという。',
+     lgc:'土方の局中法度は「組織を維持するためには規律が命」という原理を示した。現代でもリーダーシップの教材として引用される。また土方の生き様は数多くの小説・漫画・ゲームに影響を与えた。',
+     conn:['近藤勇（局長・盟友）','沖田総司（一番隊組長）','榎本武揚（函館での盟友）'],
+     ach:['局中法度の制定で組織を統率','戊辰戦争で各地を転戦しながら抵抗','1869年 五稜郭の戦いで戦死（享年34歳）'],
+     quote:'義に生き、義に死す。それが武士道の道である',
+     qctx:'五稜郭最後の戦いに臨む前の言葉とされる。幕末最後の武士としての覚悟',
+     stats:{武力:97,知略:78,魅力:90,人望:86}},
+    {id:'ryoma',name:'坂本 龍馬',rdg:'さかもと りょうま',ttl:'維新の先駆者・革命家',yrs:'1836〜1867年',
+     e1:'🌅',e2:'⚓🗡️',pbg:'linear-gradient(150deg,#000d0a,#001d16)',mon:'⚓',rar:'★★★★★',
+     bio:'土佐の郷士（下士）として生まれ、脱藩して幕末最大の革命家となった。剣の腕前は免許皆伝の達人でありながら「これからは刀の時代ではなく銃と政治の時代」と喝破。薩長同盟の仲介・大政奉還建言・海援隊創設など、血を流さない革命を目指した先進性が際立つ。1867年11月15日、33歳の誕生日に近江屋で暗殺された。',
+     ep:'龍馬の書いた手紙は現代でも多く残っている。姉・乙女宛の手紙に「日本を今一度洗濯いたし申候」という有名な一節がある。この「洗濯」という言葉に、龍馬の革命観が凝縮されている。腐敗した旧体制を「洗い流し」て清潔な新しい日本を作る、という比喩は今読んでも鮮やかだ。',
+     lgc:'龍馬の描いた「船中八策」（新政府綱領）は後の五箇条の誓文の基盤となった。明治維新という「無血革命」の設計図を書いた男として、現代でも日本人に最も愛される歴史上の人物の一人。',
+     conn:['中岡慎太郎（盟友・共に暗殺される）','西郷隆盛（薩摩の盟友）','桂小五郎（長州の盟友）','岩崎弥太郎（海援隊関係）'],
+     ach:['1866年 薩長同盟を仲介','1867年 大政奉還建言書を起草','海援隊（亀山社中）を創設','1867年 近江屋事件で暗殺（享年33歳）'],
+     quote:'日本を今一度洗濯いたし申し候',
+     qctx:'姉・乙女への手紙の一節。腐敗した旧体制を一新したいという革命への情熱',
+     stats:{武力:80,知略:99,魅力:99,人望:97}},
+    {id:'okita',name:'沖田 総司',rdg:'おきた そうじ',ttl:'新選組一番隊組長・天才剣士',yrs:'1844〜1868年',
+     e1:'🌸',e2:'💨⚔️',pbg:'linear-gradient(150deg,#0a0008,#1e0018)',mon:'✿',rar:'★★★★★',
+     bio:'9歳から天然理心流の修行を始め、16歳ですでに門弟に教授するほどの剣の天才。新選組の中でも最強と称された一番隊組長。三段突き・平突きなどの独自の剣技を持つ。しかし若い頃から肺結核（労咳）を患い、池田屋事件の最中に喀血して離脱したという伝説も残る。近藤・土方とともに幕末の剣を体現した。24歳で病没。',
+     ep:'沖田の剣について「笑いながら斬る」という証言が複数残されている。剣を振るうときに穏やかな笑顔を見せたとも、剣の動きが笑い飛ばすように軽やかだったともいわれる。その天真爛漫な人柄が「新選組で最も人気のある隊士」という評価につながった。',
+     lgc:'沖田の剣技（平突き・三段突き）は後の剣道界に影響を与えたとされる。また「若くして散った天才」という生き様は後世の文学・漫画・ゲームで繰り返し描かれ、新選組の象徴的存在となった。',
+     conn:['近藤勇（師匠・局長）','土方歳三（副長）','斎藤一（三番隊組長）'],
+     ach:['新選組一番隊組長として京都で活躍','池田屋事件でも最前線で戦う','多くの反幕府志士と戦い新選組の剣を体現','1868年 肺結核により江戸で病没（享年24歳）'],
+     quote:'死ぬことが怖いとは思わない。ただ、もう少し剣が振れればよかった',
+     qctx:'病床での言葉と伝わる。24歳で散った天才剣士の無念',
+     stats:{武力:99,知略:65,魅力:92,人望:88}},
+  ],
+  events:[
+    {y:1853,t:'黒船来航',d:'ペリー提督率いる4隻の黒塗り蒸気船が浦賀に来航。「開国か戦争か」という脅しのもと日本の長い鎖国時代に終止符が打たれた。',i:'⚓'},
+    {y:1858,t:'日米修好通商条約（不平等条約）',d:'領事裁判権・関税自主権の欠如など日本に不利な条約を締結。「弱腰外交」への批判から攘夷運動が激化した。',i:'📜'},
+    {y:1860,t:'桜田門外の変',d:'水戸藩浪士らが大老・井伊直弼を暗殺。幕府権威の失墜と尊攘運動激化の転換点となった。',i:'🗡️'},
+    {y:1863,t:'池田屋事件',d:'新選組が京都・池田屋で長州藩士・尊攘派志士20〜30名を急襲。志士側に多数の死傷者を出し幕府の名を高めた。',i:'⚔️'},
+    {y:1866,t:'薩長同盟',d:'坂本龍馬の仲介で犬猿の仲だった薩摩・長州が手を結ぶ。倒幕の流れが決定的となった。',i:'🤝'},
+    {y:1867,t:'大政奉還',d:'15代将軍徳川慶喜が政権を朝廷に返上。265年の江戸幕府が制度上終焉を迎えた。',i:'📜'},
+    {y:1868,t:'戊辰戦争',d:'鳥羽伏見の戦いを皮切りに東北・北越・箱館（函館）へと続いた内戦。1年半の戦争で新政府が勝利。',i:'🔥'},
+    {y:1869,t:'五稜郭の戦い・戊辰戦争終結',d:'土方歳三が函館・五稜郭で戦死。幕府軍最後の抵抗が終わり明治新政府が成立した。',i:'❄️'},
+  ],
+  quiz:{
+    easy:[
+      {q:'新選組の局長は誰？',c:['近藤勇','土方歳三','沖田総司','芹沢鴨'],a:0,h:'農民出身の剣士',exp:'近藤勇（1834〜1868）は農民の家に生まれ、天然理心流の剣術で頭角を現した。新選組の局長として京都の治安維持に当たり、池田屋事件で全国にその名を轟かせた。'},
+      {q:'「鬼の副長」と呼ばれたのは？',c:['土方歳三','近藤勇','沖田総司','斎藤一'],a:0,h:'最後まで五稜郭で戦った',exp:'土方歳三は石田散薬売りの商家出身ながら剣術の才能を開花させた。厳格な局中法度で「鬼の副長」と恐れられたが、一方で俳句を詠む繊細な一面もあった。新選組最後の五稜郭の戦いで34歳で戦死した。'},
+      {q:'薩長同盟を仲介したのは？',c:['坂本龍馬','西郷隆盛','木戸孝允','大久保利通'],a:0,h:'土佐の脱藩浪士',exp:'坂本龍馬（1836〜1867）は犬猿の仲だった薩摩藩（西郷隆盛）と長州藩（桂小五郎）の間を奔走し、1866年に薩長同盟を成立させた。これが倒幕への最大の原動力となった。'},
+      {q:'新選組の隊旗に書かれた文字は？',c:['誠','義','忠','武'],a:0,h:'局中法度の精神',exp:'新選組の旗には「誠」の一字が大書されていた。「士道に背かず」を第一条とする局中法度の精神そのものであり、武士道に誠実に生きるという近藤・土方の信念を表している。'},
+      {q:'黒船来航のアメリカ提督は？',c:['マシュー・ペリー','ハリス','グラント','マッカーサー'],a:0,h:'1853年に浦賀へ',exp:'マシュー・ペリー提督が4隻の黒塗り蒸気船（サスケハナ号など）を率いて浦賀に来航。「開国しなければ攻撃する」と脅し、翌年の日米和親条約締結につながった。この来航が日本の近代化の引き金となった。'},
+      {q:'大政奉還を行った最後の将軍は？',c:['徳川慶喜','徳川家茂','徳川斉昭','徳川家定'],a:0,h:'15代将軍',exp:'徳川慶喜は1867年10月、二条城で諸藩の重臣を前に大政奉還を宣言。265年続いた江戸幕府が制度上終焉を迎えた。慶喜は「武力による倒幕を避けるため」に自ら政権を返上したと言われる。'},
+    ],
+    normal:[
+      {q:'池田屋事件が幕末の流れに与えた最大の影響は？',c:['長州藩が報復として翌年に禁門の変を起こし尊攘運動が激化した','長州藩が完全に幕府側になった','新選組の勢力が拡大し京都を完全制圧した','坂本龍馬が薩長同盟を断念した'],a:0,h:'池田屋事件の翌年',exp:'池田屋事件で多くの同志を失った長州藩は激怒し、1864年に「禁門の変」として京都に兵を進めた。しかし幕府軍に敗れ、朝廷から「朝敵」の汚名を着せられた。この激化が薩長間の結束と倒幕運動の加速につながった。'},
+      {q:'坂本龍馬が「大政奉還」という解決策を選んだ理由は？',c:['日本が内戦で弱体化することを欧米列強に付け入られるのを防ぐため','幕府が好きで守りたかったから','薩摩・長州の軍事力が足りなかったから','天皇が強く望んだから'],a:0,h:'列強による植民地化を恐れた',exp:'龍馬は欧米列強がアジアを植民地化していく時代に、日本人同士が内戦で消耗することを最も恐れた。幕府・雄藩・天皇が協調する新政府という構想で、流血なき革命を目指した。その先見性は現代でも高く評価される。'},
+      {q:'新選組の「局中法度」の特徴として正しいのは？',c:['違反した場合は切腹という厳格な規律を定めた','隊士の待遇改善を目的として作られた','朝廷から公認された幕府の法律だった','隊士の合議で決められた民主的な規約だった'],a:0,h:'土方が制定した',exp:'局中法度は①士道に背かず②局を脱するを許さず③勝手に金策いたすを許さず④勝手に訴訟取り扱いを許さず⑤私の闘争を許さず、という5カ条からなり、違反すれば切腹を命じた。この峻烈な規律が新選組の強さと苦悩の両面を生み出した。'},
+      {q:'幕末の志士が「尊王攘夷」を唱えた背景にある時代の危機感は？',c:['欧米列強による植民地化を恐れ天皇の権威のもと外国人を追い払おうとした','天皇家の財政を守るためだった','幕府の貿易政策への経済的な反発だった','宗教的な外国人排除運動だった'],a:0,h:'幕末の政治スローガン',exp:'インドや中国が欧米に侵略・植民地化されていく様子を見ていた日本の志士たちは「日本も同じ運命をたどる」と危機感を抱いた。「天皇を中心に国内を統一し（尊王）外国人を追い払え（攘夷）」という運動が生まれたが、現実の軍事力差を目にして多くが「開国→富国強兵」路線に転換した。'},
+      {q:'五稜郭（函館）が幕府軍最後の拠点となった理由は？',c:['西洋式城郭で防御力が高く榎本武揚らが蝦夷共和国を宣言したため','徳川慶喜が籠城したから','気候が過酷で官軍が近づけなかったから','近海に幕府の海軍が展開していたから'],a:0,h:'北海道の星型要塞',exp:'榎本武揚率いる旧幕府海軍が函館に逃れ、五稜郭（星型の西洋式城塞）を拠点に「蝦夷共和国」を宣言した。土方歳三もここで戦い続けたが、最終的に1869年5月に官軍に敗れ戊辰戦争が終結した。'},
+      {q:'「龍馬の暗殺」の犯人はどの説が現在最も有力？',c:['京都見廻組（幕府の別動隊）による実行説','新選組説','薩摩藩黒幕説','土佐藩の内部犯行説'],a:0,h:'近江屋事件（1867年）',exp:'龍馬暗殺は長年「新選組説」が有力視されたが、現在は「京都見廻組の佐々木只三郎らによる実行」説が最も支持されている。ただし背後関係は不明で薩摩・紀州・幕府の黒幕説も残り、歴史の謎の一つとなっている。'},
+    ],
+    hard:[
+      {q:'薩長同盟が成立した政治的背景で最も重要な要因は？',c:['長州が禁門の変・四国艦隊砲撃で幕府・外国から二重に打撃を受け薩摩の支援が必要だったから','龍馬の個人的な人脈だけで成立した','両藩とも徳川家への恩義があり融和を図ったから','朝廷の仲介による正式な同盟だったから'],a:0,h:'長州の窮地',exp:'禁門の変で「朝敵」とされ、さらに英仏蘭米4カ国から下関砲撃を受けた長州藩は孤立無援の状態だった。一方で薩摩も単独での討幕は困難。「共通の敵（幕府）を持つ両藩が利害一致した」という政治的リアリズムが同盟成立の本質で、龍馬はその橋渡し役を担った。'},
+      {q:'徳川慶喜が大政奉還後も政治的影響力を持とうとした「公議政体論」とは？',c:['天皇のもと諸藩の大名たちが合議する連邦制的な政体を構想した','幕府を廃止せず将軍の権限だけを制限する案','外国公使を含む国際的な議会を設立する案','慶喜自身が天皇と並ぶ権限を持つ案'],a:0,h:'大政奉還後の慶喜の構想',exp:'慶喜は大政奉還によって統治権を天皇に返上しつつ、徳川家が最大の大名として新政府の中枢に残る「公議政体」を構想した。しかし薩長は「王政復古の大号令」でこれを阻み、小御所会議で慶喜の「辞官納地」（官職返上・領地返還）を要求。この路線対立が戊辰戦争の直接原因となった。'},
+      {q:'新選組の組織的強さの源泉として最も本質的なのは？',c:['下級武士・農民出身の実力者を身分不問で登用した能力主義','幕府の財政的バックアップ','京都市民の全面的な支持','剣術の高さだけで選抜した純粋な実力集団だった'],a:0,h:'身分にとらわれない人材登用',exp:'江戸時代の身分制度では農民が武士として仕えることは基本的に不可能だった。しかし近藤・土方・沖田はいずれも農民や商人出身。新選組は「剣の腕と武士道精神があれば出身を問わない」という当時としては革命的な能力主義組織だった。この柔軟性が強さの秘密だった。'},
+      {q:'坂本龍馬の「船中八策」が後の明治政府に与えた最大の影響は？',c:['議会制度・条約改正・上下院設置など近代的な政治制度の原型を提示した','海軍力の増強計画として活用された','薩長への権力集中を正当化した','外国との通商条約の叩き台となった'],a:0,h:'五箇条の誓文との関連',exp:'1867年11月、龍馬が船中で起草した「船中八策」は①大政奉還②上下議政局設置③官武一途④旧弊の廃絶⑤外国との交際⑥海軍拡張⑦禁衛隊設置⑧金銀為替を規定した。特に議会制度の構想は明治政府の「五箇条の誓文」の「万機公論に決すべし」に継承された。'},
+      {q:'幕末期の「雄藩」が倒幕の中心になれた経済的背景は？',c:['薩摩・長州が密貿易・独自産業で財政力を蓄えていたから','幕府の財政が完全に破綻していたから','欧米列強から軍事援助を受けたから','農業改革で農民の支持を得ていたから'],a:0,h:'薩摩・長州の経済力',exp:'薩摩藩は沖縄（琉球王国）を通じた密貿易で財を蓄え、長州藩は下関での砲撃事件後に攘夷から開国に転じ交易で近代化を進めた。一方の幕府は度重なる対外交渉・開港・尊攘運動への対処で財政が逼迫。この経済力格差が武力対決の帰趨を決定付けた。'},
+      {q:'土方歳三が最期まで函館で戦い続けた精神的動機として最も深いものは？',c:['武士として徳川への忠義を最後まで貫くという武士道の体現','勝てると信じていたから','逃げ場がなかったから','榎本武揚に義理があったから'],a:0,h:'幕末最後の武士',exp:'明治維新の後、日本では「武士」という身分が廃止された。土方にとって函館での戦いは単なる軍事作戦ではなく「武士として死ぬ場所を求めた」ものだという解釈が有力。勝敗ではなく「武士道の体現」こそが彼の最後の戦いの意味だったと、多くの歴史家が分析している。'},
+    ]
+  }
+},
+{
+  id:'ukiyoe',title:'江戸・浮世絵',sub:'花開く江戸文化',years:'1600〜1868年',
+  atm:'265年の平和な江戸時代は世界史でも稀な大衆文化の開花期だった。浮世絵・歌舞伎・俳句・落語・川柳…庶民が主役となった文化は今も日本の精神的基盤であり、ゴッホらヨーロッパの芸術家にも多大な影響を与えた。',
+  grad:'linear-gradient(140deg,#0a0700,#1c1200)',ec:'#ffd700',icon:'🎨',bg:'🌊',
+  figures:[
+    {id:'hokusai',name:'葛飾 北斎',rdg:'かつしか ほくさい',ttl:'浮世絵師・画狂老人',yrs:'1760〜1849年',
+     e1:'🌊',e2:'🖌️🗻',pbg:'linear-gradient(150deg,#080e14,#101e2e)',mon:'✵',rar:'★★★★★',
+     bio:'「神奈川沖浪裏」「富嶽三十六景」で世界的に知られる浮世絵の巨匠。生涯で3万点以上の作品を制作し90歳という長命まで筆を置かなかった。「画狂老人卍」と自称し、生涯に30回以上引っ越しをしたという放浪癖の持ち主でもあった。その作品はゴッホ・モネ・ドガらヨーロッパ印象派に決定的な影響を与え「ジャポニスム」という美術運動を生んだ。',
+     ep:'北斎は死の床でこう嘆いたという。「あと5年、いや10年の命があれば、本当の絵が描けるのに」。90年の生涯を絵に捧げながら、なお自分の絵に満足できなかった。この言葉は芸術への究極の情熱を示す名言として今も語り継がれる。',
+     lgc:'北斎の「波」のデザインは現代のロゴ・デザイン・アニメにも継承されている。また「富士山＝日本」というイメージは北斎の富嶽三十六景が世界に広めたといっても過言でない。',
+     conn:['歌川広重（ライバル・浮世絵師）','葛飾応為（娘・助手）'],
+     ach:['「富嶽三十六景」を完成','「神奈川沖浪裏」が世界的名作に','生涯3万点以上の作品を制作','ゴッホ・モネら印象派に革命的影響'],
+     quote:'七十歳以前に書いたものは、みな取るに足らない',
+     qctx:'90歳で世を去る直前の言葉。向上心を決して失わなかった巨匠の境地',
+     stats:{武力:10,知略:72,魅力:78,人望:60}},
+    {id:'hiroshige',name:'歌川 広重',rdg:'うたがわ ひろしげ',ttl:'浮世絵師・雨の広重',yrs:'1797〜1858年',
+     e1:'🌸',e2:'🗻🌧️',pbg:'linear-gradient(150deg,#060e0e,#0e1e1e)',mon:'✾',rar:'★★★★',
+     bio:'「東海道五十三次」「名所江戸百景」で知られる風景浮世絵の名手。雨・雪・霧などの大気の表現が特に卓越し「雨の広重」と称された。江戸の火消し同心の家に生まれ、15歳から絵を学んだ。ゴッホが「亀戸梅屋敷」を模写したことは有名で、欧州における「ジャポニスム」の中心的存在となった。62歳でコレラにより死去。',
+     ep:'広重が「東海道五十三次」を描いたのは35歳の時、実際に江戸から京都まで東海道を旅した際のスケッチがもとになっている。宿場ごとの空気感・季節感・人々の暮らしを鮮やかに切り取った55枚の連作は発売直後から大ベストセラーとなり、江戸の庶民の「旅気分」を満たした。',
+     lgc:'広重の風景画は「旅行ガイドブック」的な役割も果たし、江戸時代の旅文化の普及に貢献した。欧州では印象派・アール・ヌーヴォーへの影響を通じて20世紀デザインの根幹にまで及んでいる。',
+     conn:['葛飾北斎（先達・ライバル）','歌川豊国（師匠）'],
+     ach:['「東海道五十三次」を制作・大ベストセラーに','「名所江戸百景」など江戸の名所を描く','ゴッホが「亀戸梅屋敷」を模写','ジャポニスムを通じて欧州芸術に影響'],
+     quote:'旅の情景は 心の目で見よ',
+     qctx:'東海道五十三次の制作に際しての姿勢を示した言葉とされる',
+     stats:{武力:10,知略:70,魅力:80,人望:65}},
+    {id:'basho',name:'松尾 芭蕉',rdg:'まつお ばしょう',ttl:'俳諧の祖・旅人',yrs:'1644〜1694年',
+     e1:'🐸',e2:'🍃🌙',pbg:'linear-gradient(150deg,#001000,#001e00)',mon:'🍃',rar:'★★★★★',
+     bio:'「古池や蛙飛び込む水の音」という不朽の名句を残した俳聖。伊賀国（三重県）の侍の子として生まれ、29歳で江戸に出て俳諧師として名を成した。50歳の時「奥の細道」の旅に出て東北・北陸を2400km歩いて句を詠み続けた。「わびさび」の美意識を俳句に結晶させ、短詩型文学を日本文化の精髄に押し上げた。',
+     ep:'「古池や」の句は江戸の深川に住んでいた芭蕉の庵で詠まれた。弟子たちに「上の句をどうしようか」と問い、芭蕉自身が「古池や」と付けた瞬間に一同が唸ったという。静寂の中に響くカエルの水音が永遠の静けさを際立てるという逆説的な美は、東洋哲学の粋ともいえる。',
+     lgc:'芭蕉が確立した「蕉風俳諧」は、後の正岡子規らの「俳句」革新の出発点となった。現代の俳句も芭蕉の「花鳥風月に人間の感情を映す」という方法論を受け継いでいる。',
+     conn:['与謝蕪村（後継・俳人）','宝井其角（弟子）'],
+     ach:['「奥の細道」を著す（約2400kmの旅）','「古池や」など数多の名句を詠む','蕉風俳諧を確立し俳句を文学の域へ'],
+     quote:'古池や 蛙飛び込む 水の音',
+     qctx:'1686年、江戸・深川の芭蕉庵で詠まれた。静寂と動の対比が禅の境地を示す',
+     stats:{武力:15,知略:84,魅力:88,人望:75}},
+    {id:'chikamatsu',name:'近松 門左衛門',rdg:'ちかまつ もんざえもん',ttl:'日本のシェイクスピア',yrs:'1653〜1725年',
+     e1:'🎭',e2:'💔📜',pbg:'linear-gradient(150deg,#100008,#200010)',mon:'🎭',rar:'★★★★',
+     bio:'人形浄瑠璃・歌舞伎の脚本家として「日本のシェイクスピア」と称される。「曽根崎心中」「国性爺合戦」など100作以上の脚本を書き、江戸時代の庶民の心を鷲掴みにした。「芸というものは実と虚の間の薄皮一枚の世界にある」という言葉を残し、写実主義でも幻想でもない人間の心理の機微を描いた。',
+     ep:'「曽根崎心中」（1703年）は実際に起きた遊女・お初と醤油屋の手代・徳兵衛の心中事件を脚色したもの。初演から3週間も経たずに社会現象となり、大坂の曽根崎天神への心中の道行きを辿る観客が後を絶たなかったという。リアルタイムの「ニュース」を芸術に昇華させた先駆けだった。',
+     lgc:'近松の「義理と人情の相克」というテーマは日本文学の根幹となり、後の歌舞伎・演歌・現代ドラマにも生き続けている。',
+     conn:['坂田藤十郎（歌舞伎俳優・盟友）','竹本義太夫（浄瑠璃語り・盟友）'],
+     ach:['「曽根崎心中」を初演・大ヒット','「国性爺合戦」17ヶ月の記録的ロングラン','人形浄瑠璃・歌舞伎の脚本を100作以上制作'],
+     quote:'芸は実と虚の皮膜の間にあるものなり',
+     qctx:'近松の芸術論。現実でも嘘でもない、その狭間にこそ芸術の真実があるという思想',
+     stats:{武力:10,知略:90,魅力:85,人望:80}},
+  ],
+  events:[
+    {y:1603,t:'江戸幕府成立',d:'徳川家康が江戸（現・東京）に幕府を開く。265年の平和が文化の大開花をもたらす土台となった。',i:'🏯'},
+    {y:1657,t:'明暦の大火',d:'江戸の大半が焼失した「振袖火事」。復興の中で江戸の都市計画が大きく進化し、人口が急増した。',i:'🔥'},
+    {y:1688,t:'元禄文化の勃興',d:'5代将軍綱吉の時代に上方（大阪・京都）を中心に成熟した文化が開花。松尾芭蕉・近松門左衛門・井原西鶴が活躍。',i:'🌸'},
+    {y:1776,t:'安永・天明の庶民文化',d:'黄表紙・洒落本・川柳など江戸の庶民が主役となる文化が隆盛。喜多川歌麿・東洲斎写楽も登場。',i:'📚'},
+    {y:1831,t:'北斎「富嶽三十六景」刊行',d:'葛飾北斎が「神奈川沖浪裏」を含む富嶽三十六景を発表。世界を変えた浮世絵の誕生。',i:'🌊'},
+    {y:1832,t:'広重「東海道五十三次」刊行',d:'歌川広重が東海道55宿を描いた連作版画を発表。発売直後からベストセラーとなった。',i:'🎨'},
+    {y:1849,t:'葛飾北斎死去（享年90）',d:'「あと5年あれば本当の絵が描けた」と嘆いて逝去。生涯3万点以上の作品を残した。',i:'🖌️'},
+    {y:1853,t:'黒船来航・江戸文化の終焉',d:'ペリー来航で260年の鎖国に終止符。欧米文明との接触が始まり江戸の伝統文化との融合が始まる。',i:'⚓'},
+  ],
+  quiz:{
+    easy:[
+      {q:'「神奈川沖浪裏」を描いた浮世絵師は？',c:['葛飾北斎','歌川広重','喜多川歌麿','東洲斎写楽'],a:0,h:'富嶽三十六景の代表作',exp:'葛飾北斎（1760〜1849）の「神奈川沖浪裏」は富嶽三十六景のうちの一枚。荒波の向こうに富士山が佇む構図は世界で最も知られた日本画の一つとなり、ドビュッシー「海」の楽譜の表紙にも使われた。'},
+      {q:'「東海道五十三次」を描いたのは？',c:['歌川広重','葛飾北斎','菱川師宣','鈴木春信'],a:0,h:'「雨の広重」',exp:'歌川広重（1797〜1858）が実際に東海道を旅して描いた55枚の連作版画。各宿場の風景・季節・人々の暮らしを詩情豊かに描き、発売直後から大ベストセラーとなった。ゴッホが模写したことでも有名。'},
+      {q:'「古池や 蛙飛び込む 水の音」を詠んだのは？',c:['松尾芭蕉','与謝蕪村','小林一茶','正岡子規'],a:0,h:'「奥の細道」の著者',exp:'松尾芭蕉（1644〜1694）が1686年に江戸・深川の庵で詠んだ句。静寂の中に響く一つの音が永遠の静けさを際立たせるという逆説的な美しさは、禅の境地とも通じる。17文字が創り出す世界観は世界中で翻訳されている。'},
+      {q:'浮世絵の印刷技法は？',c:['木版印刷（多色木版画）','銅版印刷','水彩画','油絵'],a:0,h:'版木に彫って刷る',exp:'浮世絵は版木（桜の木が多い）に絵を彫り、色ごとに異なる版木を重ねて印刷する「多色木版画」。「絵師（デザイン）」「彫師（版木制作）」「刷師（印刷）」の三者が分業して制作した。'},
+      {q:'「日本のシェイクスピア」と称された劇作家は？',c:['近松門左衛門','松尾芭蕉','井原西鶴','鶴屋南北'],a:0,h:'「曽根崎心中」の作者',exp:'近松門左衛門（1653〜1725）は人形浄瑠璃・歌舞伎の脚本を100作以上書いた。「義理と人情の相克」というテーマを確立し、現代の歌舞伎・映画・ドラマにも続く日本文化の根幹を作った。'},
+      {q:'元禄文化が栄えたのは何時代の何代将軍の頃？',c:['江戸時代・5代将軍徳川綱吉','室町時代・8代将軍足利義政','鎌倉時代・源頼朝','平安時代・後白河上皇'],a:0,h:'「生類憐みの令」でも有名',exp:'5代将軍徳川綱吉の時代（元禄期・1688〜1704年）は平和と経済的豊かさを背景に上方（大阪・京都）を中心とした成熟した文化が開花した。松尾芭蕉・近松門左衛門・井原西鶴・俵屋宗達らが活躍した。'},
+    ],
+    normal:[
+      {q:'北斎の「神奈川沖浪裏」がヨーロッパに与えた影響として正しいのは？',c:['波の曲線美がジャポニスムを通じてアール・ヌーヴォーのデザインに影響した','油絵の技法として欧州に伝わった','ドビュッシーが音楽で再現しようとした','モネが直接この絵を模写した'],a:0,h:'ジャポニスムの影響',exp:'北斎の「波」の有機的な曲線はアール・ヌーヴォー運動のデザイン原理に影響を与えた。またドビュッシーの交響詩「海」の楽譜の表紙に「神奈川沖浪裏」が使われたことは、音楽にまで及んだ北斎の影響の象徴とされる。'},
+      {q:'浮世絵が「大衆文化」として普及できた江戸時代の社会的背景は？',c:['木版印刷による量産で庶民でも数十文で購入できた','幕府が無料で配布した','識字率が高く絵の解説文が読めたから','外国人観光客の需要があった'],a:0,h:'価格と技術の関係',exp:'多色木版画により大量生産が可能になり、浮世絵1枚の値段は蕎麦1杯（20文程度）と同程度まで下がった。当時の江戸は世界最大の100万都市で、識字率も高く庶民が文化的な娯楽を享受できる環境が整っていた。'},
+      {q:'松尾芭蕉の「旅」が彼の俳句に与えた本質的な影響は？',c:['実際の風景と体験から「切り取った瞬間」を言葉にする感性を磨いた','体を鍛えることで精神が研ぎ澄まされた','旅先で多くの弟子を集めるためだった','江戸の人々に旅の魅力を伝えるためだった'],a:0,h:'「奥の細道」の旅',exp:'芭蕉は50歳で約2400kmの「奥の細道」の旅に出た。日光・松島・象潟・金沢・敦賀を巡るこの旅で、実際の風景・音・匂いを五感で感じながら句を詠んだ。「百聞は一見に如かず」を体現した芭蕉の旅が「ありのままの自然を17文字で切り取る」という蕉風の核心を生んだ。'},
+      {q:'近松門左衛門の「曽根崎心中」が社会現象となった理由は？',c:['実際に起きた心中事件をほぼリアルタイムで劇化し庶民の共感を得た','幕府が宣伝したから','有名な武将が登場する時代劇だったから','当時珍しい喜劇だったから'],a:0,h:'1703年の事件',exp:'「曽根崎心中」は1703年5月に実際に起きた遊女・お初と手代・徳兵衛の心中事件をわずか1ヶ月後に劇化したもの。「現代のニュース」を芸術に昇華させた先進性と、義理と人情に引き裂かれる人間の心理描写が江戸庶民の心を深く揺さぶった。'},
+      {q:'江戸時代の浮世絵が「風俗画」として価値を持つ理由は？',c:['当時の庶民の生活・ファッション・娯楽を記録した歴史資料でもあるから','高価な画材を使っていたから','天皇家・将軍家の公式記録だったから','外国との外交文書に使われたから'],a:0,h:'歴史的資料としての価値',exp:'浮世絵には当時の江戸の町人のファッション・遊び・旅・歌舞伎・相撲など庶民文化のすべてが描かれている。文字資料では伝わらない「当時の人々の姿」を鮮やかに記録した視覚的歴史資料として、現代の歴史研究でも活用されている。'},
+      {q:'広重の「雨の表現」が画期的だった理由は？',c:['雨を線で表現することで視覚的リズムと湿度まで感じさせる技法を確立した','写真のように正確に描いたから','西洋の水彩画技法を取り入れたから','実際に雨の中で絵を描いたから'],a:0,h:'「雨の広重」の真骨頂',exp:'広重は雨を斜めの線で表現し、霞・霧・雪などの大気現象を独自の技法で描いた。この「気象の可視化」という革新的アプローチが、後の印象派画家たちに「光と大気を描く」という新しい視点を与えた。モネの睡蓮シリーズにも広重の影響が見られるとされる。'},
+    ],
+    hard:[
+      {q:'浮世絵の「見立て絵」や「判じ絵」が持つ文化的機能は？',c:['幕府の検閲を避けながら政治批判や諷刺を行う隠語的機能を持っていた','単なる娯楽的なパズル絵だった','武士向けの教育教材として使われた','神社仏閣の参拝者へのガイドだった'],a:0,h:'江戸の言論の自由と規制',exp:'幕府は出版物への検閲を行い、政治批判・風刺は禁じられていた。しかし浮世絵師たちは「見立て絵（古典の場面を現代に置き換える）」「判じ絵（謎解き形式）」「洒落（言葉遊び）」などを駆使して巧みに諷刺を表現した。東洲斎写楽の役者絵が突如として姿を消した背景も検閲との関係が指摘される。'},
+      {q:'北斎が90歳まで描き続けられた背景にある江戸時代の「絵師の身分」の特徴は？',c:['職人として商品を量産する「注文請負業」であり年齢に関わらず技量が評価された','幕府に雇用された官僚的身分で定年制度があった','貴族のパトロンに養われていた','寺社に所属する宗教画家だった'],a:0,h:'江戸の絵師の立場',exp:'江戸時代の絵師は武士ではなく職人・商人の身分で、出版社（地本問屋）や客の注文に応じて絵を制作した。年功序列でなく「作品の人気・技量」で報酬が決まる完全な実力主義。これが北斎を90歳まで創作し続けさせた。現代のフリーランスアーティストと本質的に変わらない。'},
+      {q:'芭蕉の俳句における「切れ字（や・かな・けり）」の機能は？',c:['一句を二つの場面・心情に分割し緊張と解放を生む構造的役割を持つ','詩のリズムを整えるだけの飾り','和歌からの引用を示すマーク','感情を強調する感嘆符的な役割だけ'],a:0,h:'「古池や」の「や」の意味',exp:'「古池や（切れ）蛙飛び込む水の音」では「や」で一度場面が切れ、静かな古池の情景と蛙の水音という二つの世界が対置される。この「切れ」が生む緊張と解放こそが俳句の核心。17文字の中に二つの世界を共存させる技法は芭蕉が完成させた。'},
+      {q:'江戸時代の「花道」（歌舞伎の舞台装置）が生まれた歴史的背景は？',c:['役者が客席を歩くことで庶民と芸術の距離を縮める大衆化の産物','西洋劇場の模倣','神社の祭礼行列が起源','将軍家の観覧のために設けられた'],a:0,h:'庶民文化としての歌舞伎',exp:'花道は舞台から客席を貫く通路で、役者が客のすぐ隣を歩くという画期的な演出装置。これは歌舞伎が庶民の娯楽として発展する中で、「遠くの舞台を見るだけでなく役者を間近に感じたい」という観客の要求から生まれた。西洋の劇場では見られない日本独自の発明。'},
+      {q:'浮世絵の「版元（出版社）」が担った文化的・経済的役割として最も包括的なのは？',c:['作品の企画・資金調達・販売・流通まで担い現代の出版社的機能を持った','単なる印刷業者だった','幕府の下請け機関として機能した','外国向け輸出業者として機能した'],a:0,h:'版元＝プロデューサー',exp:'版元（地本問屋）は現代の出版社・レコード会社・映画プロデューサーを合わせた存在だった。①人気絵師との専属契約②テーマ・シリーズの企画③版木制作費用の負担④全国販売網の構築を担った。北斎・広重・写楽らの名作も版元のプロデュース力なしには生まれなかった。'},
+      {q:'明治開国後、浮世絵が欧米で「ジャポニスム」として爆発的に評価された社会的背景は？',c:['万国博覧会での出品と陶磁器の梱包材として偶然欧州に大量に流入したことがきっかけだった','明治政府が意図的に外交ツールとして配布した','欧米の日本語学習ブームで日本文化が注目されていた','浮世絵師が欧州に渡り直接売り込んだ'],a:0,h:'19世紀ヨーロッパへの流入ルート',exp:'1850年代以降、開国した日本からの陶磁器の梱包材（緩衝材）として浮世絵が大量に欧州に流入した。印象派の画家たちがこれを発見し「こんな表現があったのか！」と衝撃を受けた。また1867年パリ万博での日本館出品が「ジャポニスム」ブームの決定打となった。'},
+    ]
+  }
+},
+{
+  id:'meiji',title:'明治時代',sub:'近代日本の夜明け',years:'1868〜1912年',
+  atm:'「文明開化」「富国強兵」「殖産興業」。欧米列強に追いつくため日本が猛スピードで近代化した44年間。西洋と日本が激しく衝突・融合し、現代日本の政治・経済・社会の原型が作られた。',
+  grad:'linear-gradient(140deg,#00080e,#001020)',ec:'#6baaff',icon:'🌅',bg:'🌅',
+  figures:[
+    {id:'saigo',name:'西郷 隆盛',rdg:'さいごう たかもり',ttl:'維新三傑・最後の武士',yrs:'1828〜1877年',
+     e1:'🔥',e2:'🌺⚔️',pbg:'linear-gradient(150deg,#0a0000,#200400)',mon:'✜',rar:'★★★★★',
+     bio:'「敬天愛人（天を敬い人を愛す）」を座右の銘とした薩摩の英雄。倒幕運動と明治維新を主導したが征韓論の争いで政府を下野し、士族の反乱を率いて西南戦争（1877年）で敗れ、城山で自刃した。巨漢で温和な人柄は多くの人を惹きつけ、死後も「生ける英雄」として上野公園に銅像が建てられた。現代でも日本人が最も敬愛する歴史人物の一人。',
+     ep:'西南戦争に敗れ城山に追い詰められた西郷は、最後の突撃の前に「もうここらでよかろうか」と言い残したという。すべてを悟った穏やかな表情だったと伝わる。「もう十分戦った。これでいい」という諦念と共に逝ったその姿が、日本人の「潔さ」の美意識の象徴となった。',
+     lgc:'西郷の「敬天愛人」の精神は、現代の京セラ・稲盛和夫らの経営哲学にも影響を与えた。また西南戦争の敗北が「士族反乱の終焉」を意味し、日本が近代的な国民軍（徴兵制）への移行を完成させる契機となった。',
+     conn:['大久保利通（盟友→対立）','木戸孝允（維新三傑の一人）','桐野利秋（西南戦争の将）'],
+     ach:['倒幕運動の中心として薩長同盟を推進','廃藩置県など明治維新の諸改革を主導','征韓論の主張で政府を辞職','1877年 西南戦争で敗れ自刃（享年49歳）'],
+     quote:'命もいらず、名もいらず、官位も金もいらぬ人は始末に困るものなり、しかしこのような人でなければ国家の大業は成し遂げられない',
+     qctx:'西郷の語録集「南洲翁遺訓」より。真の志士の条件を語った言葉',
+     stats:{武力:93,知略:86,魅力:99,人望:98}},
+    {id:'ito',name:'伊藤 博文',rdg:'いとう ひろぶみ',ttl:'初代内閣総理大臣',yrs:'1841〜1909年',
+     e1:'📜',e2:'🏛️🌐',pbg:'linear-gradient(150deg,#00060e,#001228)',mon:'🏛',rar:'★★★★★',
+     bio:'長州出身の下層武士から明治の近代化を法制面でリードした政治家。ヨーロッパへの二度の渡航でドイツ・オーストリアの憲法を研究し、1889年に大日本帝国憲法を起草。同年に初代内閣総理大臣に就任（4度歴任）。立憲政友会を創立し議会政治の基盤を築いた。1909年、ハルビン駅で韓国民族運動家・安重根に暗殺された（享年68歳）。',
+     ep:'ビスマルクのプロイセン憲法を研究するためドイツを訪れた伊藤は、鉄血宰相ビスマルク本人と会談した。「日本はどうすれば近代国家になれるか」と問う伊藤に、ビスマルクは「強い軍隊と強い政府、そして国民の教育だ」と答えたという。この言葉が明治の富国強兵政策の基本思想に影響を与えたとされる。',
+     lgc:'伊藤が起草した大日本帝国憲法は1945年まで日本の国制の基盤となった。また4度の総理在任中に進めた近代化政策は、日本を50年足らずで欧米列強と肩を並べる国に押し上げた礎となった。',
+     conn:['大久保利通（師）','山縣有朋（盟友・ライバル）','岩倉具視（明治の政治家）'],
+     ach:['1885年 初代内閣総理大臣就任（4度歴任）','1889年 大日本帝国憲法発布に尽力','立憲政友会を創立','1909年 ハルビンで安重根に暗殺'],
+     quote:'難事業も着手すれば始まる',
+     qctx:'明治近代化という前代未聞の大事業に取り組む際の姿勢を示した言葉',
+     stats:{武力:62,知略:99,魅力:84,人望:78}},
+    {id:'okubo',name:'大久保 利通',rdg:'おおくぼ としみち',ttl:'維新三傑・明治の父',yrs:'1830〜1878年',
+     e1:'🌅',e2:'⚖️🏛️',pbg:'linear-gradient(150deg,#00050a,#000c1a)',mon:'✚',rar:'★★★★★',
+     bio:'「維新三傑」の一人として明治政府を事実上主導した「明治の父」。冷徹な現実主義と卓越した政治手腕で富国強兵・殖産興業を推進した。西郷隆盛の西南戦争を鎮圧した後、1878年に紀尾井坂の変で不平士族6人に暗殺された（享年47歳）。暗殺者たちはその後従容として死を受け入れたという。大久保の死後、明治政府は新たな指導者を失い転換期を迎えた。',
+     ep:'大久保は西郷の西南戦争を鎮圧した後、遺体の前で号泣したという。「薩摩を二分させたのは自分の責任だ」と嘆き、西郷への弔いの言葉を書き残した。政治的なライバルとして対立しながら、友としての情を最後まで持ち続けた複雑な関係が、明治維新の人間的な側面を示している。',
+     lgc:'大久保が推進した「殖産興業」政策（官営工場の設立・技術者の海外招聘など）は日本の産業近代化の基盤となった。現在の霞が関・官僚主導の行政制度も大久保の国家設計に原型がある。',
+     conn:['西郷隆盛（盟友→政敵→友）','木戸孝允（維新三傑の一人）','伊藤博文（後継者）'],
+     ach:['廃藩置県・地租改正など明治維新の諸改革を主導','富国強兵・殖産興業政策の推進','1877年 西南戦争を鎮圧','1878年 紀尾井坂の変で暗殺（享年47歳）'],
+     quote:'為政の道は、まず人民の安堵をはかることである。人民あっての国家なり',
+     qctx:'内務卿として内政を担った大久保の国家観。国民生活の安定を政治の根本と置いた',
+     stats:{武力:72,知略:98,魅力:76,人望:72}},
+    {id:'ryoma-meiji',name:'福沢 諭吉',rdg:'ふくざわ ゆきち',ttl:'「学問のすすめ」・近代化の先駆者',yrs:'1835〜1901年',
+     e1:'📚',e2:'🖊️🌍',pbg:'linear-gradient(150deg,#000810,#001020)',mon:'📚',rar:'★★★★',
+     bio:'「天は人の上に人を造らず、人の下に人を造らず」の名言で知られる明治の啓蒙思想家。3度の渡米・渡欧で欧米の近代思想を学び、「学問のすすめ」（初版1872年）で330万部という空前のベストセラーを記録した。慶應義塾（現・慶應義塾大学）を創立し、「独立自尊（自分の頭で考え行動する精神）」を教育の根幹に置いた。',
+     ep:'福沢は3度欧米を訪問したが、その都度「西洋が進んでいるのは技術だけではなく思想・制度・文化全体だ」と痛感した。帰国後、多くの知識人が「富国強兵だけを西洋から学ぶ」中で、「人の内面の独立（independence）こそが近代の本質だ」と唱え続けた。この「独立自尊」の精神は慶應義塾の校訓となっている。',
+     lgc:'「学問のすすめ」は明治の近代化を支えた知的基盤となった。また慶應義塾からは政治家・官僚・経営者が多数輩出され、現代日本のエリート教育の基盤を作った。1万円札の肖像として現在も広く知られる。',
+     conn:['伊藤博文（同時代の政治家）','小泉信吉（慶應義塾の後継者）'],
+     ach:['「学問のすすめ」を著し330万部のベストセラーに','慶應義塾（現・慶應義塾大学）を創立','脱亜論など多くの評論・翻訳書を著す','「1万円札の顔」として広く親しまれる'],
+     quote:'天は人の上に人を造らず、人の下に人を造らず',
+     qctx:'「学問のすすめ」第一編の冒頭の言葉。生まれによる身分差別を否定した近代的人間観',
+     stats:{武力:10,知略:95,魅力:90,人望:88}},
+  ],
+  events:[
+    {y:1868,t:'明治維新・五箇条の誓文',d:'天皇中心の新政府が誕生。「万機公論に決すべし」など近代化の方向性を示した五箇条の誓文が発布された。',i:'🌅'},
+    {y:1871,t:'廃藩置県',d:'全国の藩を廃止して府県を設置。中央集権国家への大転換で300年続いた大名支配が一夜にして終わった。',i:'🏛️'},
+    {y:1872,t:'鉄道開通・学制発布',d:'新橋〜横浜間に日本初の鉄道が開通。同年に「学制」が発布され近代的な学校教育が始まった。',i:'🚂'},
+    {y:1877,t:'西南戦争',d:'西郷隆盛率いる士族が反乱。徴兵制による政府軍が勝利し、士族反乱の時代が終わった。',i:'⚔️'},
+    {y:1889,t:'大日本帝国憲法発布',d:'伊藤博文らがドイツ憲法を参考に起草した憲法が発布。アジア初の近代的憲法となった。',i:'📜'},
+    {y:1894,t:'日清戦争',d:'朝鮮をめぐり清国と開戦し勝利。下関条約で台湾・遼東半島を獲得し近代国家としての地位を確立。',i:'⚓'},
+    {y:1904,t:'日露戦争',d:'ロシアとの戦争で日本が勝利（日本海海戦で東郷平八郎が活躍）。列強の仲間入りを果たした。',i:'⚔️'},
+    {y:1912,t:'明治天皇崩御・大正へ',d:'明治天皇が崩御。乃木希典が殉死し一つの時代が終わった。日本は近代国家への変貌を完成させていた。',i:'👑'},
+  ],
+  quiz:{
+    easy:[
+      {q:'初代内閣総理大臣は誰？',c:['伊藤博文','大久保利通','西郷隆盛','木戸孝允'],a:0,h:'大日本帝国憲法も起草',exp:'伊藤博文（1841〜1909）は長州出身の下層武士から初代内閣総理大臣まで上り詰めた。ドイツ・オーストリアで憲法を研究し、大日本帝国憲法を起草。総理大臣を4度歴任し近代日本の基盤を作った。'},
+      {q:'「敬天愛人」を座右の銘とした維新の英雄は？',c:['西郷隆盛','大久保利通','伊藤博文','木戸孝允'],a:0,h:'西南戦争で自刃',exp:'西郷隆盛（1828〜1877）は薩摩の英雄で明治維新の立役者。しかし征韓論で政府と対立して下野し、1877年の西南戦争で敗れ城山で自刃した。「敬天愛人（天を敬い人を愛す）」という言葉と豪放な人柄は今も多くの人を魅了する。'},
+      {q:'「天は人の上に人を造らず」の言葉で知られる思想家は？',c:['福沢諭吉','大久保利通','伊藤博文','勝海舟'],a:0,h:'慶應義塾の創設者',exp:'福沢諭吉（1835〜1901）は「学問のすすめ」の冒頭に「天は人の上に人を造らず、人の下に人を造らず」と記した。生まれによる身分差別を否定したこの言葉は明治の近代的人間観の象徴となった。現在も1万円札の肖像。'},
+      {q:'日本初の鉄道が開通した年は？',c:['1872年','1868年','1889年','1894年'],a:0,h:'明治5年 新橋〜横浜間',exp:'1872年（明治5年）に新橋〜横浜間で日本初の鉄道が開通。イギリスから機関車・技術者を招き建設した。開通式には明治天皇も乗車したとされる。この年に学制も発布され「文明開化」が本格的に動き出した年となった。'},
+      {q:'大日本帝国憲法が発布されたのは？',c:['1889年','1868年','1904年','1877年'],a:0,h:'伊藤博文が中心となって起草',exp:'1889年（明治22年）2月11日に大日本帝国憲法が発布された。アジア初の近代的成文憲法として伊藤博文らがドイツ・オーストリアの憲法を参考に起草した。天皇主権を定めたこの憲法は1946年の日本国憲法施行まで日本の国制の基盤となった。'},
+      {q:'明治期の士族の反乱「西南戦争」を起こしたのは？',c:['西郷隆盛','大久保利通','板垣退助','伊藤博文'],a:0,h:'薩摩の英雄の最後の戦い',exp:'1877年（明治10年）、西郷隆盛を首領とする薩摩士族が反乱を起こした（西南戦争）。しかし徴兵制による政府軍に敗れ、西郷は城山で自刃した。この戦いが「最後の武士の反乱」となり、日本は近代的な国民軍への移行を完成させた。'},
+    ],
+    normal:[
+      {q:'廃藩置県（1871年）が明治政府にとって最大の意義は？',c:['大名300人以上の支配権を一夜にして奪い中央集権を完成させた','税収が2倍になった','農民が土地を持てるようになった','外国との条約改正に成功した'],a:0,h:'大名の支配権の廃止',exp:'廃藩置県は江戸時代の「大名＝藩主＝その地域の支配者」という体制を一夜にして解体した。約300の藩がすべて廃止され中央政府から派遣された知事が管轄する府県に再編された。これにより中央集権国家が制度的に完成した。大名たちは「華族」として処遇され反乱を防いだ。'},
+      {q:'明治維新後に行われた「地租改正」の目的と結果は？',c:['年貢（米による納税）を廃止して地価の3%を現金で納税させ政府の安定財源を確保した','農民への土地分配を行った','地主の力を弱めることに成功した','農業の近代化を実現した'],a:0,h:'税制の近代化',exp:'江戸時代の年貢は米での納税で、豊作・不作により収入が不安定だった。地租改正により地価（土地の値段）に基づく一定率の現金納税に変更。政府は安定した財源を確保できたが、農民の負担は重く地租改正反対一揆が各地で起きた。'},
+      {q:'伊藤博文がドイツ（プロイセン）の憲法を参考にした理由は？',c:['天皇の強い権限を残しつつ近代的体裁を整えられる君主主権型憲法だったから','ドイツが日本と軍事同盟を結んでいたから','英国・米国の憲法は複雑すぎたから','ビスマルクが日本に貢献してくれたから'],a:0,h:'天皇主権との両立',exp:'イギリスの議会制民主主義は「民権が強すぎる」、アメリカの共和制は天皇制と相容れない。一方ドイツ（プロイセン）の憲法は「議会を持ちながら君主（皇帝）に強い権限を残す」という体制で、天皇主権を維持しながら近代国家の体裁を整えたい明治政府の要求にぴったりだった。'},
+      {q:'日清・日露戦争の勝利が日本に与えた最大の影響は？',c:['欧米列強から「対等な近代国家」として認められ不平等条約の改正につながった','大陸に安定した植民地を獲得できた','ロシアから多額の賠償金を得た','国内の反政府運動が収まった'],a:0,h:'列強との外交的地位の変化',exp:'日清戦争勝利（1895年）で台湾・2億両の賠償金を獲得。日露戦争勝利（1905年）でロシアという欧州の大国を破ったことで「有色人種がアジアで白人国家に勝った」と世界を驚かせた。この結果、アジア各国の独立運動にも影響を与え、不平等条約改正交渉でも日本の立場が強まった。'},
+      {q:'福沢諭吉の「脱亜論」（1885年）の主旨は？',c:['朝鮮・清国の近代化が遅れているため日本は欧米と同様に接すべきという主張','アジアとの連帯を強化すべきという主張','欧米文化を拒否してアジア独自の道を歩むべきという主張','移民政策の推進を求めた論文'],a:0,h:'明治18年の評論',exp:'福沢は「文明化の遅れた朝鮮・清国と仲良くしても日本が悪名をもらうだけ。日本は欧米と並ぶ近代国家として進むべきだ」と主張した。この論文は後の帝国主義的膨張の思想的根拠として引用されることもあり、今も評価が分かれる問題作として知られる。'},
+      {q:'「殖産興業」政策の具体的な内容として正しいのは？',c:['官営工場の設立・外国人技術者招聘・留学生派遣で産業の近代化を推進した','農業の機械化を最優先にした','外国企業を日本に誘致した','民間企業の設立を禁止して国が全産業を管理した'],a:0,h:'明治政府の産業政策',exp:'殖産興業は国が主導して近代産業を育てる政策。富岡製糸場（1872年・群馬）など官営模範工場の設立、「お雇い外国人」と呼ばれる欧米技術者の招聘、留学生の欧米派遣が三本柱。1880年代以降は民間への払い下げが進み日本の産業資本主義の基盤が形成された。'},
+    ],
+    hard:[
+      {q:'明治維新を「上からの革命」と評価する歴史学的見方の根拠は？',c:['農民・商人などの民衆の意思ではなく薩長の下級武士エリートが主導した政治変革だったから','天皇が直接すべての改革を指示したから','外国の圧力により強制的に行われたから','大名たちが合議して自発的に行った改革だったから'],a:0,h:'誰が明治維新を担ったか',exp:'フランス革命が「民衆による下からの革命」だったのに対し、明治維新は薩摩・長州の下級武士（下士）エリートが中心となって主導した「上からの近代化」だった。農民や商人は基本的に観客だった。このため日本の近代化は迅速だったが、民主主義の根付きが浅いという弱点も生んだと指摘される。'},
+      {q:'「板垣退助」が推進した「自由民権運動」の歴史的意義として最も包括的なのは？',c:['国民が憲法制定・議会開設を求めた草の根の近代民主主義運動で大日本帝国憲法の早期制定を促した','政府に武力で対抗しようとした反乱運動だった','外国の支援を受けた反政府活動だった','薩長藩閥打倒のみを目的とした権力闘争だった'],a:0,h:'明治10年代の政治運動',exp:'1874年から始まった自由民権運動は「国民にも政治参加の権利を」という近代民主主義の要求運動。板垣退助が中心となり全国に広まった。政府はこれを弾圧しつつも、1889年の憲法制定・1890年の帝国議会開設を早める要因となった。「民から生まれた近代」への第一歩として高く評価される。'},
+      {q:'日露戦争後のポーツマス条約に対して「小村寿太郎外交の功罪」として議論されることは？',c:['賠償金なしの講和条件に国内で暴動（日比谷焼打事件）が起きたが一方で日本の国力の限界を現実的に判断した外交だった','賠償金を大きく得たため批判された','ロシアから領土を多く奪いすぎたために国際的に孤立した','アメリカとの関係を悪化させた'],a:0,h:'1905年の講和条約',exp:'ポーツマス条約で日本は樺太南半分・旅順・大連・南満州鉄道を獲得したが、賠償金を得られなかった。戦費を国債で賄った国民は「なぜ賠償金がないのか」と怒り日比谷焼打事件が勃発。しかし実際には戦争継続の国力がなく、外務大臣小村寿太郎が最善の条件を引き出したという歴史的評価もある。'},
+      {q:'福沢諭吉の「独立自尊」という教育理念が現代日本に与えた遺産として最も本質的なのは？',c:['「自分の頭で考え判断する主体的な人間」を育てるという日本の近代教育の理念的基盤となった','欧米式の教育を機械的に導入した','国家への絶対的な服従を教えた','経済的な自立だけを目標とした'],a:0,h:'慶應義塾の教育理念',exp:'「独立自尊」は「経済的自立」だけでなく「精神的・思想的な独立（自分で判断する力）」を意味する。福沢が「国民の啓蒙」を最優先としたのは、近代国家の主役は「お上の言うことを聞く臣民」でなく「自ら考える市民」でなければならないという確信から。この理念は現代教育における「主体的・対話的な深い学び」の遠い祖先にあたる。'},
+      {q:'明治期の「不平等条約改正」が最終的に達成されるまでにかかった年数と理由は？',c:['40年以上かかった。欧米が「日本の法制度が未整備」と主張し続けたため近代的な法典整備が先決だったから','10年で達成できた','軍事力で圧力をかけて解決した','外国公使の暗殺事件をきっかけに解決した'],a:0,h:'1858年〜1899年',exp:'1858年の安政の五ヶ国条約から、1899年の領事裁判権撤廃まで実に41年かかった。欧米諸国は「日本に近代的な司法制度がないから自国民を日本の法廷に出せない」として改正を拒否。大日本帝国憲法・民法・刑法などの近代的法典整備が完了してようやく撤廃に漕ぎ着けた。'},
+      {q:'西南戦争が近代日本の軍事史に持つ歴史的意義は？',c:['徴兵制による国民軍が武士（士族）の反乱を鎮圧したことで近代的な軍事制度の優位が実証された','幕府の残党が完全に消滅した節目だった','国外への軍事侵攻の出発点となった','天皇陛下が直接指揮を執った初の戦争だった'],a:0,h:'最後の武士反乱',exp:'西南戦争では農民・町人を徴兵した政府軍が、武士（士族）の精鋭で構成された西郷軍を破った。これにより「武士＝最強の戦士」という江戸時代の常識が崩れ、「訓練された国民軍の方が強い」という近代軍事の原則が日本でも実証された。以後、武士階級が軍の主体という考え方は消滅した。'},
+    ]
+  }
+}];
+
+// ═══════════════════════════════════════
+//  ステート
+// ═══════════════════════════════════════
+const SK = 'jhist2';
+let sv = JSON.parse(localStorage.getItem(SK)||'{"xp":0,"str":0,"ld":"","bq":{},"seen":{}}');
+let CE = null, CF = null;
+let QQ=[], QI=0, QScore=0, QXp=0, QDiff='easy', QCombo=0;
+let isAnswered=false;
+const XPL=200;
+const LNAMES=['','史学生','読書家','武士','侍大将','大名','老中','関白','将軍','大老','天下人'];
+const XPD={easy:10,normal:20,hard:35};
+const DNAMES={easy:'⭐ 初級',normal:'⭐⭐ 中級',hard:'⭐⭐⭐ 上級'};
+
+function save(){ localStorage.setItem(SK,JSON.stringify(sv)); }
+
+function checkStreak(){
+  const t=new Date().toDateString();
+  if(sv.ld===t) return;
+  const y=new Date(Date.now()-86400000).toDateString();
+  sv.str=(sv.ld===y)?sv.str+1:1;
+  sv.ld=t; save();
+}
+
+function lv(){ return Math.floor(sv.xp/XPL)+1; }
+
+// ═══════════════════════════════════════
+//  ホーム
+// ═══════════════════════════════════════
+function renderHome(){
+  checkStreak();
+  const l=lv();
+  const ln=LNAMES[Math.min(l,LNAMES.length-1)];
+  document.getElementById('lvl-txt').textContent=`Lv.${l} ${ln}`;
+  const xi=sv.xp%XPL;
+  document.getElementById('xp-fill').style.width=(xi/XPL*100)+'%';
+  document.getElementById('xp-label').textContent=`${xi}/${XPL}XP`;
+  document.getElementById('streak-num').textContent=sv.str;
+
+  // 図鑑カウント
+  const total=ERAS.reduce((s,e)=>s+e.figures.length,0);
+  const seen=Object.keys(sv.seen).length;
+  document.getElementById('collect-n').textContent=seen+'/'+total;
+
+  const grid=document.getElementById('era-grid');
+  grid.innerHTML=ERAS.map(e=>{
+    const b=sv.bq[e.id]||{};
+    const bs=Math.max(b.easy||0,b.normal||0,b.hard||0);
+    const len=e.quiz.easy.length;
+    const stars=bs>=len?'⭐⭐⭐':bs>=Math.ceil(len*.75)?'⭐⭐':bs>=Math.ceil(len*.5)?'⭐':'';
+    const diff=b.hard>0?'上級クリア':b.normal>0?'中級クリア':b.easy>0?'初級クリア':'未挑戦';
+    return `<button class="era-card fadeUp" style="background:${e.grad};border-color:${e.icon}" data-bg="${e.bg}" onclick="openEra('${e.id}')">
+      <div class="ec-icon">${e.icon}</div>
+      <div class="ec-years">${e.years}</div>
+      <div class="ec-title">${e.title}</div>
+      <div class="ec-sub">${e.sub}</div>
+      <div class="ec-stars">${stars}</div>
+      <div class="ec-diff">${diff}</div>
+    </button>`;
+  }).join('');
+}
+
+function goHome(){
+  showScreen('home');
+  renderHome();
+}
+
+// ═══════════════════════════════════════
+//  時代詳細
+// ═══════════════════════════════════════
+function openEra(id){
+  CE=ERAS.find(e=>e.id===id);
+  document.documentElement.style.setProperty('--era-c',CE.ec);
+  document.getElementById('era-ttl').textContent=CE.icon+' '+CE.title;
+  document.getElementById('era-period').textContent=CE.sub+'　'+CE.years;
+  document.getElementById('era-atm').textContent=CE.atm;
+
+  // 年表
+  document.getElementById('tab-nen').innerHTML='<div class="fadeUp">'+
+    CE.events.map(ev=>`<div class="tl-item">
+      <div class="tl-year">${ev.y}</div>
+      <div class="tl-dot">${ev.i}</div>
+      <div class="tl-box"><div class="tl-t">${ev.t}</div><div class="tl-d">${ev.d}</div></div>
+    </div>`).join('')+'</div>';
+
+  // 人物
+  document.getElementById('tab-jin').innerHTML='<div class="fig-grid fadeUp">'+
+    CE.figures.map(f=>`<div class="fig-card" onclick="openFigure('${f.id}')">
+      <div class="fig-port" style="background:${f.pbg}">
+        <div class="fig-port-inner"><div class="fig-main-e">${f.e1}</div><div class="fig-sub-e">${f.e2}</div></div>
+        <div class="fig-rar">${f.rar}</div>
+        <div class="fig-mon">${f.mon}</div>
+      </div>
+      <div class="fig-info"><div class="fig-name">${f.name}</div><div class="fig-ttl">${f.ttl}</div></div>
+    </div>`).join('')+'</div>';
+
+  // クイズタブ
+  const b=sv.bq[CE.id]||{};
+  document.getElementById('tab-qz').innerHTML=`<div class="quiz-tab-wrap fadeUp">
+    <div class="best-box">
+      <div class="best-label">ベストスコア　（各${CE.quiz.easy.length}問）</div>
+      <div class="best-scores">
+        ${['easy','normal','hard'].map(d=>`<div class="best-col">
+          <div class="best-diff-lbl">${DNAMES[d]}</div>
+          <div class="best-val">${b[d]!==undefined?b[d]+'問':'−'}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+    <button class="quiz-start-btn" style="background:${CE.grad}" onclick="openDiffModal()">
+      ⚔️ クイズに挑戦！
+    </button>
+    <div class="quiz-tab-note">
+      初級 <strong style="color:var(--era-c)">+10</strong>　中級 <strong style="color:var(--era-c)">+20</strong>　上級 <strong style="color:var(--era-c)">+35</strong> XP/問<br>
+      全問正解ボーナス <strong style="color:var(--era-c)">+50 XP</strong>
+    </div>
+  </div>`;
+
+  switchTab('nen');
+  showScreen('era');
+}
+
+function switchTab(name){
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>{
+    b.classList.toggle('on',['nen','jin','qz'][i]===name);
+  });
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('on'));
+  document.getElementById('tab-'+name).classList.add('on');
+}
+
+// ═══════════════════════════════════════
+//  人物詳細
+// ═══════════════════════════════════════
+function openFigure(id){
+  CF=CE.figures.find(x=>x.id===id);
+  sv.seen[CE.id+'_'+id]=1; save();
+
+  const l=lv();
+  const ep_lock=l<3, conn_lock=l<5, lgc_lock=l<7;
+
+  // ポートレート
+  document.getElementById('fig-dp').innerHTML=
+    `<div style="position:absolute;inset:0;background:${CF.pbg}"></div>
+     <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.07) 3px,rgba(0,0,0,.07) 4px)"></div>
+     <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,var(--bg) 100%)"></div>
+     <div class="fig-dp-inner"><div class="fig-dp-main">${CF.e1}</div><div class="fig-dp-sub">${CF.e2}</div></div>`;
+
+  const sc={武力:'#ff6b6b',知略:'#4d96ff',魅力:'#c77dff',人望:'#6bcb77'};
+  const statsH=Object.entries(CF.stats).map(([k,v])=>`
+    <div class="stat-row">
+      <div class="stat-lbl">${k}</div>
+      <div class="stat-bg"><div class="stat-bar" style="width:${v}%;background:${sc[k]}"></div></div>
+      <div class="stat-v">${v}</div>
+    </div>`).join('');
+
+  const xpPct=((l-1)%1*100)||0;
+
+  let html=`
+    <div class="fig-nm">${CF.name}</div>
+    <div class="fig-rdg">${CF.rdg}</div>
+    <div class="fig-badge-row">
+      <span class="fig-badge">${CF.rar}</span>
+      <span class="fig-badge">${CF.mon} ${CF.mon}</span>
+      <span class="fig-badge">${CF.ttl}</span>
+    </div>
+    <div class="fig-yrs">📅 ${CF.yrs}</div>
+    <div class="divider"></div>
+    <div class="section-ttl">▸ 人物紹介</div>
+    <div class="fig-bio">${CF.bio}</div>
+    <div class="section-ttl">▸ ステータス</div>
+    ${statsH}
+    <div class="divider"></div>
+    <div class="section-ttl">▸ 主な功績</div>
+    ${CF.ach.map(a=>`<div class="ach-item">${a}</div>`).join('')}
+    <div class="divider"></div>`;
+
+  // エピソード（Lv.3解放）
+  if(ep_lock){
+    html+=`<div class="locked-block">
+      <div class="locked-icon">📖</div>
+      <div class="locked-txt">伝説のエピソード</div>
+      <div class="locked-lv">🔒 Lv.3 で解放</div>
+      <div class="lv-bar-wrap"><div class="lv-bar-fill" style="width:${Math.min((l/3)*100,100)}%"></div></div>
+    </div>`;
+  } else {
+    html+=`<div class="section-ttl">📖 伝説のエピソード</div>
+    <div class="fig-episode">${CF.ep}</div>`;
+  }
+
+  // 繋がり（Lv.5解放）
+  if(conn_lock){
+    html+=`<div class="locked-block">
+      <div class="locked-icon">🔗</div>
+      <div class="locked-txt">人物の繋がり</div>
+      <div class="locked-lv">🔒 Lv.5 で解放</div>
+      <div class="lv-bar-wrap"><div class="lv-bar-fill" style="width:${Math.min((l/5)*100,100)}%"></div></div>
+    </div>`;
+  } else {
+    html+=`<div class="section-ttl">🔗 人物の繋がり</div>
+    <div class="fig-conn">${CF.conn.map(c=>`<span class="conn-tag">${c}</span>`).join('')}</div>`;
+  }
+
+  // 歴史的遺産（Lv.7解放）
+  if(lgc_lock){
+    html+=`<div class="locked-block">
+      <div class="locked-icon">🏛️</div>
+      <div class="locked-txt">歴史的遺産・後世への影響</div>
+      <div class="locked-lv">🔒 Lv.7 で解放</div>
+      <div class="lv-bar-wrap"><div class="lv-bar-fill" style="width:${Math.min((l/7)*100,100)}%"></div></div>
+    </div>`;
+  } else {
+    html+=`<div class="section-ttl">🏛️ 歴史的遺産・後世への影響</div>
+    <div class="fig-legacy">${CF.lgc}</div>`;
+  }
+
+  html+=`<div class="divider"></div>
+    <div class="fig-quote">${CF.quote}<div class="fig-quote-ctx">${CF.qctx}</div></div>`;
+
+  document.getElementById('fig-body').innerHTML=html;
+  showScreen('fig');
+}
+
+function backToEra(){ showScreen('era'); }
+
+// ═══════════════════════════════════════
+//  クイズ
+// ═══════════════════════════════════════
+function openDiffModal(){
+  document.getElementById('diff-modal').classList.add('open');
+}
+function closeDiffModal(e){
+  if(!e||e.target.id==='diff-modal') document.getElementById('diff-modal').classList.remove('open');
+}
+
+function startQuiz(diff){
+  closeDiffModal();
+  QDiff=diff;
+  const raw=[...CE.quiz[diff]];
+  QQ=shuffleChoices(shuffle(raw));
+  QI=0; QScore=0; QXp=0; QCombo=0; isAnswered=false;
+  document.getElementById('qz-era-lbl').textContent=CE.icon+' '+CE.title;
+  document.getElementById('qz-diff-lbl').textContent=DNAMES[diff]+'　+'+XPD[diff]+'XP/問';
+  document.getElementById('exp-panel').classList.remove('show');
+  showScreen('quiz');
+  showQ();
+}
+
+function replayQuiz(){ startQuiz(QDiff); }
+
+function shuffleChoices(qs){
+  return qs.map(q=>{
+    const arr=q.c.map((c,i)=>({c,i}));
+    for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
+    return{...q,c:arr.map(x=>x.c),a:arr.findIndex(x=>x.i===q.a)};
+  });
+}
+
+function showQ(){
+  document.getElementById('exp-panel').classList.remove('show');
+  if(QI>=QQ.length){finishQuiz();return;}
+  const q=QQ[QI];
+  const tot=QQ.length;
+  document.getElementById('q-num').textContent=`第${QI+1}問　／　全${tot}問`;
+  document.getElementById('prog-fill').style.width=(QI/tot*100)+'%';
+  document.getElementById('qz-xp-badge').textContent=`+${QXp} XP`;
+  document.getElementById('q-text').textContent=q.q;
+  document.getElementById('q-hint').textContent=`💡 ヒント：${q.h}`;
+  const combo=document.getElementById('q-combo');
+  if(QCombo>=2){combo.style.display='block';combo.textContent=`🔥 コンボ ×${QCombo}`;}
+  else{combo.style.display='none';}
+  isAnswered=false;
+
+  const grid=document.getElementById('choices-grid');
+  grid.innerHTML='';
+  q.c.forEach((c,i)=>{
+    const btn=document.createElement('button');
+    btn.className='choice-btn qIn';
+    btn.style.animationDelay=(i*.07)+'s';
+    btn.textContent=c;
+    btn.addEventListener('click',()=>checkAnswer(i,q.a,btn,q));
+    grid.appendChild(btn);
+  });
+}
+
+function checkAnswer(chosen,correct,btn,q){
+  if(isAnswered)return;
+  isAnswered=true;
+  document.querySelectorAll('.choice-btn').forEach(b=>b.disabled=true);
+  const allBtns=document.querySelectorAll('.choice-btn');
+
+  if(chosen===correct){
+    btn.classList.add('correct');
+    QCombo++;
+    let gain=XPD[QDiff];
+    if(QCombo>=5) gain+=15;
+    else if(QCombo>=3) gain+=5;
+    QXp+=gain;
+    QScore++;
+    document.getElementById('qz-xp-badge').textContent=`+${QXp} XP`;
+    showExpPanel(true,q.c[correct],q.exp);
+  } else {
+    btn.classList.add('wrong');
+    allBtns[correct].classList.add('correct');
+    QCombo=0;
+    showExpPanel(false,q.c[correct],q.exp);
+  }
+}
+
+function showExpPanel(correct,ans,exp){
+  document.getElementById('exp-mark').textContent=correct?'✅ 正解！':'❌ 不正解…';
+  document.getElementById('exp-mark').style.color=correct?'#6bcb77':'#ff6b6b';
+  document.getElementById('exp-correct-ans').textContent='正解：'+ans;
+  document.getElementById('exp-text').textContent=exp;
+  const last=document.querySelector('.exp-next-btn');
+  last.textContent=QI+1>=QQ.length?'結果を見る ▶':'次の問題へ ▶';
+  document.getElementById('exp-panel').classList.add('show');
+}
+
+function nextQuestion(){
+  document.getElementById('exp-panel').classList.remove('show');
+  QI++;
+  setTimeout(()=>showQ(),150);
+}
+
+function finishQuiz(){
+  const tot=QQ.length;
+  if(QScore>=tot) QXp+=50;
+  sv.xp+=QXp;
+  const prev=(sv.bq[CE.id]||{})[QDiff]||0;
+  if(!sv.bq[CE.id])sv.bq[CE.id]={};
+  sv.bq[CE.id][QDiff]=Math.max(prev,QScore);
+  save();
+
+  const pct=QScore/tot;
+  const stars=pct>=1?'⭐⭐⭐':pct>=.75?'⭐⭐':pct>=.5?'⭐':'';
+  const msgs=['もう少し！問題の解説をよく読もう','基礎は理解できてきた！繰り返して定着させよう','よくできました！もう少しで満点！','素晴らしい！あなたは本物の歴史家！','完璧！真の天下人の知識を持っている！'];
+  const mi=pct>=1?4:pct>=.75?3:pct>=.5?2:pct>=.25?1:0;
+
+  document.getElementById('res-era').textContent=CE.icon+' '+CE.title+'　'+DNAMES[QDiff];
+  document.getElementById('res-title').textContent=QScore>=tot?'パーフェクト！🎊':'クイズ完了！';
+  document.getElementById('res-correct').textContent=QScore;
+  document.getElementById('res-total').textContent=' / '+tot;
+  document.getElementById('res-stars').textContent=stars;
+  document.getElementById('res-xp').textContent=QXp;
+  document.getElementById('res-msg').textContent=msgs[mi];
+  document.getElementById('res-era').style.color=CE.ec;
+  document.getElementById('res-title').style.color=CE.ec;
+
+  showScreen('result');
+  if(QScore>=tot) launchConfetti();
+
+  // アチーブメントチェック
+  checkAchievements();
+  renderHome();
+}
+
+function checkAchievements(){
+  const total=ERAS.reduce((s,e)=>s+e.quiz.easy.length,0);
+  if(!sv.ach) sv.ach={};
+  const achs=[
+    {id:'first',c:()=>QScore>0,msg:'🏆 初陣！ 最初の正解'},
+    {id:'perfect',c:()=>QScore>=QQ.length,msg:'💎 パーフェクト！ 全問正解'},
+    {id:'hard_clear',c:()=>QDiff==='hard'&&QScore>=QQ.length,msg:'👑 上級完全制覇！'},
+    {id:'lv5',c:()=>lv()>=5,msg:'⚔️ Lv.5達成！ 大名の称号'},
+    {id:'lv10',c:()=>lv()>=10,msg:'🌟 Lv.10！ 天下人の称号'},
+    {id:'combo5',c:()=>QCombo>=5,msg:'🔥 コンボ×5達成！'},
+    {id:'allera',c:()=>ERAS.every(e=>(sv.bq[e.id]||{}).easy>0),msg:'📚 全時代制覇！'},
+    {id:'str7',c:()=>sv.str>=7,msg:'🌙 7日連続ログイン！'},
+  ];
+  achs.forEach(a=>{
+    if(!sv.ach[a.id]&&a.c()){
+      sv.ach[a.id]=true; save();
+      setTimeout(()=>showAchievement(a.msg),600);
+    }
+  });
+}
+
+function showAchievement(msg){
+  const p=document.getElementById('ach-popup');
+  document.getElementById('ach-txt').textContent=msg;
+  p.classList.add('show');
+  setTimeout(()=>p.classList.remove('show'),3000);
+}
+
+// ═══════════════════════════════════════
+//  ユーティリティ
+// ═══════════════════════════════════════
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  document.querySelector('#screen-'+name+' .s-body')&&(document.querySelector('#screen-'+name+' .s-body').scrollTop=0);
+}
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+function launchConfetti(){
+  const wrap=document.getElementById('confetti-wrap');
+  wrap.innerHTML='';
+  const cols=['#c9a227','#ffd700','#ff6b6b','#4d96ff','#6bcb77','#c77dff','#ff9f43','#fff'];
+  for(let i=0;i<90;i++){
+    const el=document.createElement('div');
+    el.className='cp';
+    const sz=5+Math.random()*10;
+    el.style.cssText=[`left:${Math.random()*100}vw`,`width:${sz}px`,`height:${sz}px`,
+      `background:${cols[Math.floor(Math.random()*cols.length)]}`,
+      `border-radius:${Math.random()>.5?'50%':'3px'}`,
+      `animation-duration:${1.5+Math.random()*2.5}s`,
+      `animation-delay:${Math.random()*.5}s`].join(';');
+    wrap.appendChild(el);
+  }
+  setTimeout(()=>{wrap.innerHTML='';},4500);
+}
+
+// 起動
+renderHome();
+</script>
+</body>
+</html>
