@@ -7,10 +7,51 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:#111;color:#fff;font-family:'MS Gothic','Courier New',monospace;
-     display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;}
+     display:flex;flex-direction:column;align-items:center;justify-content:flex-start;min-height:100vh;overflow-x:hidden;}
 #gc{width:576px;max-width:100vw;background:#000066;border:3px solid #8888ff;}
 #mapWrap{position:relative;width:576px;height:384px;overflow:hidden;}
 #mapCanvas{display:block;}
+
+/* ========== タッチ操作Dパッド ========== */
+#dpad{display:none;justify-content:center;align-items:center;
+      padding:6px 0 4px;background:#000044;border-top:2px solid #4444aa;user-select:none;}
+#dpadGrid{display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(3,46px);gap:2px;}
+.dpadBtn{background:#000066;border:2px solid #8888ff;color:#fff;font-size:18px;
+         display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:4px;
+         touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+.dpadBtn:active{background:#2222aa;border-color:#ffff44;}
+.dpadC{background:#000044;border-color:#333366;cursor:default;}
+
+@media(max-width:600px){
+  body{justify-content:flex-start;padding-top:2px;}
+  #gc{width:100vw;border-left:none;border-right:none;border-width:2px 0;}
+  #mapWrap{width:100vw;height:calc(100vw * 384 / 576);}
+  #mapWrap canvas{width:100%;height:100%;}
+  #dpad{display:flex;}
+  #partyBar{gap:2px;padding:2px 3px;flex-wrap:wrap;}
+  .charCard{font-size:10px;padding:2px 4px;}
+  .charCard .cname{font-size:11px;}
+  #msgBox{font-size:11px;min-height:52px;padding:5px 8px;margin:2px 3px;}
+  #cmdArea{padding:2px 3px 4px;gap:2px;}
+  .btn{font-size:11px;padding:7px 6px;min-width:0;flex:1;}
+  #titleOv h1{font-size:20px;letter-spacing:3px;}
+  #titleOv h2{font-size:10px;letter-spacing:2px;}
+  .startBtn{font-size:13px;padding:9px 22px;letter-spacing:2px;}
+  .enemyEmoji{font-size:48px;}
+  #battleBg{height:150px;padding:8px 10px;}
+  #battleMsg{font-size:11px;min-height:36px;padding:4px 8px;}
+  #battleCmds{padding:2px 3px;}
+  #battleCmds .btn,#spellPanel .btn,#targetPanel .btn{flex:1;padding:7px 4px;font-size:11px;}
+  .ovTitle{font-size:15px;padding:3px 12px;}
+  .shopRow{font-size:11px;padding:4px 8px;}
+  #shopList{max-height:140px;max-width:100%;}
+  .classCard{padding:5px 8px;max-width:100%;}
+  #storyBody{font-size:11px;}
+  #storyTitle{font-size:17px;}
+  #menuBody{font-size:11px;}
+  #dpadGrid{grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);}
+  .dpadBtn{font-size:22px;}
+}
 #partyBar{display:flex;background:#000044;border-top:2px solid #4444aa;padding:4px 6px;gap:6px;}
 .charCard{flex:1;background:#000066;border:1px solid #4466aa;padding:4px 6px;font-size:11px;min-width:0;}
 .charCard .cname{color:#ffff88;font-size:12px;font-weight:bold;}
@@ -199,6 +240,21 @@ body{background:#111;color:#fff;font-family:'MS Gothic','Courier New',monospace;
       <div style="font-size:22px;color:#ffff44;">✨ CONGRATULATIONS ✨</div>
       <div id="endingText" style="font-size:13px;color:#ccffcc;line-height:2.2;max-width:400px;"></div>
       <button class="btn" style="margin-top:16px" onclick="location.reload()">タイトルへ</button>
+    </div>
+  </div>
+
+  <!-- タッチ操作Dパッド -->
+  <div id="dpad">
+    <div id="dpadGrid">
+      <div></div>
+      <button class="dpadBtn" ontouchstart="dpadPress(0,-1);event.preventDefault()" ontouchend="dpadRelease()" onmousedown="dpadPress(0,-1)" onmouseup="dpadRelease()">▲</button>
+      <div></div>
+      <button class="dpadBtn" ontouchstart="dpadPress(-1,0);event.preventDefault()" ontouchend="dpadRelease()" onmousedown="dpadPress(-1,0)" onmouseup="dpadRelease()">◀</button>
+      <div class="dpadBtn dpadC"></div>
+      <button class="dpadBtn" ontouchstart="dpadPress(1,0);event.preventDefault()" ontouchend="dpadRelease()" onmousedown="dpadPress(1,0)" onmouseup="dpadRelease()">▶</button>
+      <div></div>
+      <button class="dpadBtn" ontouchstart="dpadPress(0,1);event.preventDefault()" ontouchend="dpadRelease()" onmousedown="dpadPress(0,1)" onmouseup="dpadRelease()">▼</button>
+      <div></div>
     </div>
   </div>
 
@@ -790,6 +846,19 @@ function renderPartyBar(){
 // MOVEMENT & ENCOUNTER
 // ============================================================
 let moveBlocked=false;
+
+// ---- タッチDパッド ----
+let _dpadTimer=null;
+function dpadPress(dx,dy){
+  if(G.state!=='map'||moveBlocked) return;
+  movePlayer(dx,dy);
+  _dpadTimer=setInterval(()=>{if(G.state==='map'&&!moveBlocked)movePlayer(dx,dy);},180);
+}
+function dpadRelease(){clearInterval(_dpadTimer);_dpadTimer=null;}
+document.getElementById('dpad').addEventListener('touchstart',e=>e.preventDefault(),{passive:false});
+document.getElementById('dpad').addEventListener('touchend',  e=>e.preventDefault(),{passive:false});
+// ---- ここまで ----
+
 document.addEventListener('keydown',e=>{
   if(G.state!=='map'||moveBlocked) return;
   let dx=0,dy=0;
