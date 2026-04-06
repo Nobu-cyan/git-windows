@@ -1,0 +1,1944 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TOEIC 750点突破アプリ</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --success: #16a34a;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+
+  body {
+    font-family: 'Segoe UI', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+    color: white;
+    padding: 16px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(29,78,216,0.3);
+  }
+  .header-inner {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .header h1 { font-size: 1.2rem; font-weight: 700; }
+  .header-score {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.9rem;
+  }
+  .score-badge {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.4);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-weight: 700;
+    font-size: 1rem;
+  }
+  .streak-badge {
+    background: #fbbf24;
+    color: #78350f;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+  /* Nav */
+  .nav {
+    background: white;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 61px;
+    z-index: 99;
+  }
+  .nav-inner {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    overflow-x: auto;
+  }
+  .nav-btn {
+    flex: 1;
+    min-width: 80px;
+    padding: 14px 8px;
+    border: none;
+    background: none;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .nav-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+  }
+  .nav-btn .nav-icon { display: block; font-size: 1.3rem; margin-bottom: 2px; }
+
+  /* Main */
+  .main {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px 16px;
+  }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+  }
+  .card h2 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+
+  /* Dashboard */
+  .progress-section { margin-bottom: 20px; }
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .progress-bar-bg {
+    height: 12px;
+    background: #e2e8f0;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.5s ease;
+    background: linear-gradient(90deg, #3b82f6, #2563eb);
+  }
+  .score-display {
+    text-align: center;
+    padding: 24px;
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    border-radius: 16px;
+    margin-bottom: 20px;
+  }
+  .score-current { font-size: 3rem; font-weight: 800; color: var(--primary); }
+  .score-arrow { font-size: 1.5rem; color: var(--text-muted); margin: 4px 0; }
+  .score-target { font-size: 1.5rem; font-weight: 700; color: var(--success); }
+  .score-label { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .stat-box {
+    text-align: center;
+    padding: 16px 8px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+  }
+  .stat-num { font-size: 1.6rem; font-weight: 800; color: var(--primary); }
+  .stat-label { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+
+  .daily-tip {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    border-radius: 12px;
+    padding: 16px;
+    border-left: 4px solid #f59e0b;
+  }
+  .daily-tip h3 { font-size: 0.85rem; font-weight: 700; color: #92400e; margin-bottom: 6px; }
+  .daily-tip p { font-size: 0.85rem; color: #78350f; line-height: 1.5; }
+
+  .weak-points {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .weak-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: #fef2f2;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    border: 1px solid #fecaca;
+  }
+  .weak-icon { font-size: 1.1rem; }
+  .weak-text { flex: 1; color: #991b1b; font-weight: 600; }
+  .weak-bar-bg { width: 80px; height: 6px; background: #fca5a5; border-radius: 3px; overflow: hidden; }
+  .weak-bar-fill { height: 100%; background: #ef4444; border-radius: 3px; }
+
+  /* Vocabulary */
+  .flashcard-container { perspective: 1000px; margin-bottom: 20px; }
+  .flashcard {
+    width: 100%;
+    min-height: 200px;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.5s ease;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .flashcard.flipped { transform: rotateY(180deg); }
+  .flashcard-front, .flashcard-back {
+    position: absolute;
+    width: 100%;
+    min-height: 200px;
+    backface-visibility: hidden;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 24px;
+    text-align: center;
+  }
+  .flashcard-front {
+    background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+    color: white;
+  }
+  .flashcard-back {
+    background: linear-gradient(135deg, #065f46, #059669);
+    color: white;
+    transform: rotateY(180deg);
+  }
+  .fc-word { font-size: 2rem; font-weight: 800; margin-bottom: 8px; }
+  .fc-pos { font-size: 0.85rem; opacity: 0.8; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; margin-bottom: 12px; }
+  .fc-hint { font-size: 0.85rem; opacity: 0.7; }
+  .fc-meaning { font-size: 1.4rem; font-weight: 700; margin-bottom: 10px; }
+  .fc-example { font-size: 0.85rem; opacity: 0.85; line-height: 1.6; }
+  .fc-example em { font-style: normal; font-weight: 700; text-decoration: underline; }
+
+  .flashcard-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+  .vocab-nav {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-success { background: var(--success); color: white; }
+  .btn-success:hover { background: #15803d; }
+  .btn-danger { background: var(--danger); color: white; }
+  .btn-danger:hover { background: #b91c1c; }
+  .btn-gray { background: #e2e8f0; color: var(--text); }
+  .btn-gray:hover { background: #cbd5e1; }
+  .btn-warning { background: var(--warning); color: white; }
+  .btn-warning:hover { background: #b45309; }
+
+  .flip-hint {
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+
+  .category-filter {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    margin-bottom: 16px;
+  }
+  .cat-btn {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border: 2px solid var(--border);
+    border-radius: 20px;
+    background: white;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .cat-btn.active {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: white;
+  }
+
+  /* Grammar */
+  .question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .q-num { font-size: 0.8rem; color: var(--text-muted); }
+  .q-difficulty {
+    font-size: 0.75rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 700;
+  }
+  .diff-easy { background: #dcfce7; color: #15803d; }
+  .diff-medium { background: #fef3c7; color: #92400e; }
+  .diff-hard { background: #fee2e2; color: #991b1b; }
+
+  .question-text {
+    font-size: 1rem;
+    line-height: 1.8;
+    margin-bottom: 20px;
+    background: #f8fafc;
+    padding: 16px;
+    border-radius: 10px;
+    border-left: 4px solid var(--primary);
+    font-weight: 500;
+  }
+  .blank {
+    display: inline-block;
+    border-bottom: 2px solid var(--primary);
+    min-width: 60px;
+    text-align: center;
+    font-weight: 700;
+    color: var(--primary);
+  }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .option-btn {
+    padding: 14px 16px;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    background: white;
+    text-align: left;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 500;
+  }
+  .option-btn:hover:not(:disabled) { border-color: var(--primary); background: #eff6ff; }
+  .option-btn.correct { border-color: var(--success); background: #dcfce7; color: #15803d; }
+  .option-btn.wrong { border-color: var(--danger); background: #fee2e2; color: #991b1b; }
+  .option-btn:disabled { cursor: default; }
+  .option-label {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+  .option-btn.correct .option-label { background: var(--success); color: white; }
+  .option-btn.wrong .option-label { background: var(--danger); color: white; }
+
+  .explanation {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: #0c4a6e;
+    display: none;
+    margin-bottom: 16px;
+  }
+  .explanation.show { display: block; }
+  .explanation strong { color: #0369a1; }
+
+  .grammar-score {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 12px;
+    margin-bottom: 16px;
+  }
+  .g-score-item { text-align: center; }
+  .g-score-num { font-size: 1.5rem; font-weight: 800; }
+  .g-score-label { font-size: 0.75rem; color: var(--text-muted); }
+
+  /* Reading */
+  .passage {
+    font-size: 0.9rem;
+    line-height: 1.9;
+    color: var(--text);
+    background: #fafafa;
+    padding: 18px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+    max-height: 280px;
+    overflow-y: auto;
+  }
+  .passage p { margin-bottom: 10px; }
+  .r-question {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+  .passage-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .passage-type {
+    font-size: 0.75rem;
+    padding: 3px 10px;
+    background: #ede9fe;
+    color: #5b21b6;
+    border-radius: 20px;
+    font-weight: 700;
+  }
+  .reading-nav {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .passage-num {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-align: center;
+    flex: 1;
+  }
+
+  /* Progress tracking */
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+  .cal-label {
+    text-align: center;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    padding: 4px 0;
+  }
+  .cal-day {
+    aspect-ratio: 1;
+    border-radius: 6px;
+    background: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+  .cal-day.studied { background: var(--primary); color: white; }
+  .cal-day.today { background: var(--warning); color: white; }
+  .cal-day.empty { background: transparent; }
+
+  .achievement-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .achievement {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+  }
+  .achievement.unlocked { background: #fef9c3; border-color: #fde047; }
+  .ach-icon { font-size: 1.5rem; }
+  .ach-info { flex: 1; }
+  .ach-name { font-size: 0.9rem; font-weight: 700; }
+  .ach-desc { font-size: 0.75rem; color: var(--text-muted); }
+  .ach-locked { font-size: 0.75rem; color: #94a3b8; }
+
+  .chart-bar-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .chart-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.82rem;
+  }
+  .chart-label { width: 90px; color: var(--text-muted); font-weight: 600; text-align: right; }
+  .chart-bar-wrap { flex: 1; height: 22px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+  .chart-bar { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; color: white; font-size: 0.72rem; font-weight: 700; transition: width 0.5s ease; }
+  .chart-val { width: 40px; text-align: right; font-weight: 700; color: var(--text); }
+
+  /* Result overlay */
+  .result-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .result-overlay.show { display: flex; }
+  .result-box {
+    background: white;
+    border-radius: 20px;
+    padding: 32px 24px;
+    text-align: center;
+    max-width: 360px;
+    width: 100%;
+    animation: popIn 0.3s ease;
+  }
+  @keyframes popIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .result-icon { font-size: 3rem; margin-bottom: 12px; }
+  .result-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 8px; }
+  .result-score { font-size: 2.5rem; font-weight: 800; color: var(--primary); margin-bottom: 8px; }
+  .result-message { font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 20px; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: #1e293b;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 24px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    z-index: 300;
+    transition: transform 0.3s ease;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ===== RESPONSIVE ===== */
+
+  /* スマホ：ナビを画面下部に固定 */
+  @media (max-width: 640px) {
+    .nav {
+      position: fixed;
+      bottom: 0;
+      top: auto;
+      left: 0;
+      right: 0;
+      border-top: 1px solid var(--border);
+      border-bottom: none;
+      box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+      z-index: 100;
+    }
+    .nav-inner {
+      justify-content: space-around;
+    }
+    .nav-btn {
+      flex: 1;
+      min-width: 0;
+      padding: 10px 4px 8px;
+      font-size: 0.72rem;
+      border-bottom: none;
+      border-top: 3px solid transparent;
+    }
+    .nav-btn.active {
+      border-bottom: none;
+      border-top-color: var(--primary);
+    }
+    .nav-btn .nav-icon { font-size: 1.4rem; margin-bottom: 1px; }
+
+    /* ヘッダー調整 */
+    .header {
+      padding: 12px 16px;
+    }
+    .header h1 { font-size: 1rem; }
+    .score-badge { font-size: 0.9rem; padding: 4px 12px; }
+    .streak-badge { font-size: 0.8rem; padding: 4px 10px; }
+
+    /* メインコンテンツに下ナビ分の余白 */
+    .main {
+      padding: 16px 12px 88px;
+    }
+
+    /* カード */
+    .card { padding: 16px; border-radius: 14px; }
+    .card h2 { font-size: 0.95rem; margin-bottom: 12px; }
+
+    /* スコア表示 */
+    .score-display { padding: 18px 12px; }
+    .score-current { font-size: 2.6rem; }
+    .score-arrow { font-size: 1.1rem; }
+    .score-target { font-size: 1.2rem; }
+
+    /* 統計グリッド */
+    .stats-grid { gap: 8px; }
+    .stat-box { padding: 12px 6px; border-radius: 10px; }
+    .stat-num { font-size: 1.4rem; }
+    .stat-label { font-size: 0.68rem; }
+
+    /* 苦手バー */
+    .weak-item { padding: 10px 10px; gap: 8px; font-size: 0.82rem; }
+    .weak-bar-bg { width: 60px; }
+
+    /* フラッシュカード */
+    .flashcard-front, .flashcard-back { padding: 24px 18px; min-height: 180px; }
+    .flashcard { min-height: 180px; }
+    .fc-word { font-size: 1.7rem; }
+    .fc-meaning { font-size: 1.2rem; }
+    .fc-example { font-size: 0.82rem; }
+
+    /* 語彙ナビ：2×2グリッド */
+    .vocab-nav {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    /* ボタン全般のタップ領域 */
+    .btn { padding: 13px 10px; font-size: 0.85rem; border-radius: 10px; }
+
+    /* カテゴリフィルター */
+    .category-filter { gap: 6px; }
+    .cat-btn { padding: 6px 12px; font-size: 0.78rem; }
+
+    /* 問題文 */
+    .question-text { font-size: 0.92rem; padding: 14px 12px; line-height: 1.75; }
+    .option-btn { padding: 13px 12px; font-size: 0.88rem; }
+
+    /* 解説 */
+    .explanation { font-size: 0.82rem; padding: 12px 14px; }
+
+    /* 文法スコア */
+    .grammar-score { gap: 14px; padding: 14px 8px; }
+    .g-score-num { font-size: 1.3rem; }
+
+    /* チャートラベル */
+    .chart-label { width: 70px; font-size: 0.78rem; }
+    .chart-val { width: 36px; font-size: 0.78rem; }
+    .chart-bar { font-size: 0.68rem; }
+
+    /* リーディング */
+    .passage { font-size: 0.86rem; padding: 14px 12px; max-height: 240px; line-height: 1.8; }
+    .r-question { font-size: 0.9rem; }
+
+    /* カレンダー */
+    .cal-day { font-size: 0.62rem; border-radius: 5px; }
+    .cal-label { font-size: 0.68rem; }
+
+    /* 実績 */
+    .achievement { padding: 10px 12px; gap: 10px; }
+    .ach-icon { font-size: 1.3rem; }
+    .ach-name { font-size: 0.85rem; }
+
+    /* トースト：折り返し対応 */
+    .toast {
+      white-space: normal;
+      max-width: calc(100vw - 40px);
+      text-align: center;
+      font-size: 0.85rem;
+      padding: 10px 20px;
+      bottom: 80px;
+    }
+
+    /* スコア更新入力 */
+    #newScore { font-size: 0.95rem; padding: 11px; }
+
+    /* 結果オーバーレイ */
+    .result-box { padding: 24px 20px; }
+    .result-icon { font-size: 2.4rem; }
+    .result-title { font-size: 1.2rem; }
+    .result-score { font-size: 2rem; }
+  }
+
+  /* 極小画面（320px以下） */
+  @media (max-width: 360px) {
+    .header h1 { font-size: 0.9rem; }
+    .score-badge { display: none; }
+    .score-current { font-size: 2.2rem; }
+    .stat-num { font-size: 1.2rem; }
+    .fc-word { font-size: 1.5rem; }
+    .chart-label { width: 58px; font-size: 0.72rem; }
+  }
+
+  /* タブレット */
+  @media (min-width: 641px) and (max-width: 900px) {
+    .main { padding: 20px; }
+    .card { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <h1>🎯 TOEIC 750点突破</h1>
+    <div class="header-score">
+      <span class="streak-badge" id="streakBadge">🔥 0日</span>
+      <span class="score-badge" id="headerScore">600点</span>
+    </div>
+  </div>
+</div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <button class="nav-btn active" onclick="showTab('dashboard')">
+      <span class="nav-icon">🏠</span>ホーム
+    </button>
+    <button class="nav-btn" onclick="showTab('vocabulary')">
+      <span class="nav-icon">📚</span>語彙
+    </button>
+    <button class="nav-btn" onclick="showTab('grammar')">
+      <span class="nav-icon">✏️</span>文法
+    </button>
+    <button class="nav-btn" onclick="showTab('reading')">
+      <span class="nav-icon">📖</span>読解
+    </button>
+    <button class="nav-btn" onclick="showTab('progress')">
+      <span class="nav-icon">📊</span>記録
+    </button>
+  </div>
+</nav>
+
+<main class="main">
+
+  <!-- DASHBOARD -->
+  <div id="tab-dashboard" class="tab-content active">
+    <div class="card">
+      <div class="score-display">
+        <div class="score-current" id="currentScoreDisplay">600</div>
+        <div class="score-arrow">↓ 目標まで <strong id="scoreDiff">150点</strong></div>
+        <div class="score-target">🎯 750点</div>
+        <div class="score-label">TOEICスコア</div>
+      </div>
+      <div class="progress-section">
+        <div class="progress-label">
+          <span>達成率</span>
+          <span id="achievePercent">0%</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="mainProgress" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📈 今日の学習</h2>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-num" id="todayVocab">0</div>
+          <div class="stat-label">語彙習得</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="todayGrammar">0</div>
+          <div class="stat-label">文法正解</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="todayReading">0</div>
+          <div class="stat-label">読解問題</div>
+        </div>
+      </div>
+      <div class="progress-section">
+        <div class="progress-label">
+          <span>本日の目標</span>
+          <span id="todayProgressPct">0%</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="todayProgress" style="width:0%; background: linear-gradient(90deg, #10b981, #059669);"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>⚡ 苦手ポイント</h2>
+      <div class="weak-points">
+        <div class="weak-item">
+          <span class="weak-icon">📝</span>
+          <span class="weak-text">前置詞・接続詞の使い分け</span>
+          <div class="weak-bar-bg"><div class="weak-bar-fill" id="weakBar1" style="width:70%"></div></div>
+        </div>
+        <div class="weak-item">
+          <span class="weak-icon">🔤</span>
+          <span class="weak-text">ビジネス語彙</span>
+          <div class="weak-bar-bg"><div class="weak-bar-fill" id="weakBar2" style="width:55%"></div></div>
+        </div>
+        <div class="weak-item">
+          <span class="weak-icon">📄</span>
+          <span class="weak-text">長文読解スピード</span>
+          <div class="weak-bar-bg"><div class="weak-bar-fill" id="weakBar3" style="width:45%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>💡 今日のポイント</h2>
+      <div class="daily-tip">
+        <h3 id="tipTitle">🎯 Part 5 攻略のコツ</h3>
+        <p id="tipContent">空所の前後を見て品詞を確認しよう。空所の直前が冠詞(a/the)や形容詞なら名詞、be動詞なら形容詞か現在分詞が入ります。まず「品詞問題」として解くクセをつけましょう！</p>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+      <button class="btn btn-primary" onclick="showTab('vocabulary')">📚 語彙練習</button>
+      <button class="btn btn-success" onclick="showTab('grammar')">✏️ 文法練習</button>
+    </div>
+  </div>
+
+  <!-- VOCABULARY -->
+  <div id="tab-vocabulary" class="tab-content">
+    <div class="card">
+      <h2>📚 TOEICビジネス語彙</h2>
+      <div class="category-filter">
+        <button class="cat-btn active" onclick="setVocabCat('all', this)">すべて</button>
+        <button class="cat-btn" onclick="setVocabCat('business', this)">ビジネス</button>
+        <button class="cat-btn" onclick="setVocabCat('finance', this)">金融</button>
+        <button class="cat-btn" onclick="setVocabCat('office', this)">オフィス</button>
+        <button class="cat-btn" onclick="setVocabCat('travel', this)">旅行</button>
+        <button class="cat-btn" onclick="setVocabCat('stared', this)">⭐ 要復習</button>
+      </div>
+
+      <div class="flashcard-meta">
+        <span id="vocabCounter">1 / 30</span>
+        <span id="vocabMastered" style="color: var(--success); font-weight:700;">✓ 習得: 0語</span>
+      </div>
+
+      <div class="flashcard-container">
+        <div class="flashcard" id="flashcard" onclick="flipCard()">
+          <div class="flashcard-front">
+            <div class="fc-word" id="fcWord">Loading...</div>
+            <div class="fc-pos" id="fcPos">名詞</div>
+            <div class="fc-hint" id="fcHint">タップして意味を確認</div>
+          </div>
+          <div class="flashcard-back">
+            <div class="fc-meaning" id="fcMeaning">-</div>
+            <div class="fc-example" id="fcExample">-</div>
+          </div>
+        </div>
+      </div>
+
+      <p class="flip-hint">👆 カードをタップして意味を確認</p>
+
+      <div class="vocab-nav">
+        <button class="btn btn-gray" onclick="prevCard()">← 前へ</button>
+        <button class="btn btn-danger" onclick="markCard('hard')">😓 難しい</button>
+        <button class="btn btn-success" onclick="markCard('easy')">✓ 覚えた</button>
+        <button class="btn btn-gray" onclick="nextCard()">次へ →</button>
+      </div>
+      <button class="btn btn-warning" onclick="toggleStar()" id="starBtn" style="margin-top:8px; width:100%;">⭐ 要復習に追加</button>
+    </div>
+
+    <div class="card">
+      <h2>📊 語彙進捗</h2>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-num" id="vocabTotal">0</div>
+          <div class="stat-label">総学習数</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="vocabMasteredCount">0</div>
+          <div class="stat-label" style="color:var(--success)">習得済み</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="vocabStarred">0</div>
+          <div class="stat-label" style="color:var(--warning)">要復習</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRAMMAR -->
+  <div id="tab-grammar" class="tab-content">
+    <div class="card">
+      <h2>✏️ Part 5 文法問題</h2>
+      <div class="grammar-score">
+        <div class="g-score-item">
+          <div class="g-score-num" id="grammarCorrect" style="color:var(--success)">0</div>
+          <div class="g-score-label">正解</div>
+        </div>
+        <div class="g-score-item">
+          <div class="g-score-num" id="grammarWrong" style="color:var(--danger)">0</div>
+          <div class="g-score-label">不正解</div>
+        </div>
+        <div class="g-score-item">
+          <div class="g-score-num" id="grammarAccuracy">-</div>
+          <div class="g-score-label">正答率</div>
+        </div>
+      </div>
+
+      <div class="question-header">
+        <span class="q-num" id="qNum">問題 1 / 20</span>
+        <span class="q-difficulty diff-medium" id="qDiff">普通</span>
+      </div>
+
+      <div class="question-text" id="questionText">Loading...</div>
+
+      <div class="options" id="optionsContainer"></div>
+
+      <div class="explanation" id="explanation"></div>
+
+      <button class="btn btn-primary" id="nextQBtn" onclick="nextQuestion()" style="display:none">次の問題 →</button>
+    </div>
+
+    <div class="card">
+      <h2>📋 文法カテゴリ別正答率</h2>
+      <div class="chart-bar-group" id="grammarChart"></div>
+    </div>
+  </div>
+
+  <!-- READING -->
+  <div id="tab-reading" class="tab-content">
+    <div class="card">
+      <h2>📖 Part 7 読解問題</h2>
+
+      <div class="reading-nav">
+        <button class="btn btn-gray" style="flex:0 0 auto; padding:10px 16px;" onclick="prevPassage()">← 前</button>
+        <div class="passage-num" id="passageNum">英文 1 / 5</div>
+        <button class="btn btn-gray" style="flex:0 0 auto; padding:10px 16px;" onclick="nextPassage()">次 →</button>
+      </div>
+
+      <div class="passage-meta">
+        <span class="passage-type" id="passageType">Eメール</span>
+        <span style="font-size:0.78rem; color:var(--text-muted);" id="passageLevel">難易度: ★★☆</span>
+      </div>
+
+      <div class="passage" id="passageText"></div>
+
+      <div id="readingQuestions"></div>
+      <div class="explanation" id="readingExplanation"></div>
+
+      <button class="btn btn-primary" id="nextRQBtn" onclick="nextReadingQ()" style="display:none; margin-top:12px;">次の問題 →</button>
+    </div>
+
+    <div class="card">
+      <h2>📊 読解スコア</h2>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-num" id="readingCorrect" style="font-size:1.3rem">0</div>
+          <div class="stat-label">正解</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="readingTotal" style="font-size:1.3rem">0</div>
+          <div class="stat-label">総問題数</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="readingRate" style="font-size:1.3rem">-%</div>
+          <div class="stat-label">正答率</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div id="tab-progress" class="tab-content">
+    <div class="card">
+      <h2>📅 学習カレンダー</h2>
+      <div class="calendar-grid" id="calDayLabels"></div>
+      <div class="calendar-grid" id="calGrid"></div>
+      <p style="font-size:0.75rem; color:var(--text-muted); margin-top:8px;">
+        <span style="display:inline-block;width:12px;height:12px;background:var(--primary);border-radius:3px;margin-right:4px;vertical-align:middle;"></span>学習済み
+        <span style="display:inline-block;width:12px;height:12px;background:var(--warning);border-radius:3px;margin-right:4px;vertical-align:middle;"></span>今日
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>📈 カテゴリ別スコア推移</h2>
+      <div class="chart-bar-group">
+        <div class="chart-row">
+          <span class="chart-label">語彙</span>
+          <div class="chart-bar-wrap"><div class="chart-bar" id="progVocab" style="width:0%;background:#3b82f6">0%</div></div>
+          <span class="chart-val" id="progVocabVal">0%</span>
+        </div>
+        <div class="chart-row">
+          <span class="chart-label">文法</span>
+          <div class="chart-bar-wrap"><div class="chart-bar" id="progGrammar" style="width:0%;background:#10b981">0%</div></div>
+          <span class="chart-val" id="progGrammarVal">0%</span>
+        </div>
+        <div class="chart-row">
+          <span class="chart-label">読解</span>
+          <div class="chart-bar-wrap"><div class="chart-bar" id="progReading" style="width:0%;background:#f59e0b">0%</div></div>
+          <span class="chart-val" id="progReadingVal">0%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🏆 実績</h2>
+      <div class="achievement-list" id="achievementList"></div>
+    </div>
+
+    <div class="card">
+      <h2>⚙️ スコア更新</h2>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">模試・本番の結果を入力してスコアを更新しましょう</p>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <input type="number" id="newScore" placeholder="例: 650" min="0" max="990"
+          style="flex:1; padding:12px; border:2px solid var(--border); border-radius:10px; font-size:1rem; font-weight:700;">
+        <button class="btn btn-primary" style="flex:0 0 auto;" onclick="updateScore()">更新</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Result Overlay -->
+<div class="result-overlay" id="resultOverlay">
+  <div class="result-box">
+    <div class="result-icon" id="resultIcon">🎉</div>
+    <div class="result-title" id="resultTitle">セッション完了！</div>
+    <div class="result-score" id="resultScoreDisplay">-</div>
+    <div class="result-message" id="resultMessage">-</div>
+    <button class="btn btn-primary" onclick="closeResult()">続ける</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================
+// DATA
+// ============================
+
+const VOCAB_DATA = [
+  // Business
+  { word: "negotiate", pos: "動詞", meaning: "交渉する", example: "We need to <em>negotiate</em> the contract terms.", cat: "business" },
+  { word: "facilitate", pos: "動詞", meaning: "促進する・容易にする", example: "This tool will <em>facilitate</em> communication.", cat: "business" },
+  { word: "implement", pos: "動詞", meaning: "実施する・導入する", example: "We plan to <em>implement</em> new procedures.", cat: "business" },
+  { word: "collaborate", pos: "動詞", meaning: "協力する", example: "Teams must <em>collaborate</em> effectively.", cat: "business" },
+  { word: "delegate", pos: "動詞", meaning: "委任する・委託する", example: "She decided to <em>delegate</em> the task.", cat: "business" },
+  { word: "initiative", pos: "名詞", meaning: "主導権・イニシアチブ", example: "We launched a new marketing <em>initiative</em>.", cat: "business" },
+  { word: "comprehensive", pos: "形容詞", meaning: "包括的な・総合的な", example: "A <em>comprehensive</em> report was submitted.", cat: "business" },
+  { word: "prospective", pos: "形容詞", meaning: "見込みの・将来の", example: "<em>Prospective</em> clients attended the seminar.", cat: "business" },
+  { word: "substantial", pos: "形容詞", meaning: "かなりの・相当な", example: "There was a <em>substantial</em> increase in sales.", cat: "business" },
+  // Finance
+  { word: "invoice", pos: "名詞", meaning: "請求書・送り状", example: "Please send the <em>invoice</em> by Friday.", cat: "finance" },
+  { word: "reimburse", pos: "動詞", meaning: "払い戻す・弁済する", example: "We will <em>reimburse</em> your travel expenses.", cat: "finance" },
+  { word: "revenue", pos: "名詞", meaning: "収益・歳入", example: "Annual <em>revenue</em> exceeded expectations.", cat: "finance" },
+  { word: "expenditure", pos: "名詞", meaning: "支出・経費", example: "Capital <em>expenditure</em> was reduced.", cat: "finance" },
+  { word: "fiscal", pos: "形容詞", meaning: "財政上の・会計の", example: "The <em>fiscal</em> year ends in March.", cat: "finance" },
+  { word: "audit", pos: "名詞/動詞", meaning: "監査（する）", example: "An external <em>audit</em> was conducted.", cat: "finance" },
+  { word: "deficit", pos: "名詞", meaning: "赤字・不足額", example: "The company reported a budget <em>deficit</em>.", cat: "finance" },
+  // Office
+  { word: "agenda", pos: "名詞", meaning: "議題・予定表", example: "The <em>agenda</em> was distributed before the meeting.", cat: "office" },
+  { word: "premises", pos: "名詞", meaning: "敷地・施設", example: "Visitors must sign in on the <em>premises</em>.", cat: "office" },
+  { word: "correspondence", pos: "名詞", meaning: "通信・文書のやりとり", example: "All <em>correspondence</em> should be filed.", cat: "office" },
+  { word: "adjourn", pos: "動詞", meaning: "（会議を）延期する・散会する", example: "The meeting was <em>adjourned</em> at 5 p.m.", cat: "office" },
+  { word: "tentative", pos: "形容詞", meaning: "仮の・暫定的な", example: "We have a <em>tentative</em> schedule.", cat: "office" },
+  { word: "mandatory", pos: "形容詞", meaning: "義務的な・必須の", example: "Attendance is <em>mandatory</em> for all staff.", cat: "office" },
+  { word: "confidential", pos: "形容詞", meaning: "機密の・秘密の", example: "This information is strictly <em>confidential</em>.", cat: "office" },
+  // Travel
+  { word: "itinerary", pos: "名詞", meaning: "旅程・旅行計画", example: "Please review the travel <em>itinerary</em>.", cat: "travel" },
+  { word: "accommodate", pos: "動詞", meaning: "収容する・宿泊させる", example: "The hotel can <em>accommodate</em> 300 guests.", cat: "travel" },
+  { word: "reservation", pos: "名詞", meaning: "予約", example: "Your <em>reservation</em> has been confirmed.", cat: "travel" },
+  { word: "complimentary", pos: "形容詞", meaning: "無料の・優待の", example: "<em>Complimentary</em> breakfast is included.", cat: "travel" },
+  { word: "layover", pos: "名詞", meaning: "乗り継ぎ・経由停止", example: "We have a 3-hour <em>layover</em> in Dubai.", cat: "travel" },
+  { word: "commute", pos: "動詞/名詞", meaning: "通勤する/通勤", example: "His daily <em>commute</em> takes 45 minutes.", cat: "travel" },
+  { word: "vicinity", pos: "名詞", meaning: "近辺・付近", example: "There are many restaurants in the <em>vicinity</em>.", cat: "travel" },
+];
+
+const GRAMMAR_DATA = [
+  {
+    question: "The manager decided to _____ the meeting until next Monday.",
+    options: ["postpone", "propose", "promote", "proceed"],
+    answer: 0,
+    explanation: "<strong>postpone</strong> は「延期する」。前置詞 until（〜まで）と一緒によく使われます。propose（提案する）、promote（昇進させる）、proceed（進む）は文意に合いません。",
+    category: "語彙", difficulty: "medium"
+  },
+  {
+    question: "All employees are required to submit their expense reports _____ the end of the month.",
+    options: ["for", "by", "until", "during"],
+    answer: 1,
+    explanation: "<strong>by</strong> は「〜までに（期限）」を表す前置詞。until は「〜まで（継続）」なので注意。「月末までに提出する」にはbyが正解です。",
+    category: "前置詞", difficulty: "easy"
+  },
+  {
+    question: "The new policy will be _____ next quarter.",
+    options: ["implementing", "implemented", "to implement", "implement"],
+    answer: 1,
+    explanation: "<strong>implemented</strong>（過去分詞）が正解。will be + 過去分詞 = 未来の受動態。「方針が実施される」という受動の意味になります。",
+    category: "動詞・態", difficulty: "medium"
+  },
+  {
+    question: "The report _____ by the team before it was submitted to the board.",
+    options: ["had reviewed", "has been reviewed", "had been reviewed", "was reviewing"],
+    answer: 2,
+    explanation: "<strong>had been reviewed</strong>（過去完了受動態）が正解。「提出される（過去）よりも前に」レビューされたという時制の前後関係を表します。",
+    category: "動詞・時制", difficulty: "hard"
+  },
+  {
+    question: "_____ the bad weather, the outdoor event was canceled.",
+    options: ["Because", "Due to", "Although", "Unless"],
+    answer: 1,
+    explanation: "<strong>Due to</strong> は「〜のために」という理由を表す前置詞句。Becauseは接続詞なので後ろに節（S+V）が必要。the bad weather は名詞句なのでDue toが正解。",
+    category: "接続詞・前置詞", difficulty: "medium"
+  },
+  {
+    question: "The company has experienced a _____ increase in online sales since last year.",
+    options: ["significance", "significant", "significantly", "signify"],
+    answer: 1,
+    explanation: "<strong>significant</strong>（形容詞）が正解。空所の後は名詞 increase があるので、名詞を修飾する形容詞が入ります。品詞問題はTOEIC Part 5の最頻出パターンです。",
+    category: "品詞", difficulty: "easy"
+  },
+  {
+    question: "The marketing department is responsible _____ developing new strategies.",
+    options: ["to", "for", "of", "with"],
+    answer: 1,
+    explanation: "<strong>be responsible for</strong> は定型表現で「〜に責任がある・〜を担当している」という意味。前置詞の固定表現はTOEICでよく出題されます。",
+    category: "前置詞", difficulty: "easy"
+  },
+  {
+    question: "_____ was announced at the meeting surprised everyone.",
+    options: ["Which", "What", "That", "How"],
+    answer: 1,
+    explanation: "<strong>What</strong> は先行詞を含む関係代名詞で「〜すること・〜するもの」という意味。文の主語になる名詞節を作ります。What was announced = 「発表されたこと」",
+    category: "関係詞", difficulty: "hard"
+  },
+  {
+    question: "Please let me know if you need _____ assistance with the project.",
+    options: ["some", "any", "every", "each"],
+    answer: 1,
+    explanation: "<strong>any</strong> が正解。if節の中や疑問文では some ではなく any を使います。「何か助けが必要であれば」という意味になります。",
+    category: "代名詞・数量詞", difficulty: "medium"
+  },
+  {
+    question: "The contract _____ by both parties before it becomes valid.",
+    options: ["must sign", "must be signed", "must signing", "must have sign"],
+    answer: 1,
+    explanation: "<strong>must be signed</strong>（助動詞+受動態）が正解。「契約書は署名されなければならない」という受動の意味。助動詞+be+過去分詞が受動態の形です。",
+    category: "動詞・態", difficulty: "medium"
+  },
+  {
+    question: "The _____ of the new product line exceeded our initial projections.",
+    options: ["perform", "performance", "performing", "performed"],
+    answer: 1,
+    explanation: "<strong>performance</strong>（名詞）が正解。文の主語となる位置なので名詞が必要。The + [名詞] + of という構造になります。品詞問題の基本パターンです。",
+    category: "品詞", difficulty: "easy"
+  },
+  {
+    question: "We will proceed with the plan _____ we receive approval from the director.",
+    options: ["once", "although", "despite", "whereas"],
+    answer: 0,
+    explanation: "<strong>once</strong>（〜したらすぐに・〜次第）が正解。「承認を得たらすぐに進める」という条件を表す接続詞。althoughは逆接、despiteは前置詞、whereasは対比。",
+    category: "接続詞", difficulty: "medium"
+  },
+  {
+    question: "The seminar is open to _____ is interested in digital marketing.",
+    options: ["who", "whoever", "whom", "which"],
+    answer: 1,
+    explanation: "<strong>whoever</strong>（〜する人は誰でも）が正解。whoever = anyone who という意味で、先行詞を含む複合関係代名詞です。",
+    category: "関係詞", difficulty: "hard"
+  },
+  {
+    question: "Staff members are _____ encouraged to participate in training programs.",
+    options: ["strong", "strength", "strengthen", "strongly"],
+    answer: 3,
+    explanation: "<strong>strongly</strong>（副詞）が正解。encouraged は過去分詞（形容詞的用法）で、副詞が修飾します。strongly encouraged = 強く奨励される、という固定表現でもあります。",
+    category: "品詞", difficulty: "medium"
+  },
+  {
+    question: "The presentation _____ Mr. Kim gave yesterday was very informative.",
+    options: ["who", "whose", "which", "what"],
+    answer: 2,
+    explanation: "<strong>which</strong>（関係代名詞・目的格）が正解。先行詞が「The presentation」（モノ）なので which を使います。Mr. Kim が主語、gave が動詞の関係詞節です。",
+    category: "関係詞", difficulty: "medium"
+  },
+  {
+    question: "The shipment arrived two days _____ than expected.",
+    options: ["soon", "sooner", "soonest", "as soon"],
+    answer: 1,
+    explanation: "<strong>sooner</strong>（比較級）が正解。than があるので比較級が必要。soon → sooner → soonest。「予想より2日早く到着した」という意味です。",
+    category: "比較", difficulty: "easy"
+  },
+  {
+    question: "We are looking for a candidate _____ has experience in project management.",
+    options: ["whose", "who", "whom", "which"],
+    answer: 1,
+    explanation: "<strong>who</strong>（関係代名詞・主格）が正解。先行詞がa candidate（人）で、関係詞節の動詞 has の主語となるので主格のwhoを使います。",
+    category: "関係詞", difficulty: "easy"
+  },
+  {
+    question: "_____ increasing competition, the company managed to maintain its market share.",
+    options: ["Despite", "Because of", "As a result of", "In addition to"],
+    answer: 0,
+    explanation: "<strong>Despite</strong>（〜にもかかわらず）が正解。「競争が激化しているにもかかわらず、市場シェアを維持した」という逆接の意味。Despite + 名詞/名詞句が基本形。",
+    category: "前置詞", difficulty: "medium"
+  },
+  {
+    question: "The CEO _____ the importance of teamwork in her closing remarks.",
+    options: ["emphasized", "emphasis", "emphatic", "emphasizing"],
+    answer: 0,
+    explanation: "<strong>emphasized</strong>（動詞・過去形）が正解。文の述語動詞の位置なので動詞が必要。The CEO が主語で、emphasized が動詞、the importance が目的語です。",
+    category: "品詞", difficulty: "easy"
+  },
+  {
+    question: "Please ensure that all documents are _____ before the deadline.",
+    options: ["submit", "submitted", "submitting", "submission"],
+    answer: 1,
+    explanation: "<strong>submitted</strong>（過去分詞）が正解。are + 過去分詞 = 受動態。「すべての書類が提出された状態であることを確認してください」という意味。",
+    category: "動詞・態", difficulty: "medium"
+  },
+];
+
+const READING_DATA = [
+  {
+    type: "Eメール",
+    level: "★★☆",
+    passage: `<p>From: Sarah Mitchell &lt;s.mitchell@techcorp.com&gt;<br>To: All Staff<br>Subject: Office Renovation Notice<br>Date: March 15</p>
+<p>Dear Colleagues,</p>
+<p>I am writing to inform you that our office renovation will begin on March 22 and is expected to be completed by April 5. During this period, the third floor will be temporarily closed.</p>
+<p>Employees currently working on the third floor will be relocated to the conference rooms on the second floor. Please note that parking in Lot B will also be unavailable during the renovation. We recommend using the municipal parking garage on Oak Street, which offers a discounted rate for our employees.</p>
+<p>A complimentary shuttle service will run between Oak Street and the office every 30 minutes from 7:30 A.M. to 6:30 P.M. If you have any questions, please contact the facilities department at ext. 204.</p>
+<p>Thank you for your cooperation.</p>
+<p>Sarah Mitchell<br>Facilities Manager</p>`,
+    questions: [
+      {
+        q: "What is the purpose of this email?",
+        options: ["To announce a new parking policy", "To notify staff about an office renovation", "To introduce a shuttle service", "To request employees work from home"],
+        answer: 1,
+        exp: "第1段落「office renovation will begin on March 22」から、オフィスの改装について通知するメールだとわかります。"
+      },
+      {
+        q: "Where will third-floor employees work during the renovation?",
+        options: ["At home", "In Lot B", "In second-floor conference rooms", "At Oak Street parking garage"],
+        answer: 2,
+        exp: "第2段落「will be relocated to the conference rooms on the second floor」から、2階の会議室に移動することがわかります。"
+      },
+      {
+        q: "How often does the shuttle service run?",
+        options: ["Every 15 minutes", "Every 20 minutes", "Every 30 minutes", "Every 45 minutes"],
+        answer: 2,
+        exp: "第3段落「every 30 minutes」から、30分ごとに運行することがわかります。"
+      }
+    ]
+  },
+  {
+    type: "お知らせ",
+    level: "★★☆",
+    passage: `<p><strong>NOTICE: Annual Performance Reviews</strong></p>
+<p>All full-time employees are reminded that annual performance reviews will take place from October 1 through October 31. Supervisors are asked to complete evaluation forms and submit them to the Human Resources department no later than September 20.</p>
+<p>This year, the review process has been updated to include a self-assessment component. Each employee will be asked to complete a self-evaluation form, which can be downloaded from the company intranet. Completed self-assessments should be submitted to your immediate supervisor at least one week before your scheduled review.</p>
+<p>Employees who have questions about the review process or need assistance accessing the self-evaluation forms should contact HR at hrteam@company.com or call extension 300.</p>`,
+    questions: [
+      {
+        q: "When must supervisors submit evaluation forms?",
+        options: ["By October 1", "By October 31", "By September 20", "By September 1"],
+        answer: 2,
+        exp: "第1段落「submit them to the Human Resources department no later than September 20」から、9月20日までが期限です。"
+      },
+      {
+        q: "What is new about this year's review process?",
+        options: ["It will be done online only", "It includes a self-assessment", "It will last two months", "It requires manager approval"],
+        answer: 1,
+        exp: "第2段落「updated to include a self-assessment component」から、自己評価が新たに追加されたことがわかります。"
+      }
+    ]
+  },
+  {
+    type: "広告",
+    level: "★☆☆",
+    passage: `<p><strong>Grand Opening Sale — Riverside Electronics</strong></p>
+<p>Celebrate the grand opening of our newest location at 450 Riverside Boulevard! From April 10 to April 17, enjoy incredible savings on all products.</p>
+<p>• 20% off all laptops and desktop computers<br>• 15% off tablets and smartphones<br>• Free installation on all home appliances purchased over $500<br>• Extended warranty available at no extra charge on selected items</p>
+<p>As a special thank-you to our loyal customers, anyone who presents a Riverside Electronics membership card will receive an additional 5% discount on any purchase.</p>
+<p>Store hours during the sale: Monday–Saturday 9 A.M.–9 P.M., Sunday 10 A.M.–7 P.M.</p>
+<p>Visit us at 450 Riverside Boulevard or shop online at www.riversideelectronics.com</p>`,
+    questions: [
+      {
+        q: "What discount do membership card holders receive?",
+        options: ["10% off", "15% off", "An additional 5% off", "Free installation"],
+        answer: 2,
+        exp: "「anyone who presents a Riverside Electronics membership card will receive an additional 5% discount」から、メンバーカード保持者は追加5%割引を受けられます。"
+      },
+      {
+        q: "What is offered free with appliance purchases over $500?",
+        options: ["Extended warranty", "Delivery", "Installation", "Membership card"],
+        answer: 2,
+        exp: "「Free installation on all home appliances purchased over $500」から、500ドル以上の家電購入で設置が無料になります。"
+      }
+    ]
+  },
+  {
+    type: "記事",
+    level: "★★★",
+    passage: `<p><strong>Remote Work Reshapes Corporate Real Estate Strategy</strong></p>
+<p>Companies across various industries are reevaluating their office space needs as hybrid work arrangements become increasingly common. According to a recent survey conducted by the Global Workforce Institute, approximately 68% of mid-sized companies have reduced their office footprints by at least 20% over the past two years.</p>
+<p>Industry analysts suggest that this trend is expected to continue, with many organizations shifting toward flexible, activity-based workspaces rather than assigned seating. "The traditional model of one desk per employee is becoming obsolete," noted Dr. Patricia Howe, a workplace consultant. "Companies are now designing spaces that support collaboration and focus work in equal measure."</p>
+<p>Despite the reduction in physical space, investment in office technology has increased significantly. High-speed internet infrastructure, video conferencing equipment, and smart building systems are among the top priorities for companies redesigning their workspaces.</p>`,
+    questions: [
+      {
+        q: "According to the survey, what percentage of companies reduced their office space?",
+        options: ["About 20%", "About 48%", "About 68%", "About 80%"],
+        answer: 2,
+        exp: "「approximately 68% of mid-sized companies have reduced their office footprints」から、約68%の企業がオフィス面積を削減したことがわかります。"
+      },
+      {
+        q: "What does Dr. Patricia Howe suggest about traditional offices?",
+        options: ["They are still the most productive", "The one-desk-per-employee model is outdated", "Companies should invest in more space", "Remote work is a temporary trend"],
+        answer: 1,
+        exp: "「The traditional model of one desk per employee is becoming obsolete」から、従来の1人1デスクモデルは時代遅れになりつつあると述べています。"
+      },
+      {
+        q: "What has increased despite the reduction in office space?",
+        options: ["Number of employees", "Investment in office technology", "Assigned seating areas", "Number of office locations"],
+        answer: 1,
+        exp: "第3段落「investment in office technology has increased significantly」から、オフィス技術への投資が増加していることがわかります。"
+      }
+    ]
+  },
+  {
+    type: "社内文書",
+    level: "★★☆",
+    passage: `<p><strong>MEMORANDUM</strong><br>To: All Department Heads<br>From: Michael Chen, CFO<br>Date: February 28<br>Subject: Q1 Budget Review</p>
+<p>Please be advised that the first-quarter budget review meeting has been rescheduled from March 5 to March 12 at 2:00 P.M. in Conference Room A. This change was necessitated by the unexpected delay in receiving the audited financial statements from our external accounting firm.</p>
+<p>All department heads are required to attend this meeting in person. If you are traveling on that date and cannot attend in person, please notify my office by March 7 so that appropriate arrangements can be made for remote participation.</p>
+<p>Prior to the meeting, each department head should prepare a summary of Q1 expenditures and projected costs for Q2. These summaries must be submitted electronically to finance@company.com by noon on March 10.</p>`,
+    questions: [
+      {
+        q: "Why was the meeting rescheduled?",
+        options: ["The CFO was traveling", "A conference room was unavailable", "Financial statements were delayed", "Department heads requested a change"],
+        answer: 2,
+        exp: "「unexpected delay in receiving the audited financial statements」から、財務諸表の受け取りが遅延したために会議が変更されたことがわかります。"
+      },
+      {
+        q: "What should department heads who cannot attend in person do?",
+        options: ["Send a representative", "Submit a written report", "Notify the CFO's office by March 7", "Cancel their participation"],
+        answer: 2,
+        exp: "「notify my office by March 7 so that appropriate arrangements can be made for remote participation」から、3月7日までにCFOのオフィスに連絡する必要があります。"
+      }
+    ]
+  }
+];
+
+// ============================
+// STATE
+// ============================
+let state = JSON.parse(localStorage.getItem('toeicAppState') || 'null') || {
+  currentScore: 600,
+  streak: 0,
+  lastStudyDate: null,
+  totalVocabSeen: 0,
+  masteredWords: [],
+  starredWords: [],
+  grammarCorrect: 0,
+  grammarWrong: 0,
+  grammarCategoryStats: {},
+  readingCorrect: 0,
+  readingTotal: 0,
+  todayVocab: 0,
+  todayGrammar: 0,
+  todayReading: 0,
+  studiedDates: [],
+};
+
+function saveState() {
+  localStorage.setItem('toeicAppState', JSON.stringify(state));
+}
+
+// ============================
+// TABS
+// ============================
+function showTab(name) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  const tabs = ['dashboard','vocabulary','grammar','reading','progress'];
+  document.querySelectorAll('.nav-btn')[tabs.indexOf(name)].classList.add('active');
+
+  if (name === 'progress') renderProgress();
+  if (name === 'dashboard') updateDashboard();
+}
+
+// ============================
+// STREAK & DATE
+// ============================
+function checkStreak() {
+  const today = new Date().toDateString();
+  if (state.lastStudyDate !== today) {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (state.lastStudyDate === yesterday.toDateString()) {
+      state.streak++;
+    } else if (!state.lastStudyDate) {
+      state.streak = 1;
+    } else {
+      state.streak = 1;
+    }
+    state.lastStudyDate = today;
+    if (!state.studiedDates.includes(today)) state.studiedDates.push(today);
+    state.todayVocab = 0;
+    state.todayGrammar = 0;
+    state.todayReading = 0;
+    saveState();
+  }
+}
+
+// ============================
+// DASHBOARD
+// ============================
+const TIPS = [
+  { title: "🎯 Part 5 品詞問題の攻略", content: "空所の前後を確認して品詞を判定しよう。冠詞・形容詞の後→名詞、be動詞の後→形容詞、動詞を修飾→副詞。この基本パターンで正答率が大幅アップ！" },
+  { title: "📖 Part 7 時間配分のコツ", content: "シングルパッセージは1問30秒を目安に。設問を先に読んでから本文を読むと効率的。キーワードを本文でスキャンする練習をしよう。" },
+  { title: "🔤 前置詞の頻出パターン", content: "by（期限）/ until（継続）/ for（期間・目的）/ in（場所・期間）/ on（日・曜日）の違いを意識しよう。特にby/untilの区別は頻出！" },
+  { title: "💼 ビジネス語彙強化法", content: "TOEICによく出るビジネスシーン：会議、メール、出張、採用、財務。各シーンの関連語彙をまとめて覚えると効率的です。" },
+  { title: "⏱️ 時制・態のルール", content: "受動態 = be動詞 + 過去分詞。will be done（未来受動）、has been done（現在完了受動）、was done（過去受動）を区別できるようにしよう。" },
+];
+
+function updateDashboard() {
+  const target = 750;
+  const start = 600;
+  const current = state.currentScore;
+  const diff = target - current;
+  const pct = Math.max(0, Math.min(100, Math.round((current - start) / (target - start) * 100)));
+
+  document.getElementById('currentScoreDisplay').textContent = current;
+  document.getElementById('scoreDiff').textContent = diff > 0 ? diff + '点' : '達成！';
+  document.getElementById('mainProgress').style.width = pct + '%';
+  document.getElementById('achievePercent').textContent = pct + '%';
+  document.getElementById('headerScore').textContent = current + '点';
+  document.getElementById('streakBadge').textContent = '🔥 ' + state.streak + '日';
+
+  const todayTotal = state.todayVocab + state.todayGrammar + state.todayReading;
+  const todayGoal = 30;
+  const todayPct = Math.min(100, Math.round(todayTotal / todayGoal * 100));
+  document.getElementById('todayVocab').textContent = state.todayVocab;
+  document.getElementById('todayGrammar').textContent = state.todayGrammar;
+  document.getElementById('todayReading').textContent = state.todayReading;
+  document.getElementById('todayProgress').style.width = todayPct + '%';
+  document.getElementById('todayProgressPct').textContent = todayPct + '%';
+
+  const tip = TIPS[new Date().getDay() % TIPS.length];
+  document.getElementById('tipTitle').textContent = tip.title;
+  document.getElementById('tipContent').textContent = tip.content;
+}
+
+function updateScore() {
+  const val = parseInt(document.getElementById('newScore').value);
+  if (isNaN(val) || val < 0 || val > 990) {
+    showToast('0〜990の範囲で入力してください');
+    return;
+  }
+  state.currentScore = val;
+  saveState();
+  updateDashboard();
+  showToast('スコアを ' + val + '点 に更新しました！');
+  document.getElementById('newScore').value = '';
+}
+
+// ============================
+// VOCABULARY
+// ============================
+let currentVocabCat = 'all';
+let filteredVocab = [...VOCAB_DATA];
+let vocabIndex = 0;
+let isFlipped = false;
+
+function setVocabCat(cat, btn) {
+  currentVocabCat = cat;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  if (cat === 'all') filteredVocab = [...VOCAB_DATA];
+  else if (cat === 'stared') filteredVocab = VOCAB_DATA.filter(v => state.starredWords.includes(v.word));
+  else filteredVocab = VOCAB_DATA.filter(v => v.cat === cat);
+
+  vocabIndex = 0;
+  isFlipped = false;
+  if (filteredVocab.length === 0) {
+    showToast('該当する単語がありません');
+    return;
+  }
+  renderCard();
+}
+
+function renderCard() {
+  if (filteredVocab.length === 0) return;
+  const v = filteredVocab[vocabIndex];
+  const fc = document.getElementById('flashcard');
+  fc.classList.remove('flipped');
+  isFlipped = false;
+
+  document.getElementById('fcWord').textContent = v.word;
+  document.getElementById('fcPos').textContent = v.pos;
+  document.getElementById('fcHint').textContent = '👆 タップして意味を確認';
+  document.getElementById('fcMeaning').textContent = v.meaning;
+  document.getElementById('fcExample').innerHTML = v.example;
+  document.getElementById('vocabCounter').textContent = (vocabIndex + 1) + ' / ' + filteredVocab.length;
+  document.getElementById('vocabMastered').textContent = '✓ 習得: ' + state.masteredWords.length + '語';
+
+  const starBtn = document.getElementById('starBtn');
+  starBtn.textContent = state.starredWords.includes(v.word) ? '⭐ 要復習から削除' : '⭐ 要復習に追加';
+
+  updateVocabStats();
+}
+
+function flipCard() {
+  isFlipped = !isFlipped;
+  document.getElementById('flashcard').classList.toggle('flipped', isFlipped);
+}
+
+function nextCard() {
+  vocabIndex = (vocabIndex + 1) % filteredVocab.length;
+  renderCard();
+}
+
+function prevCard() {
+  vocabIndex = (vocabIndex - 1 + filteredVocab.length) % filteredVocab.length;
+  renderCard();
+}
+
+function markCard(difficulty) {
+  const v = filteredVocab[vocabIndex];
+  if (difficulty === 'easy' && !state.masteredWords.includes(v.word)) {
+    state.masteredWords.push(v.word);
+    state.todayVocab++;
+    saveState();
+    showToast('✓ 「' + v.word + '」を習得しました！');
+  } else if (difficulty === 'hard') {
+    showToast('📌 あとで復習しましょう');
+  }
+  updateVocabStats();
+  nextCard();
+}
+
+function toggleStar() {
+  const v = filteredVocab[vocabIndex];
+  const idx = state.starredWords.indexOf(v.word);
+  if (idx === -1) {
+    state.starredWords.push(v.word);
+    showToast('⭐ 要復習に追加しました');
+  } else {
+    state.starredWords.splice(idx, 1);
+    showToast('⭐ 要復習から削除しました');
+  }
+  saveState();
+  renderCard();
+}
+
+function updateVocabStats() {
+  document.getElementById('vocabTotal').textContent = state.totalVocabSeen || filteredVocab.length;
+  document.getElementById('vocabMasteredCount').textContent = state.masteredWords.length;
+  document.getElementById('vocabStarred').textContent = state.starredWords.length;
+}
+
+// ============================
+// GRAMMAR
+// ============================
+let grammarIndex = 0;
+let grammarAnswered = false;
+let shuffledGrammar = [...GRAMMAR_DATA];
+
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function renderQuestion() {
+  const q = shuffledGrammar[grammarIndex];
+  grammarAnswered = false;
+
+  document.getElementById('qNum').textContent = '問題 ' + (grammarIndex + 1) + ' / ' + shuffledGrammar.length;
+  const diffMap = { easy: ['易しい', 'diff-easy'], medium: ['普通', 'diff-medium'], hard: ['難しい', 'diff-hard'] };
+  const [dLabel, dClass] = diffMap[q.difficulty] || ['普通', 'diff-medium'];
+  const diffEl = document.getElementById('qDiff');
+  diffEl.textContent = dLabel;
+  diffEl.className = 'q-difficulty ' + dClass;
+
+  document.getElementById('questionText').innerHTML = q.question.replace('_____', '<span class="blank">_____</span>');
+
+  const container = document.getElementById('optionsContainer');
+  container.innerHTML = '';
+  const labels = ['A', 'B', 'C', 'D'];
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.innerHTML = `<span class="option-label">${labels[i]}</span>${opt}`;
+    btn.onclick = () => answerGrammar(i, btn);
+    container.appendChild(btn);
+  });
+
+  document.getElementById('explanation').classList.remove('show');
+  document.getElementById('explanation').innerHTML = '';
+  document.getElementById('nextQBtn').style.display = 'none';
+
+  updateGrammarScore();
+  renderGrammarChart();
+}
+
+function answerGrammar(idx, btn) {
+  if (grammarAnswered) return;
+  grammarAnswered = true;
+
+  const q = shuffledGrammar[grammarIndex];
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach(b => b.disabled = true);
+
+  if (idx === q.answer) {
+    btn.classList.add('correct');
+    state.grammarCorrect++;
+    state.todayGrammar++;
+    showToast('✓ 正解！');
+    if (!state.grammarCategoryStats[q.category]) state.grammarCategoryStats[q.category] = { correct: 0, total: 0 };
+    state.grammarCategoryStats[q.category].correct++;
+  } else {
+    btn.classList.add('wrong');
+    btns[q.answer].classList.add('correct');
+    state.grammarWrong++;
+    showToast('✗ 不正解...');
+    if (!state.grammarCategoryStats[q.category]) state.grammarCategoryStats[q.category] = { correct: 0, total: 0 };
+  }
+
+  if (!state.grammarCategoryStats[q.category]) state.grammarCategoryStats[q.category] = { correct: 0, total: 0 };
+  state.grammarCategoryStats[q.category].total++;
+
+  const expEl = document.getElementById('explanation');
+  expEl.innerHTML = '📝 <strong>解説:</strong> ' + q.explanation;
+  expEl.classList.add('show');
+  document.getElementById('nextQBtn').style.display = 'block';
+
+  saveState();
+  updateGrammarScore();
+
+  if (grammarIndex + 1 >= shuffledGrammar.length && grammarAnswered) {
+    setTimeout(showGrammarResult, 500);
+  }
+}
+
+function nextQuestion() {
+  grammarIndex = (grammarIndex + 1) % shuffledGrammar.length;
+  if (grammarIndex === 0) shuffleArray(shuffledGrammar);
+  renderQuestion();
+}
+
+function updateGrammarScore() {
+  const total = state.grammarCorrect + state.grammarWrong;
+  document.getElementById('grammarCorrect').textContent = state.grammarCorrect;
+  document.getElementById('grammarWrong').textContent = state.grammarWrong;
+  document.getElementById('grammarAccuracy').textContent = total ? Math.round(state.grammarCorrect / total * 100) + '%' : '-';
+}
+
+function renderGrammarChart() {
+  const container = document.getElementById('grammarChart');
+  container.innerHTML = '';
+  const cats = Object.keys(state.grammarCategoryStats);
+  if (cats.length === 0) {
+    container.innerHTML = '<p style="color:var(--text-muted); font-size:0.85rem; text-align:center;">問題に答えると統計が表示されます</p>';
+    return;
+  }
+  cats.forEach(cat => {
+    const s = state.grammarCategoryStats[cat];
+    const pct = s.total ? Math.round(s.correct / s.total * 100) : 0;
+    const color = pct >= 70 ? '#10b981' : pct >= 50 ? '#f59e0b' : '#ef4444';
+    container.innerHTML += `
+      <div class="chart-row">
+        <span class="chart-label">${cat}</span>
+        <div class="chart-bar-wrap"><div class="chart-bar" style="width:${pct}%;background:${color}">${pct > 15 ? pct+'%' : ''}</div></div>
+        <span class="chart-val">${pct}%</span>
+      </div>`;
+  });
+}
+
+function showGrammarResult() {
+  const total = state.grammarCorrect + state.grammarWrong;
+  const pct = total ? Math.round(state.grammarCorrect / total * 100) : 0;
+  let msg = pct >= 80 ? '素晴らしい！この調子で続けましょう！' : pct >= 60 ? 'なかなか良いですね。苦手分野を重点的に復習しよう！' : '基礎固めが大切です。解説をしっかり読んで復習しましょう。';
+  showResult('✏️', '文法セッション完了', pct + '%', msg);
+}
+
+// ============================
+// READING
+// ============================
+let readingPassageIndex = 0;
+let readingQIndex = 0;
+let readingAnswered = false;
+
+function renderPassage() {
+  const p = READING_DATA[readingPassageIndex];
+  document.getElementById('passageNum').textContent = '英文 ' + (readingPassageIndex + 1) + ' / ' + READING_DATA.length;
+  document.getElementById('passageType').textContent = p.type;
+  document.getElementById('passageLevel').textContent = '難易度: ' + p.level;
+  document.getElementById('passageText').innerHTML = p.passage;
+  renderReadingQ();
+}
+
+function renderReadingQ() {
+  const p = READING_DATA[readingPassageIndex];
+  const q = p.questions[readingQIndex];
+  readingAnswered = false;
+
+  const container = document.getElementById('readingQuestions');
+  container.innerHTML = `
+    <div class="r-question">Q${readingQIndex + 1}. ${q.q}</div>
+    <div class="options" id="readingOptions"></div>`;
+
+  const labels = ['A', 'B', 'C', 'D'];
+  const optContainer = document.getElementById('readingOptions');
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.innerHTML = `<span class="option-label">${labels[i]}</span>${opt}`;
+    btn.onclick = () => answerReading(i, btn);
+    optContainer.appendChild(btn);
+  });
+
+  document.getElementById('readingExplanation').classList.remove('show');
+  document.getElementById('nextRQBtn').style.display = 'none';
+}
+
+function answerReading(idx, btn) {
+  if (readingAnswered) return;
+  readingAnswered = true;
+
+  const p = READING_DATA[readingPassageIndex];
+  const q = p.questions[readingQIndex];
+  const btns = document.querySelectorAll('#readingOptions .option-btn');
+  btns.forEach(b => b.disabled = true);
+
+  state.readingTotal++;
+  if (idx === q.answer) {
+    btn.classList.add('correct');
+    state.readingCorrect++;
+    state.todayReading++;
+    showToast('✓ 正解！');
+  } else {
+    btn.classList.add('wrong');
+    btns[q.answer].classList.add('correct');
+    showToast('✗ 不正解...');
+  }
+
+  const expEl = document.getElementById('readingExplanation');
+  expEl.innerHTML = '📝 <strong>解説:</strong> ' + q.exp;
+  expEl.classList.add('show');
+  document.getElementById('nextRQBtn').style.display = 'block';
+
+  saveState();
+  updateReadingScore();
+}
+
+function nextReadingQ() {
+  const p = READING_DATA[readingPassageIndex];
+  if (readingQIndex + 1 < p.questions.length) {
+    readingQIndex++;
+    renderReadingQ();
+  } else {
+    readingQIndex = 0;
+    readingPassageIndex = (readingPassageIndex + 1) % READING_DATA.length;
+    renderPassage();
+    showToast('次の英文へ進みます');
+  }
+}
+
+function prevPassage() {
+  readingPassageIndex = (readingPassageIndex - 1 + READING_DATA.length) % READING_DATA.length;
+  readingQIndex = 0;
+  renderPassage();
+}
+
+function nextPassage() {
+  readingPassageIndex = (readingPassageIndex + 1) % READING_DATA.length;
+  readingQIndex = 0;
+  renderPassage();
+}
+
+function updateReadingScore() {
+  document.getElementById('readingCorrect').textContent = state.readingCorrect;
+  document.getElementById('readingTotal').textContent = state.readingTotal;
+  document.getElementById('readingRate').textContent = state.readingTotal ? Math.round(state.readingCorrect / state.readingTotal * 100) + '%' : '-%';
+}
+
+// ============================
+// PROGRESS
+// ============================
+function renderProgress() {
+  renderCalendar();
+  renderProgressBars();
+  renderAchievements();
+}
+
+function renderCalendar() {
+  const dayLabels = document.getElementById('calDayLabels');
+  const grid = document.getElementById('calGrid');
+  const days = ['日','月','火','水','木','金','土'];
+  dayLabels.innerHTML = days.map(d => `<div class="cal-label">${d}</div>`).join('');
+
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  let html = '';
+  for (let i = 0; i < firstDay; i++) html += '<div class="cal-day empty"></div>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(year, month, d).toDateString();
+    const isToday = d === today.getDate();
+    const isStudied = state.studiedDates.includes(date);
+    const cls = isToday ? 'today' : isStudied ? 'studied' : '';
+    html += `<div class="cal-day ${cls}">${d}</div>`;
+  }
+  grid.innerHTML = html;
+}
+
+function renderProgressBars() {
+  const vocabPct = Math.min(100, Math.round(state.masteredWords.length / VOCAB_DATA.length * 100));
+  const total = state.grammarCorrect + state.grammarWrong;
+  const grammarPct = total ? Math.round(state.grammarCorrect / total * 100) : 0;
+  const readingPct = state.readingTotal ? Math.round(state.readingCorrect / state.readingTotal * 100) : 0;
+
+  ['Vocab','Grammar','Reading'].forEach((key, i) => {
+    const pct = [vocabPct, grammarPct, readingPct][i];
+    document.getElementById('prog' + key).style.width = pct + '%';
+    document.getElementById('prog' + key).textContent = pct > 10 ? pct + '%' : '';
+    document.getElementById('prog' + key + 'Val').textContent = pct + '%';
+  });
+}
+
+const ACHIEVEMENTS = [
+  { id: 'first_vocab', name: '語彙デビュー', desc: '初めて単語を習得した', icon: '📚', check: s => s.masteredWords.length >= 1 },
+  { id: 'vocab10', name: '語彙マスター10', desc: '10語を習得した', icon: '🔤', check: s => s.masteredWords.length >= 10 },
+  { id: 'grammar10', name: '文法チャレンジャー', desc: '文法問題に10問正解した', icon: '✏️', check: s => s.grammarCorrect >= 10 },
+  { id: 'streak3', name: '3日連続学習', desc: '3日連続で学習した', icon: '🔥', check: s => s.streak >= 3 },
+  { id: 'streak7', name: '1週間継続', desc: '7日連続で学習した', icon: '⚡', check: s => s.streak >= 7 },
+  { id: 'reading5', name: '読解クリア5', desc: '読解問題に5問正解した', icon: '📖', check: s => s.readingCorrect >= 5 },
+  { id: 'score650', name: '650点突破', desc: 'スコアが650点を超えた', icon: '🎯', check: s => s.currentScore >= 650 },
+  { id: 'score700', name: '700点の壁', desc: 'スコアが700点を超えた', icon: '🏅', check: s => s.currentScore >= 700 },
+  { id: 'score750', name: '目標達成！', desc: 'スコアが750点に達した！', icon: '🏆', check: s => s.currentScore >= 750 },
+];
+
+function renderAchievements() {
+  const list = document.getElementById('achievementList');
+  list.innerHTML = ACHIEVEMENTS.map(a => {
+    const unlocked = a.check(state);
+    return `<div class="achievement ${unlocked ? 'unlocked' : ''}">
+      <div class="ach-icon">${a.icon}</div>
+      <div class="ach-info">
+        <div class="ach-name">${a.name}</div>
+        <div class="ach-desc">${a.desc}</div>
+      </div>
+      ${unlocked ? '<span style="color:#ca8a04;font-weight:700;font-size:0.85rem;">✓ 達成</span>' : '<span class="ach-locked">未達成</span>'}
+    </div>`;
+  }).join('');
+}
+
+// ============================
+// RESULT & TOAST
+// ============================
+function showResult(icon, title, score, message) {
+  document.getElementById('resultIcon').textContent = icon;
+  document.getElementById('resultTitle').textContent = title;
+  document.getElementById('resultScoreDisplay').textContent = score;
+  document.getElementById('resultMessage').textContent = message;
+  document.getElementById('resultOverlay').classList.add('show');
+}
+
+function closeResult() {
+  document.getElementById('resultOverlay').classList.remove('show');
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ============================
+// INIT
+// ============================
+function init() {
+  checkStreak();
+  updateDashboard();
+
+  // Vocab
+  state.totalVocabSeen = VOCAB_DATA.length;
+  renderCard();
+  updateVocabStats();
+
+  // Grammar
+  shuffleArray(shuffledGrammar);
+  renderQuestion();
+  updateGrammarScore();
+  renderGrammarChart();
+
+  // Reading
+  renderPassage();
+  updateReadingScore();
+
+  saveState();
+}
+
+init();
+</script>
+</body>
+</html>
