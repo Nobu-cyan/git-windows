@@ -1,0 +1,1561 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>勇者伝説III ～ゾーマの城～</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#111;color:#fff;font-family:'MS Gothic','Courier New',monospace;
+     display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;}
+#gc{width:576px;max-width:100vw;background:#000066;border:3px solid #8888ff;}
+#mapWrap{position:relative;width:576px;height:384px;overflow:hidden;}
+#mapCanvas{display:block;}
+#partyBar{display:flex;background:#000044;border-top:2px solid #4444aa;padding:4px 6px;gap:6px;}
+.charCard{flex:1;background:#000066;border:1px solid #4466aa;padding:4px 6px;font-size:11px;min-width:0;}
+.charCard .cname{color:#ffff88;font-size:12px;font-weight:bold;}
+.charCard .chp{color:#44ff44;}
+.charCard .cmp{color:#44aaff;}
+.charCard .cdead{color:#ff4444;}
+.hpbar{height:6px;background:#004400;border:1px solid #006600;margin:2px 0;}
+.hpbar div{height:100%;background:#44ff44;transition:width .3s;}
+.hpbar div.low{background:#ffaa00;}
+.hpbar div.crit{background:#ff4444;}
+#msgBox{background:#000066;border:2px solid #4444aa;margin:3px 5px;padding:8px 12px;
+        min-height:68px;font-size:13px;line-height:1.65;position:relative;}
+#msgBox .arr{position:absolute;bottom:4px;right:8px;color:#ffff44;animation:bk .6s infinite;}
+@keyframes bk{0%,100%{opacity:1}50%{opacity:0}}
+#cmdArea{display:flex;flex-wrap:wrap;gap:3px;padding:3px 5px 6px;}
+.btn{background:#000066;color:#fff;border:2px solid #4466ff;padding:5px 12px;
+     font-family:inherit;font-size:12px;cursor:pointer;min-width:68px;text-align:center;}
+.btn:hover,.btn.sel{background:#2222aa;border-color:#ffff44;color:#ffff44;}
+.btn:disabled{opacity:.35;cursor:default;}
+.btn.red{border-color:#ff4444;color:#ff8888;}
+.btn.grn{border-color:#44ff44;color:#88ff88;}
+.overlay{position:absolute;top:0;left:0;width:100%;height:100%;
+         display:none;flex-direction:column;align-items:center;justify-content:center;z-index:20;}
+#titleOv{background:linear-gradient(180deg,#000011,#000033 60%,#000011);}
+#titleOv h1{font-size:28px;color:#ffff44;text-shadow:2px 2px #884400;letter-spacing:6px;margin-bottom:4px;}
+#titleOv h2{font-size:12px;color:#aaaaff;letter-spacing:3px;margin-bottom:6px;}
+#titleOv .sub{font-size:11px;color:#6666aa;margin-bottom:28px;}
+.startBtn{font-size:15px;padding:10px 32px;letter-spacing:4px;animation:bk 1s infinite;
+          background:#000066;border:2px solid #ffff44;color:#fff;cursor:pointer;font-family:inherit;margin:4px;}
+.startBtn:hover{background:#0000aa;}
+#battleOv{background:#000011;flex-direction:column;}
+#battleBg{width:100%;height:200px;display:flex;align-items:flex-end;justify-content:space-around;
+          padding:12px 20px;background:linear-gradient(180deg,#001133,#002255 60%,#221100);}
+.enemyBlock{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;}
+.enemyEmoji{font-size:64px;line-height:1;transition:transform .1s,opacity .3s;}
+.enemyEmoji.dead{opacity:.1;transform:scale(.5);}
+.enemyEmoji.hit{transform:translateX(-12px);}
+.enemyName{font-size:10px;color:#ffaaaa;}
+.enemyHpW{width:60px;height:6px;background:#440000;border:1px solid #ff4444;}
+.enemyHpI{height:100%;background:#ff4444;transition:width .3s;}
+#battleMsg{background:#000066;border:2px solid #4444aa;margin:3px;padding:6px 10px;
+           font-size:12px;min-height:44px;line-height:1.6;}
+#battleCmds{display:flex;flex-wrap:wrap;gap:3px;padding:3px 5px;}
+#spellPanel{display:none;flex-wrap:wrap;gap:3px;padding:3px 5px;}
+#targetPanel{display:none;flex-wrap:wrap;gap:3px;padding:3px 5px;}
+#battleContBtn{display:none;padding:4px 8px 6px;}
+#shopOv{background:rgba(0,0,20,.97);padding:14px;}
+.ovTitle{font-size:18px;color:#ffff44;border:2px solid #ffff44;padding:4px 18px;margin-bottom:10px;}
+#shopTabs{display:flex;gap:4px;margin-bottom:8px;}
+.shopTab{padding:4px 12px;border:1px solid #4466ff;cursor:pointer;font-size:12px;font-family:inherit;background:#000066;color:#fff;}
+.shopTab.active{border-color:#ffff44;color:#ffff44;background:#2222aa;}
+#shopList{max-height:180px;overflow-y:auto;width:100%;max-width:340px;}
+.shopRow{display:flex;justify-content:space-between;padding:5px 10px;border:1px solid #224466;
+         margin:2px 0;cursor:pointer;font-size:12px;background:#000044;}
+.shopRow:hover{background:#002266;border-color:#ffff44;}
+.shopRow .sprice{color:#ffff44;}
+.shopRow .sdesc{font-size:10px;color:#8888aa;}
+#shopGold{color:#ffff44;font-size:13px;margin:6px 0;}
+#innOv{background:rgba(0,0,20,.97);}
+#storyOv{background:#000000;padding:24px;text-align:center;}
+#storyTitle{font-size:20px;color:#ffff44;margin-bottom:16px;}
+#storyBody{font-size:13px;color:#ccccff;line-height:2.1;max-width:420px;margin-bottom:20px;}
+#classOv{background:rgba(0,0,20,.97);padding:12px;}
+.classCard{display:flex;align-items:flex-start;gap:10px;padding:7px 12px;
+           border:1px solid #224466;margin:4px 0;cursor:pointer;background:#000044;width:100%;max-width:380px;}
+.classCard:hover{background:#002266;border-color:#ffff44;}
+.classCard .ce{font-size:28px;}
+.classCard .ci{flex:1;}
+.classCard .cn{font-size:14px;color:#ffff88;}
+.classCard .cd{font-size:11px;color:#8888aa;margin-top:2px;}
+.classCard.chosen{border-color:#44ff44;background:#002200;}
+#menuOv{background:rgba(0,0,20,.97);padding:12px;flex-direction:column;align-items:center;}
+#menuCharTabs{display:flex;gap:4px;margin-bottom:8px;}
+.menuTab{padding:4px 10px;border:1px solid #4466ff;cursor:pointer;font-size:12px;font-family:inherit;background:#000066;color:#fff;}
+.menuTab.active{border-color:#ffff44;color:#ffff44;}
+#menuBody{width:100%;max-width:380px;font-size:12px;line-height:1.8;}
+#menuBody .mrow{display:flex;justify-content:space-between;border-bottom:1px solid #224466;padding:2px 0;}
+#menuBody .mrow .ml{color:#aaaaff;}
+#menuBody .mrow .mr{color:#fff;}
+#gameoverOv{background:#000000;}
+#endingOv{background:linear-gradient(180deg,#000022,#000044);}
+#nameInput{background:#000066;color:#fff;border:2px solid #4466ff;font-family:inherit;
+           font-size:16px;padding:6px 10px;letter-spacing:4px;text-align:center;width:200px;margin:8px;}
+#nameInput:focus{outline:none;border-color:#ffff44;}
+#shopList::-webkit-scrollbar{width:6px;}
+#shopList::-webkit-scrollbar-track{background:#000044;}
+#shopList::-webkit-scrollbar-thumb{background:#4466aa;}
+#bgmBtn{position:absolute;bottom:6px;right:8px;font-size:10px;padding:3px 7px;
+        border:1px solid #4466ff;background:#000044;color:#aaaaff;cursor:pointer;
+        font-family:inherit;z-index:30;}
+#bgmBtn:hover{border-color:#ffff44;color:#ffff44;}
+</style>
+</head>
+<body>
+<div id="gc">
+  <div id="mapWrap">
+    <canvas id="mapCanvas" width="576" height="384"></canvas>
+    <button id="bgmBtn" onclick="toggleBgm()">🎵 BGM</button>
+
+    <!-- TITLE -->
+    <div id="titleOv" class="overlay" style="display:flex;">
+      <div style="color:#ffaa00;font-size:20px;margin-bottom:8px;">★ ★ ★ ★ ★ ★</div>
+      <h1>勇者伝説 III</h1><h2>～ ゾーマの城 ～</h2>
+      <div class="sub">©2026 CLAUDE SOFT  ALL RIGHTS RESERVED</div>
+      <button class="startBtn" onclick="startNewGame()">は じ め か ら</button>
+      <button class="startBtn" onclick="loadGame()" style="animation:none;margin-top:4px;">つ づ き か ら</button>
+    </div>
+
+    <!-- STORY -->
+    <div id="storyOv" class="overlay">
+      <div id="storyTitle"></div>
+      <div id="storyBody"></div>
+      <button class="btn" onclick="nextStory()">　つぎへ ▶　</button>
+    </div>
+
+    <!-- CLASS SELECT -->
+    <div id="classOv" class="overlay" style="flex-direction:column;align-items:center;">
+      <div class="ovTitle" id="classTitle">なかまをえらべ！</div>
+      <div id="classList"></div>
+      <div style="font-size:12px;color:#888;margin-top:8px;" id="classHint"></div>
+    </div>
+
+    <!-- BATTLE -->
+    <div id="battleOv" class="overlay">
+      <div id="battleBg">
+        <div class="enemyBlock" id="eblk0"></div>
+        <div class="enemyBlock" id="eblk1"></div>
+        <div class="enemyBlock" id="eblk2"></div>
+      </div>
+      <div id="battleMsg"></div>
+      <div id="battleCmds">
+        <button class="btn" onclick="battleCmd('attack')">たたかう</button>
+        <button class="btn" onclick="battleCmd('spell')">じゅもん</button>
+        <button class="btn" onclick="battleCmd('item')">どうぐ</button>
+        <button class="btn" onclick="battleCmd('defend')">ぼうぎょ</button>
+        <button class="btn red" onclick="battleCmd('run')">にげる</button>
+      </div>
+      <div id="spellPanel"></div>
+      <div id="targetPanel"></div>
+      <div id="battleContBtn"><button class="btn grn" onclick="endBattle()">　続ける ▶　</button></div>
+    </div>
+
+    <!-- SHOP -->
+    <div id="shopOv" class="overlay" style="flex-direction:column;align-items:center;">
+      <div class="ovTitle">🏪 お み せ</div>
+      <div id="shopTabs">
+        <button class="shopTab active" onclick="shopTab('items')">どうぐ</button>
+        <button class="shopTab" onclick="shopTab('weapons')">ぶき</button>
+        <button class="shopTab" onclick="shopTab('armors')">ぼうぐ</button>
+      </div>
+      <div id="shopList"></div>
+      <div id="shopGold">所持金: 0 G</div>
+      <button class="btn" style="margin-top:4px" onclick="closeShop()">　とじる　</button>
+    </div>
+
+    <!-- INN -->
+    <div id="innOv" class="overlay" style="flex-direction:column;gap:10px;">
+      <div class="ovTitle">🏨 やどや</div>
+      <p style="font-size:13px;color:#ccffcc;text-align:center;line-height:1.8">
+        一泊 <span id="innCost" style="color:#ffff44">0</span> G でございます。<br>おとまりになりますか？</p>
+      <button class="btn" onclick="doInn()">はい</button>
+      <button class="btn" onclick="closeInn()">いいえ</button>
+    </div>
+
+    <!-- MENU -->
+    <div id="menuOv" class="overlay">
+      <div class="ovTitle" style="margin-bottom:8px">ステータス</div>
+      <div id="menuCharTabs"></div>
+      <div id="menuBody"></div>
+      <div style="margin-top:8px;display:flex;gap:4px">
+        <button class="btn" onclick="openItemMenu()">どうぐ</button>
+        <button class="btn" onclick="saveGame()">セーブ</button>
+        <button class="btn" onclick="closeMenu()">とじる</button>
+      </div>
+    </div>
+
+    <!-- GAMEOVER -->
+    <div id="gameoverOv" class="overlay" style="flex-direction:column;gap:12px;">
+      <div style="font-size:40px;color:#ff4444;text-shadow:0 0 20px #ff0000">GAME OVER</div>
+      <p style="color:#cc8888;font-size:13px;text-align:center">勇者たちは倒れてしまった……<br>だが、伝説は終わらない。</p>
+      <button class="btn" onclick="reviveParty()">復活して再挑戦</button>
+    </div>
+
+    <!-- ENDING -->
+    <div id="endingOv" class="overlay" style="flex-direction:column;gap:10px;padding:20px;text-align:center;">
+      <div style="font-size:22px;color:#ffff44;">✨ CONGRATULATIONS ✨</div>
+      <div id="endingText" style="font-size:13px;color:#ccffcc;line-height:2.2;max-width:400px;"></div>
+      <button class="btn" style="margin-top:16px" onclick="location.reload()">タイトルへ</button>
+    </div>
+  </div>
+
+  <div id="partyBar"></div>
+  <div id="msgBox"><span id="msgText"></span><span class="arr" id="msgArr" style="display:none">▼</span></div>
+  <div id="cmdArea">
+    <button class="btn" onclick="cmdTalk()">はなす</button>
+    <button class="btn" onclick="cmdSearch()">しらべる</button>
+    <button class="btn" onclick="openMenu()">メニュー</button>
+    <button class="btn" onclick="saveGame()">セーブ</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+// ============================================================
+// AUDIO ENGINE (BGM + SE using Web Audio API)
+// ============================================================
+const AUDIO = (function(){
+  let _ctx=null, _bgG=null, _seG=null;
+  let _cur=null, _loopT=null, _bgMute=false;
+  let _bgInst=null; // 現在のBGMインスタンス用Gainノード
+  let _lastStep=0;  // step SEのクールダウン用
+
+  // Note frequencies
+  const NF={
+    R:0,
+    Bb1:58.27,B1:61.74,
+    C2:65.41,D2:73.42,Eb2:77.78,E2:82.41,F2:87.31,G2:98.00,Ab2:103.83,A2:110.00,Bb2:116.54,B2:123.47,
+    C3:130.81,Db3:138.59,D3:146.83,Eb3:155.56,E3:164.81,F3:174.61,Gb3:185.00,G3:196.00,Ab3:207.65,A3:220.00,Bb3:233.08,B3:246.94,
+    C4:261.63,Db4:277.18,D4:293.66,Eb4:311.13,E4:329.63,F4:349.23,Gb4:369.99,G4:392.00,Ab4:415.30,A4:440.00,Bb4:466.16,B4:493.88,
+    C5:523.25,Db5:554.37,D5:587.33,Eb5:622.25,E5:659.25,F5:698.46,Gb5:739.99,G5:783.99,Ab5:830.61,A5:880.00,Bb5:932.33,B5:987.77,
+    C6:1046.50,D6:1174.66,E6:1318.51,G6:1567.98
+  };
+
+  // BGM track data  [note, beats]
+  const TRK={
+    // ── タイトル (F major, 72BPM, 64 beats) ──
+    title:{bpm:72,loop:true,v:[
+      {w:'square',vol:.5,n:[
+        ['F4',1],['A4',1],['C5',1],['F5',1],['Eb5',2],['D5',1],['C5',1],['Bb4',1],['C5',1],['D5',1],['Eb5',1],['F5',3],['R',1],
+        ['G5',1],['F5',1],['Eb5',1],['D5',1],['C5',2],['Bb4',2],['C5',1],['D5',1],['Eb5',1],['F5',1],['Eb5',3],['R',1],
+        ['C5',.5],['D5',.5],['Eb5',1],['F5',1],['G5',1],['Ab5',2],['G5',1],['F5',1],['Eb5',1],['D5',1],['C5',1],['Bb4',1],['C5',4],
+        ['F4',1],['G4',1],['Ab4',1],['Bb4',1],['C5',2],['D5',2],['Eb5',1],['D5',1],['C5',1],['Bb4',1],['F5',3],['R',1]
+      ]},
+      {w:'triangle',vol:.28,n:[
+        ['C4',1],['F4',1],['A4',1],['C5',1],['G4',2],['F4',1],['Eb4',1],['D4',1],['Eb4',1],['F4',1],['G4',1],['A4',3],['R',1],
+        ['Bb4',1],['A4',1],['G4',1],['F4',1],['Eb4',2],['D4',2],['Eb4',1],['F4',1],['G4',1],['A4',1],['G4',3],['R',1],
+        ['Eb4',.5],['F4',.5],['G4',1],['Ab4',1],['Bb4',1],['C5',2],['Bb4',1],['Ab4',1],['G4',1],['F4',1],['Eb4',1],['D4',1],['Eb4',4],
+        ['A3',1],['Bb3',1],['C4',1],['D4',1],['Eb4',2],['F4',2],['G4',1],['F4',1],['Eb4',1],['D4',1],['A4',3],['R',1]
+      ]},
+      {w:'sawtooth',vol:.25,n:[
+        ['F2',2],['C3',2],['C3',2],['Bb2',2],['Bb2',2],['F2',2],['F2',2],['F2',2],
+        ['C3',2],['C3',2],['F2',2],['Bb2',2],['Bb2',2],['Bb2',2],['Eb3',2],['F2',2],
+        ['Ab2',2],['Ab2',2],['Bb2',2],['Bb2',2],['G2',2],['G2',2],['C2',2],['C2',2],
+        ['F2',2],['F2',2],['G2',2],['G2',2],['Eb2',2],['D2',2],['C2',2],['F2',2]
+      ]}
+    ]},
+
+    // ── フィールド (Bb major, 120BPM, 64 beats) ──
+    field:{bpm:120,loop:true,v:[
+      {w:'square',vol:.48,n:[
+        ['Bb4',.5],['C5',.5],['D5',1],['Eb5',1],['F5',1],['G5',2],['F5',1],['Eb5',1],['D5',1],['Eb5',1],['F5',1],['G5',1],['F5',2],['Eb5',2],
+        ['D5',1],['Eb5',1],['F5',1],['G5',1],['Ab5',2],['G5',1],['F5',1],['Eb5',.5],['D5',.5],['C5',1],['Bb4',1],['C5',1],['Bb4',4],
+        ['F5',1],['Eb5',1],['D5',1],['C5',1],['Bb4',2],['Ab4',1],['G4',1],['Ab4',1],['Bb4',1],['C5',1],['D5',1],['Eb5',2],['F5',2],
+        ['G5',1],['F5',1],['Eb5',1],['D5',1],['C5',2],['D5',1],['Eb5',1],['F5',.5],['Eb5',.5],['D5',1],['C5',1],['Bb4',1],['Bb4',4]
+      ]},
+      {w:'triangle',vol:.22,n:[
+        ['D4',.5],['Eb4',.5],['F4',1],['G4',1],['Bb4',1],['Bb4',2],['Ab4',1],['G4',1],['F4',1],['G4',1],['Ab4',1],['Bb4',1],['Ab4',2],['G4',2],
+        ['F4',1],['G4',1],['Ab4',1],['Bb4',1],['C5',2],['Bb4',1],['Ab4',1],['G4',.5],['F4',.5],['Eb4',1],['D4',1],['Eb4',1],['D4',4],
+        ['Ab4',1],['G4',1],['F4',1],['Eb4',1],['D4',2],['C4',1],['Bb3',1],['C4',1],['D4',1],['Eb4',1],['F4',1],['G4',2],['Ab4',2],
+        ['Bb4',1],['Ab4',1],['G4',1],['F4',1],['Eb4',2],['F4',1],['G4',1],['Ab4',.5],['G4',.5],['F4',1],['Eb4',1],['D4',1],['D4',4]
+      ]},
+      {w:'sawtooth',vol:.25,n:[
+        ['Bb2',1],['Bb2',1],['Bb2',1],['Bb2',1],['Eb3',1],['Eb3',1],['Bb2',1],['Bb2',1],
+        ['G2',1],['G2',1],['G2',1],['G2',1],['C3',1],['C3',1],['Bb2',1],['Bb2',1],
+        ['Bb2',1],['Bb2',1],['Bb2',1],['Bb2',1],['Db3',1],['Db3',1],['C3',1],['C3',1],
+        ['F3',1],['F3',1],['F3',1],['F3',1],['Bb2',2],['Bb2',2],
+        ['Bb2',1],['Bb2',1],['F3',1],['F3',1],['G3',1],['G3',1],['Bb2',1],['Bb2',1],
+        ['Ab2',1],['Ab2',1],['Ab2',1],['Ab2',1],['Eb3',2],['F3',2],
+        ['G2',1],['G2',1],['G2',1],['G2',1],['C3',1],['C3',1],['Bb2',1],['Bb2',1],
+        ['F3',1],['F3',1],['F3',1],['F3',1],['Bb2',2],['Bb2',2]
+      ]}
+    ]},
+
+    // ── 町 (C major, 104BPM, 64 beats) ──
+    town:{bpm:104,loop:true,v:[
+      {w:'square',vol:.42,n:[
+        ['C5',1],['E5',1],['G5',1],['E5',1],['F5',1],['D5',1],['E5',2],['D5',1],['F5',1],['A5',1],['G5',1],['E5',2],['C5',2],
+        ['G5',1],['E5',1],['C5',1],['E5',1],['A5',2],['G5',1],['F5',1],['E5',1],['D5',1],['C5',1],['B4',1],['C5',4],
+        ['G5',1],['F5',1],['E5',1],['D5',1],['C5',2],['B4',1],['C5',1],['D5',1],['E5',1],['F5',1],['G5',1],['A5',2],['G5',2],
+        ['F5',1],['E5',1],['D5',1],['C5',1],['B4',2],['C5',2],['D5',1],['C5',1],['B4',1],['A4',1],['G4',4]
+      ]},
+      {w:'triangle',vol:.18,n:[
+        ['C4',.5],['E4',.5],['G4',.5],['E4',.5],['C4',.5],['E4',.5],['G4',.5],['E4',.5],
+        ['F3',.5],['A3',.5],['C4',.5],['A3',.5],['F3',.5],['A3',.5],['C4',.5],['A3',.5],
+        ['D4',.5],['F4',.5],['A4',.5],['F4',.5],['D4',.5],['F4',.5],['A4',.5],['F4',.5],
+        ['G3',.5],['B3',.5],['E4',.5],['B3',.5],['G3',.5],['B3',.5],['E4',.5],['B3',.5],
+        ['C4',.5],['E4',.5],['G4',.5],['E4',.5],['C4',.5],['E4',.5],['G4',.5],['E4',.5],
+        ['A3',.5],['C4',.5],['E4',.5],['C4',.5],['A3',.5],['C4',.5],['E4',.5],['C4',.5],
+        ['G3',.5],['B3',.5],['D4',.5],['B3',.5],['G3',.5],['B3',.5],['D4',.5],['B3',.5],
+        ['C4',.5],['E4',.5],['G4',.5],['E4',.5],['R',.5],['R',.5],['R',.5],['R',.5],
+        ['G3',.5],['B3',.5],['D4',.5],['B3',.5],['G3',.5],['B3',.5],['D4',.5],['B3',.5],
+        ['A3',.5],['C4',.5],['E4',.5],['C4',.5],['F3',.5],['A3',.5],['C4',.5],['A3',.5],
+        ['D4',.5],['F4',.5],['A4',.5],['F4',.5],['G3',.5],['B3',.5],['D4',.5],['B3',.5],
+        ['A3',.5],['C4',.5],['E4',.5],['C4',.5],['A3',.5],['C4',.5],['E4',.5],['C4',.5],
+        ['F3',.5],['A3',.5],['C4',.5],['A3',.5],['F3',.5],['A3',.5],['C4',.5],['A3',.5],
+        ['G3',.5],['B3',.5],['D4',.5],['B3',.5],['G3',.5],['B3',.5],['D4',.5],['B3',.5],
+        ['E3',.5],['G3',.5],['B3',.5],['G3',.5],['G3',.5],['B3',.5],['D4',.5],['B3',.5],
+        ['C4',.5],['E4',.5],['G4',.5],['E4',.5],['R',.5],['R',.5],['R',.5],['R',.5]
+      ]},
+      {w:'sawtooth',vol:.23,n:[
+        ['C3',2],['C3',2],['F3',2],['F3',2],['D3',2],['D3',2],['G3',2],['G3',2],
+        ['C3',2],['C3',2],['A3',2],['A3',2],['G3',2],['G3',2],['C3',2],['R',2],
+        ['G3',2],['G3',2],['A3',2],['A3',2],['D3',2],['G3',2],['A3',2],['A3',2],
+        ['F3',2],['F3',2],['G3',2],['G3',2],['E3',2],['G3',2],['C3',2],['R',2]
+      ]}
+    ]},
+
+    // ── バトル (D minor, 162BPM, 64 beats) ──
+    battle:{bpm:162,loop:true,v:[
+      {w:'square',vol:.55,n:[
+        ['D5',.5],['E5',.5],['F5',.5],['E5',.5],['D5',1],['A4',1],['C5',.5],['D5',.5],['E5',.5],['D5',.5],['C5',1],['G4',1],
+        ['Bb4',.5],['C5',.5],['D5',.5],['C5',.5],['Bb4',1],['F4',1],['A4',2],['A4',2],
+        ['D5',.5],['F5',.5],['A5',1],['G5',1],['F5',1],['E5',.5],['D5',.5],['C5',1],['Bb4',1],['A4',1],
+        ['G4',.5],['A4',.5],['Bb4',.5],['C5',.5],['D5',2],['D5',3],['R',1],
+        ['F5',1],['E5',1],['D5',1],['C5',1],['Bb4',2],['A4',2],
+        ['Bb4',1],['C5',1],['D5',1],['E5',1],['F5',2],['G5',2],
+        ['A5',1],['G5',1],['F5',1],['E5',1],['D5',2],['C5',2],
+        ['Bb4',1],['A4',1],['G4',1],['F4',1],['D5',4]
+      ]},
+      {w:'square',vol:.18,n:[
+        ['D4',.5],['R',.5],['F4',.5],['R',.5],['A4',.5],['R',.5],['F4',.5],['R',.5],
+        ['C4',.5],['R',.5],['E4',.5],['R',.5],['G4',.5],['R',.5],['E4',.5],['R',.5],
+        ['Bb3',.5],['R',.5],['D4',.5],['R',.5],['F4',.5],['R',.5],['D4',.5],['R',.5],
+        ['A3',.5],['R',.5],['A3',.5],['R',.5],['C4',.5],['R',.5],['E4',.5],['R',.5],
+        ['D4',.5],['R',.5],['F4',.5],['R',.5],['A4',.5],['R',.5],['C5',.5],['R',.5],
+        ['E4',.5],['R',.5],['G4',.5],['R',.5],['Bb4',.5],['R',.5],['G4',.5],['R',.5],
+        ['G3',.5],['R',.5],['Bb3',.5],['R',.5],['D4',.5],['R',.5],['F4',.5],['R',.5],
+        ['D4',.5],['R',.5],['D4',.5],['R',.5],['R',.5],['R',.5],['R',.5],['R',.5],
+        ['F4',.5],['R',.5],['A4',.5],['R',.5],['C5',.5],['R',.5],['A4',.5],['R',.5],
+        ['E4',.5],['R',.5],['G4',.5],['R',.5],['Bb4',.5],['R',.5],['G4',.5],['R',.5],
+        ['Bb3',.5],['R',.5],['D4',.5],['R',.5],['F4',.5],['R',.5],['D4',.5],['R',.5],
+        ['G3',.5],['R',.5],['Bb3',.5],['R',.5],['D4',.5],['R',.5],['Bb3',.5],['R',.5],
+        ['C4',.5],['R',.5],['E4',.5],['R',.5],['G4',.5],['R',.5],['E4',.5],['R',.5],
+        ['D4',.5],['R',.5],['F4',.5],['R',.5],['A4',.5],['R',.5],['F4',.5],['R',.5],
+        ['G3',.5],['R',.5],['Bb3',.5],['R',.5],['D4',.5],['R',.5],['F4',.5],['R',.5],
+        ['D4',.5],['R',.5],['D4',.5],['R',.5],['D4',.5],['R',.5],['R',.5],['R',.5]
+      ]},
+      {w:'sawtooth',vol:.28,n:[
+        ['D3',.5],['D3',.5],['D3',1],['A3',1],['D3',1],['C3',.5],['C3',.5],['C3',1],['G3',1],['C3',1],
+        ['Bb2',.5],['Bb2',.5],['Bb2',1],['F3',1],['Bb2',1],['A2',2],['A2',2],
+        ['D3',1],['D3',1],['D3',1],['D3',1],['D3',1],['D3',1],['Bb3',1],['Bb3',1],
+        ['E3',1],['E3',1],['A3',1],['A3',1],['D3',2],['D3',2],
+        ['F3',1],['F3',1],['F3',1],['F3',1],['G3',1],['G3',1],['G3',1],['G3',1],
+        ['Bb2',1],['Bb2',1],['Bb2',1],['Bb2',1],['G2',1],['G2',1],['G2',1],['G2',1],
+        ['C3',1],['C3',1],['C3',1],['C3',1],['D3',1],['D3',1],['D3',1],['D3',1],
+        ['G2',1],['G2',1],['A2',1],['A2',1],['D3',2],['D3',2]
+      ]}
+    ]},
+
+    // ── ボス (D minor, 145BPM, 64 beats) ──
+    boss:{bpm:145,loop:true,v:[
+      {w:'square',vol:.58,n:[
+        ['D4',1],['Eb4',.5],['D4',.5],['C4',1],['R',1],['D4',2],['C4',1],['Bb3',1],
+        ['C4',1],['Bb3',.5],['C4',.5],['D4',1],['R',1],['D4',3],['R',1],
+        ['D5',.5],['C5',.5],['Bb4',.5],['A4',.5],['G4',1],['F4',1],['E4',.5],['F4',.5],['G4',.5],['A4',.5],['Bb4',2],
+        ['C5',1],['Bb4',1],['A4',1],['G4',1],['F4',3],['R',1],
+        ['F5',1],['Eb5',1],['D5',1],['C5',1],['Bb4',1],['A4',.5],['Bb4',.5],['C5',2],
+        ['D5',1],['Eb5',1],['D5',1],['C5',1],['D5',4],
+        ['A4',.5],['Bb4',.5],['C5',.5],['D5',.5],['Eb5',1],['F5',1],['G5',.5],['F5',.5],['Eb5',.5],['D5',.5],['C5',2],
+        ['Bb4',1],['C5',1],['D5',1],['Eb5',1],['D5',4]
+      ]},
+      {w:'sawtooth',vol:.24,n:[
+        ['F3',2],['Eb3',2],['F3',2],['F3',2],['Eb3',2],['D3',2],['F3',3],['R',1],
+        ['F4',.5],['Eb4',.5],['D4',.5],['C4',.5],['Bb3',1],['A3',1],['G3',.5],['A3',.5],['Bb3',.5],['C4',.5],['D4',2],
+        ['Eb4',1],['D4',1],['C4',1],['Bb3',1],['A3',3],['R',1],
+        ['Ab3',1],['G3',1],['F3',1],['Eb3',1],['D3',1],['C3',.5],['D3',.5],['Eb3',2],
+        ['F3',1],['G3',1],['F3',1],['Eb3',1],['F3',4],
+        ['C3',.5],['D3',.5],['Eb3',.5],['F3',.5],['G3',1],['Ab3',1],['Bb3',.5],['Ab3',.5],['G3',.5],['F3',.5],['Eb3',2],
+        ['D3',1],['Eb3',1],['F3',1],['G3',1],['F3',4]
+      ]},
+      {w:'sawtooth',vol:.3,n:[
+        ['D2',1],['D2',1],['D2',1],['D2',1],['D2',1],['D2',1],['D2',1],['D2',1],
+        ['Bb2',1],['Bb2',1],['Bb2',1],['Bb2',1],['F2',1],['F2',1],['F2',1],['F2',1],
+        ['D2',1],['D2',1],['D2',1],['D2',1],['G2',1],['G2',1],['D2',1],['D2',1],
+        ['A2',1],['A2',1],['D2',1],['D2',1],['D2',2],['D2',2],
+        ['Bb1',1],['Bb1',1],['Bb1',1],['Bb1',1],['F2',1],['F2',1],['C2',1],['C2',1],
+        ['Bb1',1],['Bb1',1],['F2',1],['A2',1],['D2',4],
+        ['F2',1],['F2',1],['C2',1],['C2',1],['G2',1],['G2',1],['G2',1],['G2',1],
+        ['D2',1],['D2',1],['A2',1],['A2',1],['D2',4]
+      ]}
+    ]},
+
+    // ── 勝利ファンファーレ (G major, 160BPM, 20 beats, no loop) ──
+    victory:{bpm:160,loop:false,v:[
+      {w:'square',vol:.62,n:[
+        ['G4',.5],['G4',.5],['G4',.5],['R',.5],['G4',.5],['Bb4',.5],['D5',.5],['G5',.5],
+        ['G5',1.5],['R',.5],['D5',.5],['E5',.5],['D5',.5],['C5',.5],
+        ['Bb4',.5],['A4',.5],['G4',1],['R',2],
+        ['G5',.5],['F5',.5],['Eb5',.5],['D5',.5],['C5',.5],['Bb4',.5],['A4',.5],['G4',.5],
+        ['G5',3],['R',1]
+      ]},
+      {w:'triangle',vol:.32,n:[
+        ['D4',.5],['D4',.5],['D4',.5],['R',.5],['D4',.5],['F4',.5],['G4',.5],['Bb4',.5],
+        ['Bb4',1.5],['R',.5],['G4',.5],['A4',.5],['G4',.5],['F4',.5],
+        ['D4',.5],['C4',.5],['Bb3',1],['R',2],
+        ['Bb4',.5],['Ab4',.5],['G4',.5],['F4',.5],['Eb4',.5],['D4',.5],['C4',.5],['Bb3',.5],
+        ['D5',3],['R',1]
+      ]}
+    ]},
+
+    // ── ゲームオーバー (D minor, 52BPM, 20 beats, no loop) ──
+    gameover:{bpm:52,loop:false,v:[
+      {w:'square',vol:.48,n:[
+        ['D4',2],['Eb4',1],['D4',1],['C4',2],['Bb3',2],['C4',2],['D4',2],['D4',6],['R',2]
+      ]},
+      {w:'triangle',vol:.28,n:[
+        ['F3',2],['Gb3',1],['F3',1],['Eb3',2],['D3',2],['Eb3',2],['F3',2],['F3',6],['R',2]
+      ]}
+    ]},
+
+    // ── エンディング (G major, 80BPM, 64 beats) ──
+    ending:{bpm:80,loop:true,v:[
+      {w:'square',vol:.5,n:[
+        ['G5',2],['E5',1],['D5',1],['C5',2],['B4',1],['A4',1],['B4',1],['C5',1],['D5',1],['E5',1],['G5',3],['R',1],
+        ['D5',1],['E5',1],['G5',1],['A5',1],['B5',2],['A5',1],['G5',1],['F5',1],['E5',1],['D5',1],['C5',1],['G4',3],['R',1],
+        ['G5',1],['G5',1],['A5',1],['B5',1],['C6',2],['B5',1],['A5',1],['G5',1],['A5',1],['B5',1],['C6',1],['D6',4],
+        ['E6',1],['D6',1],['C6',1],['B5',1],['A5',2],['G5',2],['F5',1],['G5',1],['A5',1],['B5',1],['G5',4]
+      ]},
+      {w:'triangle',vol:.26,n:[
+        ['B4',2],['G4',1],['F4',1],['E4',2],['D4',1],['C4',1],['D4',1],['E4',1],['G4',1],['A4',1],['B4',3],['R',1],
+        ['G4',1],['A4',1],['B4',1],['C5',1],['D5',2],['C5',1],['B4',1],['A4',1],['G4',1],['F4',1],['E4',1],['B4',3],['R',1],
+        ['B4',1],['B4',1],['C5',1],['D5',1],['E5',2],['D5',1],['C5',1],['B4',1],['C5',1],['D5',1],['E5',1],['G5',4],
+        ['G4',1],['F4',1],['E4',1],['D4',1],['C4',2],['B4',2],['A4',1],['B4',1],['C5',1],['D5',1],['G4',4]
+      ]},
+      {w:'sawtooth',vol:.22,n:[
+        ['G3',2],['G3',2],['C3',2],['C3',2],['G3',2],['G3',2],['G3',2],['G3',2],
+        ['D3',2],['D3',2],['G3',2],['G3',2],['C3',2],['C3',2],['G3',2],['R',2],
+        ['G3',2],['G3',2],['C3',2],['C3',2],['G3',2],['G3',2],['D3',2],['G3',2],
+        ['C3',2],['C3',2],['A3',2],['A3',2],['D3',2],['D3',2],['G3',4]
+      ]}
+    ]}
+  };
+
+  function _init(){
+    if(_ctx) return;
+    _ctx=new(window.AudioContext||window.webkitAudioContext)();
+    _bgG=_ctx.createGain(); _bgG.gain.value=1.0; _bgG.connect(_ctx.destination);
+    _seG=_ctx.createGain(); _seG.gain.value=0.38; _seG.connect(_ctx.destination);
+  }
+  function _note(freq,t,dur,wave,vol,instG){
+    if(!freq||!_ctx) return;
+    const o=_ctx.createOscillator(), g=_ctx.createGain();
+    o.type=wave||'square'; o.frequency.value=freq;
+    g.gain.setValueAtTime(vol||.5,t);
+    g.gain.exponentialRampToValueAtTime(.0001,t+dur*.85);
+    o.connect(g); g.connect(instG||_seG);
+    o.start(t); o.stop(t+dur);
+  }
+  function _sched(name,t0,instG){
+    const trk=TRK[name]; if(!trk) return 0;
+    const b=60/trk.bpm; let mx=0;
+    trk.v.forEach(v=>{
+      let t=t0;
+      v.n.forEach(([n,beats])=>{
+        const d=beats*b;
+        if(NF[n]) _note(NF[n],t,d,v.w,v.vol*0.22,instG);
+        t+=d;
+      });
+      const tb=v.n.reduce((s,[,b2])=>s+b2,0);
+      if(tb>mx) mx=tb;
+    });
+    return mx*b;
+  }
+
+  return {
+    bgm(name){
+      _init(); if(_ctx.state==='suspended') _ctx.resume();
+      this.stop(); _cur=name;
+      const trk=TRK[name]; if(!trk) return;
+      // BGMごとに独立したGainノードを作成（古いBGMとの重複を防ぐ）
+      const inst=_ctx.createGain();
+      inst.gain.value=_bgMute?0:1.0;
+      inst.connect(_ctx.destination);
+      _bgInst=inst;
+      const loop=()=>{
+        if(_cur!==name||_bgInst!==inst) return;
+        const d=_sched(name,_ctx.currentTime+.05,inst);
+        if(trk.loop!==false) _loopT=setTimeout(loop,(d-.15)*1000);
+      };
+      loop();
+    },
+    stop(){
+      _cur=null; if(_loopT){clearTimeout(_loopT);_loopT=null;}
+      // 古いBGMをフェードアウトして切断
+      if(_bgInst){
+        const old=_bgInst; _bgInst=null;
+        const t=_ctx?.currentTime||0;
+        try{
+          old.gain.setValueAtTime(old.gain.value,t);
+          old.gain.linearRampToValueAtTime(0,t+0.25);
+          setTimeout(()=>{try{old.disconnect();}catch(e){}},400);
+        }catch(e){}
+      }
+    },
+    toggle(){
+      _bgMute=!_bgMute;
+      if(_bgInst) _bgInst.gain.setValueAtTime(_bgMute?0:1.0,_ctx?.currentTime||0);
+      return !_bgMute;
+    },
+    se(name){
+      _init(); if(_ctx.state==='suspended') _ctx.resume();
+      const t=_ctx.currentTime;
+      const p=(f,t0,d,w,v)=>_note(f,t0,d,w||'square',v||.5,null);
+      switch(name){
+        case 'step': {
+          const now=Date.now(); if(now-_lastStep<90) break; _lastStep=now;
+          p(330,t,.03,'square',.08); break;
+        }
+        case 'attack':   p(440,t,.06,'square',.5); p(330,t+.05,.08,'square',.4); break;
+        case 'damage':   p(180,t,.18,'sawtooth',.5); p(120,t+.1,.12,'sawtooth',.4); break;
+        case 'spell':    [523,659,784,1047].forEach((f,i)=>p(f,t+i*.07,.14,'sine',.3)); break;
+        case 'heal':     [659,784,1047,1319].forEach((f,i)=>p(f,t+i*.08,.16,'triangle',.28)); break;
+        case 'item':     [523,659,784].forEach((f,i)=>p(f,t+i*.08,.12,'triangle',.32)); break;
+        case 'levelup':  [523,659,784,1047,1319,1568].forEach((f,i)=>p(f,t+i*.09,.2,'square',.32)); break;
+        case 'victory':  [[392,.12],[392,.12],[392,.12],[523,.25],[659,.12],[523,.12],[659,.5]].forEach(([f,d],i)=>p(f,t+i*.12,d,'square',.5)); break;
+        case 'encounter':[150,200,250,300].forEach((f,i)=>p(f,t+i*.06,.12,'sawtooth',.42)); break;
+        case 'door':     p(523,t,.1,'square',.28); p(659,t+.1,.15,'square',.24); break;
+        case 'buy':      [523,659,784].forEach((f,i)=>p(f,t+i*.06,.1,'square',.28)); break;
+        case 'error':    p(150,t,.12,'sawtooth',.38); p(100,t+.1,.1,'sawtooth',.28); break;
+        case 'fanfare':  [[392,.1],[440,.1],[494,.1],[523,.1],[587,.1],[659,.1],[740,.1],[784,.4]].forEach(([f,d],i)=>p(f,t+i*.1,d,'square',.45)); break;
+        case 'stair':    p(440,t,.1,'square',.28); p(554,t+.1,.1,'square',.25); p(659,t+.2,.2,'square',.28); break;
+        case 'dead':     [220,196,174,155,130].forEach((f,i)=>p(f,t+i*.12,.15,'sawtooth',.35)); break;
+        case 'inn':      [523,659,784,1047].forEach((f,i)=>p(f,t+i*.12,.2,'triangle',.28)); break;
+        case 'save':     [784,1047,1319].forEach((f,i)=>p(f,t+i*.1,.15,'square',.28)); break;
+      }
+    }
+  };
+})();
+
+function toggleBgm(){
+  const on=AUDIO.toggle();
+  document.getElementById('bgmBtn').textContent=on?'🎵 BGM':'🔇 BGM';
+}
+
+// ============================================================
+// TILE / MAP CONSTANTS
+// ============================================================
+const TS=32,VC=18,VR=12,MC=24,MR=18;
+const T={DEEP:0,SEA:1,BEACH:2,GRASS:3,FOREST:4,MOUNTAIN:5,SNOW:6,DESERT:7,SWAMP:8,
+         TOWN:9,CASTLE:10,TOWER:11,CAVE:12,DUNGEON:13,SHRINE:14,BRIDGE:15};
+const TDATA={
+  0:{c:'#000833',pass:false,enc:false}, 1:{c:'#0044bb',pass:false,enc:false},
+  2:{c:'#ddcc88',pass:true,enc:false},  3:{c:'#228833',pass:true,enc:true,rate:.12},
+  4:{c:'#115522',pass:true,enc:true,rate:.18}, 5:{c:'#664422',pass:false,enc:false},
+  6:{c:'#cceeff',pass:true,enc:true,rate:.14}, 7:{c:'#ccaa44',pass:true,enc:true,rate:.16},
+  8:{c:'#334422',pass:true,enc:true,rate:.25}, 9:{c:'#bb8833',pass:true,enc:false},
+  10:{c:'#8844bb',pass:true,enc:false}, 11:{c:'#7755cc',pass:true,enc:false},
+  12:{c:'#443322',pass:true,enc:true,rate:.3}, 13:{c:'#220011',pass:true,enc:true,rate:.35},
+  14:{c:'#336688',pass:true,enc:false}, 15:{c:'#116688',pass:true,enc:false}  // 15=港
+};
+const TICON={9:'🏘️',10:'🏰',11:'🗼',12:'🕳️',13:'🌑',14:'⛩️',4:'🌲',5:'⛰️',6:'❄️',7:'🏜️',8:'🌿',15:'⚓'};
+
+const WMAP=[
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,1,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,0,0,0,1,1,0],
+  [0,1,2,3,3,3,2,2,0,0,0,0,1,15,3,3,2,2,1,0,1,2,2,0],
+  [0,1,3,3,10,3,3,15,0,0,0,0,1,3,10,3,3,2,1,0,9,2,1,0],
+  [0,1,3,4,4,3,4,1,0,0,0,0,1,3,3,4,3,1,0,1,15,1,0,0],
+  [0,1,3,4,5,5,11,2,0,0,0,0,1,3,3,5,7,1,0,1,1,0,0,0],
+  [0,1,9,4,5,5,4,1,0,0,0,0,1,3,3,5,7,1,0,0,0,0,0,0],
+  [0,1,3,3,3,3,2,1,0,0,0,0,0,1,3,7,9,1,0,0,0,0,0,0],
+  [0,1,3,3,3,2,1,0,0,0,0,0,0,1,3,7,7,1,0,0,0,0,0,0],
+  [0,1,2,3,12,2,1,0,0,0,0,0,0,1,3,7,9,1,0,0,0,0,0,0],
+  [0,0,1,2,2,1,0,0,0,0,0,0,0,1,2,3,2,1,0,0,0,0,0,0],
+  [0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,1,15,8,2,1,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,1,2,8,8,8,2,1,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,1,2,8,12,8,2,1,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,1,2,13,2,1,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0]
+];
+
+const LOCS={
+  ariahan:{x:4,y:3,name:'アリアハン城',type:'castle'},
+  lebe:   {x:2,y:6,name:'レーベの村',  type:'village',shop:'lebe',inn:20},
+  najimi: {x:6,y:5,name:'ナジミの塔',  type:'tower'},
+  port_ariah: {x:7,y:3,name:'アリアハン港',type:'port',dest:['port_romaly','port_dark']},
+  port_romaly:{x:13,y:2,name:'ロマリア港',type:'port',dest:['port_ariah','port_zipang','port_dark']},
+  port_zipang:{x:20,y:4,name:'ジパング港',type:'port',dest:['port_romaly','port_ariah']},
+  port_dark:  {x:9,y:13,name:'暗黒大陸港',type:'port',dest:['port_ariah','port_romaly']},
+  romaly: {x:14,y:3,name:'ロマリア城', type:'castle'},
+  kazab:  {x:16,y:7,name:'カザーブ',   type:'village',shop:'kazab',inn:40},
+  isis:   {x:16,y:9,name:'イシス',     type:'town',shop:'isis',inn:60},
+  zipang: {x:20,y:3,name:'ジパング',   type:'town',shop:'zipang',inn:80},
+  cave1:  {x:4,y:9,name:'海岸の洞窟', type:'cave'},
+  necro:  {x:10,y:15,name:'ネクロゴンドの洞窟',type:'cave'},
+  zoma:   {x:10,y:16,name:'ゾーマの城',type:'dungeon'}
+};
+
+const SHOPS={
+  lebe:{
+    items:[{name:'やくそう',price:30,type:'item',heal:30,desc:'HP30回復'}],
+    weapons:[{name:'どうのつるぎ',price:180,type:'weapon',atk:12,def:0,desc:'銅製の剣'},
+             {name:'ひのきのぼう',price:40,type:'weapon',atk:5,def:0,desc:'木の棒'},
+             {name:'どうのおの',price:220,type:'weapon',atk:14,def:0,desc:'銅の斧'}],
+    armors:[{name:'ぬののふく',price:30,type:'armor',atk:0,def:2,desc:'布の服'},
+            {name:'かわのよろい',price:150,type:'armor',atk:0,def:10,desc:'革鎧'}]
+  },
+  kazab:{
+    items:[{name:'やくそう',price:30,type:'item',heal:30,desc:'HP30回復'},
+           {name:'せいすい',price:20,type:'item',heal:15,mp:8,desc:'HP/MP小回復'},
+           {name:'まほうのやくそう',price:120,type:'item',heal:80,desc:'HP80回復'}],
+    weapons:[{name:'はがねのつるぎ',price:800,type:'weapon',atk:22,def:0,desc:'鋼の剣'},
+             {name:'てつのおの',price:700,type:'weapon',atk:20,def:0,desc:'鉄の斧'},
+             {name:'まどうしのつえ',price:500,type:'weapon',atk:15,def:0,desc:'魔法使い用'}],
+    armors:[{name:'くさりかたびら',price:480,type:'armor',atk:0,def:18,desc:'鎖帷子'},
+            {name:'てつのよろい',price:1100,type:'armor',atk:0,def:26,desc:'鉄鎧'},
+            {name:'てつのたて',price:400,type:'shield',atk:0,def:8,desc:'鉄の盾'}]
+  },
+  isis:{
+    items:[{name:'やくそう',price:30,type:'item',heal:30,desc:'HP30回復'},
+           {name:'まほうのやくそう',price:120,type:'item',heal:80,desc:'HP80回復'},
+           {name:'エリクサー',price:500,type:'item',heal:9999,mp:9999,desc:'HP/MP完全回復'}],
+    weapons:[{name:'ほのおのつるぎ',price:3500,type:'weapon',atk:35,def:0,desc:'炎の剣'}],
+    armors:[{name:'ドラゴンメイル',price:4000,type:'armor',atk:0,def:40,desc:'竜鱗の鎧'},
+            {name:'まほうのよろい',price:3000,type:'armor',atk:0,def:32,desc:'魔法の鎧'},
+            {name:'ちからのたて',price:2200,type:'shield',atk:0,def:18,desc:'強い盾'}]
+  },
+  zipang:{
+    items:[{name:'まほうのやくそう',price:120,type:'item',heal:80,desc:'HP80回復'},
+           {name:'エリクサー',price:500,type:'item',heal:9999,mp:9999,desc:'HP/MP完全回復'}],
+    weapons:[{name:'まさむね',price:6000,type:'weapon',atk:50,def:0,desc:'伝説の名刀'},
+             {name:'はがねのおの',price:3000,type:'weapon',atk:38,def:0,desc:'鋼の斧'}],
+    armors:[{name:'ひかりのよろい',price:7500,type:'armor',atk:0,def:50,desc:'光の鎧'},
+            {name:'まほうのたて',price:3500,type:'shield',atk:0,def:22,desc:'魔法の盾'}]
+  }
+};
+
+const CLASSES={
+  hero:   {name:'勇者',   emoji:'🦸',desc:'高い能力。固有呪文ギガデインを使う。',
+            hp:40,mp:18,atk:14,def:10,spd:11,int:10,hg:12,mg:5,ag:3,dg:2,sg:1,ig:2,
+            learn:[{lv:1,s:'hoimi'},{lv:3,s:'mera'},{lv:6,s:'hoibird'},{lv:8,s:'behoimra'},{lv:12,s:'giga'},{lv:16,s:'behoma'}],
+            equip:['weapon','armor','shield']},
+  warrior:{name:'戦士',   emoji:'⚔️',desc:'最高のHPと攻撃力。呪文は使えない盾。',
+            hp:55,mp:0,atk:18,def:15,spd:7,int:3,hg:18,mg:0,ag:5,dg:4,sg:1,ig:0,
+            learn:[],equip:['weapon','armor','shield']},
+  mage:   {name:'魔法使い',emoji:'🔮',desc:'強力な攻撃呪文が使える。HPは低い。',
+            hp:20,mp:35,atk:5,def:3,spd:14,int:20,hg:6,mg:9,ag:1,dg:1,sg:2,ig:5,
+            learn:[{lv:1,s:'mera'},{lv:3,s:'hyad'},{lv:5,s:'merami'},{lv:8,s:'hyadaruko'},{lv:11,s:'merazoma'},{lv:15,s:'ionazun'}],
+            equip:['staff','robe']},
+  priest: {name:'僧侶',   emoji:'✝️',desc:'回復・補助呪文の専門家。パーティの要。',
+            hp:28,mp:30,atk:7,def:10,spd:9,int:16,hg:9,mg:8,ag:2,dg:3,sg:1,ig:3,
+            learn:[{lv:1,s:'hoimi'},{lv:3,s:'kiarii'},{lv:5,s:'behoimra'},{lv:7,s:'zaorik'},{lv:10,s:'behoma'},{lv:14,s:'behomazun'}],
+            equip:['staff','armor','shield']},
+  thief:  {name:'盗賊',   emoji:'🗡️',desc:'素早さ最高。逃走得意。宝箱発見。',
+            hp:33,mp:6,atk:14,def:8,spd:20,int:11,hg:10,mg:2,ag:4,dg:2,sg:3,ig:1,
+            learn:[{lv:5,s:'rura'},{lv:9,s:'mera'}],equip:['weapon','armor']}
+};
+
+const SPELLS={
+  hoimi:    {name:'ホイミ',    mp:3,  type:'heal',   pow:40,  tgt:'ally'},
+  hoibird:  {name:'ホイミン',  mp:6,  type:'heal',   pow:70,  tgt:'ally'},
+  behoimra: {name:'ベホイミ',  mp:8,  type:'heal',   pow:100, tgt:'ally'},
+  behoma:   {name:'ベホマ',    mp:15, type:'heal',   pow:9999,tgt:'ally'},
+  behomazun:{name:'ベホマズン',mp:22, type:'healall',pow:9999,tgt:'all'},
+  kiarii:   {name:'キアリー',  mp:2,  type:'cure',   pow:0,   tgt:'ally'},
+  zaorik:   {name:'ザオリク',  mp:10, type:'revive', pow:0,   tgt:'dead'},
+  mera:     {name:'メラ',      mp:2,  type:'attack', pow:22,  tgt:'one'},
+  merami:   {name:'メラミ',    mp:5,  type:'attack', pow:55,  tgt:'one'},
+  merazoma: {name:'メラゾーマ',mp:10, type:'attack', pow:130, tgt:'one'},
+  hyad:     {name:'ヒャド',    mp:2,  type:'attack', pow:20,  tgt:'one'},
+  hyadaruko:{name:'ヒャダルコ',mp:6,  type:'attack', pow:65,  tgt:'all_e'},
+  ionazun:  {name:'イオナズン', mp:15, type:'attack', pow:150, tgt:'all_e'},
+  giga:     {name:'ギガデイン',mp:20, type:'attack', pow:180, tgt:'all_e'},
+  rura:     {name:'ルーラ',    mp:5,  type:'escape', pow:0,   tgt:'self'}
+};
+
+const MONS=[
+  {id:'slime',   name:'スライム',     emoji:'🟢',hp:8,  mp:0, atk:5, def:2, spd:6, exp:4,   gold:3,  zone:1,sz:1},
+  {id:'crow',    name:'おおがらす',   emoji:'🐦',hp:14, mp:0, atk:9, def:4, spd:10,exp:8,   gold:6,  zone:1,sz:1},
+  {id:'drakee',  name:'ドラキー',     emoji:'🦇',hp:12, mp:0, atk:8, def:3, spd:12,exp:6,   gold:5,  zone:1,sz:2},
+  {id:'ghost',   name:'ゴースト',     emoji:'👻',hp:18, mp:8, atk:12,def:6, spd:11,exp:14,  gold:10, zone:1,sz:1,sp:'hyad'},
+  {id:'wolf',    name:'おおかみ',     emoji:'🐺',hp:25, mp:0, atk:16,def:8, spd:14,exp:20,  gold:15, zone:1,sz:1},
+  {id:'golem',   name:'ゴーレム',     emoji:'🗿',hp:45, mp:0, atk:25,def:18,spd:5, exp:40,  gold:30, zone:2,sz:1},
+  {id:'skeleton',name:'スケルトン',   emoji:'💀',hp:30, mp:5, atk:20,def:10,spd:9, exp:28,  gold:22, zone:2,sz:2},
+  {id:'lizard',  name:'トカゲ兵',     emoji:'🦎',hp:38, mp:0, atk:22,def:14,spd:11,exp:35,  gold:28, zone:2,sz:2},
+  {id:'sandman', name:'サンドマン',   emoji:'🏜️',hp:55, mp:15,atk:28,def:16,spd:10,exp:55,  gold:45, zone:3,sz:1,sp:'mera'},
+  {id:'mummy',   name:'ミイラ男',     emoji:'🧟',hp:60, mp:0, atk:32,def:20,spd:7, exp:60,  gold:50, zone:3,sz:1},
+  {id:'sphinx',  name:'スフィンクス', emoji:'🦁',hp:80, mp:10,atk:38,def:22,spd:12,exp:80,  gold:70, zone:3,sz:1,sp:'merami'},
+  {id:'samurai', name:'かげむしゃ',   emoji:'⚔️',hp:90, mp:0, atk:45,def:28,spd:16,exp:100, gold:90, zone:4,sz:1},
+  {id:'ninja',   name:'にんじゃ',     emoji:'🥷',hp:70, mp:20,atk:50,def:22,spd:22,exp:110, gold:100,zone:4,sz:2,sp:'hyad'},
+  {id:'darkelf', name:'あんこくまどう',emoji:'🧙',hp:120,mp:40,atk:55,def:30,spd:18,exp:150, gold:120,zone:5,sz:1,sp:'ionazun'},
+  {id:'dknight', name:'あんこくきし', emoji:'🛡️',hp:150,mp:0, atk:65,def:40,spd:14,exp:180, gold:150,zone:5,sz:1},
+  {id:'daemon',  name:'デーモン',     emoji:'👿',hp:180,mp:30,atk:70,def:45,spd:20,exp:220, gold:200,zone:5,sz:1,sp:'merami'},
+  {id:'baramos', name:'バラモス',     emoji:'🐲',hp:380,mp:100,atk:80,def:50,spd:15,exp:1500,gold:0, zone:99,sz:1,sp:'merazoma',boss:true},
+  {id:'zoma',    name:'大魔王ゾーマ', emoji:'👹',hp:1000,mp:200,atk:110,def:70,spd:22,exp:9999,gold:0,zone:99,sz:1,sp:'giga',boss:true,final:true}
+];
+
+const EXP_TBL=[0,0,15,45,95,175,285,435,635,895,1235,1665,2195,2845,3625,4545,5625,6885,8345,10025,13000];
+
+// ============================================================
+// GAME STATE
+// ============================================================
+let G={
+  state:'title', px:4,py:3, camX:0,camY:0, zone:1,
+  gold:200, items:[{name:'やくそう',type:'item',heal:30,count:3}],
+  party:[], flags:{}, hasShip:false,
+  battleData:null, shopKey:null, shopTabKey:'items', innCost:0,
+  menuCharIdx:0, storyQ:[], storyIdx:0, storyCB:null,
+  classSelection:[], classStep:0,
+  mapBgm:'field'  // BGM to return to after battle
+};
+
+function mkChar(classKey,name){
+  const cl=CLASSES[classKey];
+  const spells=cl.learn.filter(l=>l.lv<=1).map(l=>l.s);
+  return{classKey,name:name||cl.name,emoji:cl.emoji,lv:1,exp:0,
+         hp:cl.hp,maxHp:cl.hp,mp:cl.mp,maxMp:cl.mp,
+         atk:cl.atk,def:cl.def,spd:cl.spd,int:cl.int,spells,
+         weapon:null,armor:null,shield:null,status:'ok',cl};
+}
+function lvupChar(ch){
+  const cl=ch.cl; ch.lv++;
+  ch.maxHp+=cl.hg+rnd(0,4); ch.maxMp+=cl.mg+rnd(0,2);
+  ch.hp=ch.maxHp; ch.mp=ch.maxMp;
+  ch.atk+=cl.ag+rnd(0,2); ch.def+=cl.dg+rnd(0,1);
+  ch.spd+=cl.sg; ch.int+=cl.ig+rnd(0,1);
+  let ns=[];
+  (cl.learn||[]).forEach(l=>{if(l.lv===ch.lv&&!ch.spells.includes(l.s)){ch.spells.push(l.s);ns.push(SPELLS[l.s].name);}});
+  return ns;
+}
+function charTotalAtk(ch){return ch.atk+(ch.weapon?ch.weapon.atk:0);}
+function charTotalDef(ch){return ch.def+(ch.armor?ch.armor.def:0)+(ch.shield?ch.shield.def:0);}
+
+function rnd(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
+
+// ============================================================
+// MAP & CANVAS
+// ============================================================
+const canvas=document.getElementById('mapCanvas');
+const ctx=canvas.getContext('2d');
+
+function drawMap(){
+  const cx=G.camX,cy=G.camY;
+  for(let r=0;r<VR;r++){for(let c=0;c<VC;c++){
+    const mx=cx+c,my=cy+r;
+    if(mx<0||mx>=MC||my<0||my>=MR){ctx.fillStyle='#000';ctx.fillRect(c*TS,r*TS,TS,TS);continue;}
+    const td=TDATA[WMAP[my][mx]]||TDATA[0];
+    ctx.fillStyle=td.c; ctx.fillRect(c*TS,r*TS,TS,TS);
+    ctx.strokeStyle='rgba(0,0,0,.12)'; ctx.strokeRect(c*TS,r*TS,TS,TS);
+  }}
+  ctx.font='18px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  for(let r=0;r<VR;r++){for(let c=0;c<VC;c++){
+    const mx=cx+c,my=cy+r;
+    if(mx<0||mx>=MC||my<0||my>=MR) continue;
+    const icon=TICON[WMAP[my][mx]];
+    if(icon) ctx.fillText(icon,c*TS+16,r*TS+16);
+  }}
+  const px=G.px-cx,py=G.py-cy;
+  if(px>=0&&px<VC&&py>=0&&py<VR){
+    ctx.font='22px serif'; ctx.fillText(G.party[0]?.emoji||'🧙',px*TS+16,py*TS+14);
+  }
+}
+function updateCamera(){
+  G.camX=clamp(G.px-Math.floor(VC/2),0,MC-VC);
+  G.camY=clamp(G.py-Math.floor(VR/2),0,MR-VR);
+}
+function renderPartyBar(){
+  const bar=document.getElementById('partyBar');
+  if(!G.party.length){bar.innerHTML='';return;}
+  bar.innerHTML=G.party.map(ch=>{
+    const pct=clamp(ch.hp/ch.maxHp*100,0,100);
+    const dead=ch.status==='dead';
+    const hpCl=pct<25?'crit':pct<50?'low':'';
+    return`<div class="charCard">
+      <div class="cname">${ch.emoji}${ch.name}${ch.status==='poison'?' 🟣':ch.status==='sleep'?' 💤':dead?' ☠️':''}</div>
+      <div class="hpbar"><div style="width:${pct}%" class="${hpCl}"></div></div>
+      <div class="${dead?'cdead':'chp'}">HP ${ch.hp}/${ch.maxHp}</div>
+      <div class="cmp">MP ${ch.mp}/${ch.maxMp}</div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// MOVEMENT & ENCOUNTER
+// ============================================================
+let moveBlocked=false;
+document.addEventListener('keydown',e=>{
+  if(G.state!=='map'||moveBlocked) return;
+  let dx=0,dy=0;
+  if(e.key==='ArrowLeft'||e.key==='a') dx=-1;
+  else if(e.key==='ArrowRight'||e.key==='d') dx=1;
+  else if(e.key==='ArrowUp'||e.key==='w') dy=-1;
+  else if(e.key==='ArrowDown'||e.key==='s') dy=1;
+  if(dx||dy){e.preventDefault();movePlayer(dx,dy);}
+});
+function movePlayer(dx,dy){
+  const nx=G.px+dx,ny=G.py+dy;
+  if(nx<0||nx>=MC||ny<0||ny>=MR) return;
+  const t=WMAP[ny][nx], td=TDATA[t]||{pass:false};
+  if(!td.pass){AUDIO.se('error');setMsg('そこには行けない。');return;}
+  G.px=nx; G.py=ny;
+  AUDIO.se('step');
+  updateCamera(); drawMap();
+  checkLoc();
+  if(td.enc&&Math.random()<(td.rate||.15)) setTimeout(()=>startRandBattle(),200);
+}
+function checkLoc(){
+  for(const[k,loc]of Object.entries(LOCS)){
+    if(loc.x===G.px&&loc.y===G.py){handleLoc(k,loc);return;}
+  }
+}
+function handleLoc(k,loc){
+  moveBlocked=true; AUDIO.se('door');
+  if(loc.type==='castle') handleCastle(k,loc);
+  else if(loc.type==='village'||loc.type==='town') handleTown(k,loc);
+  else if(loc.type==='tower') handleTower(k,loc);
+  else if(loc.type==='cave') handleCave(k,loc);
+  else if(loc.type==='dungeon') handleDungeon(k,loc);
+  else if(loc.type==='port') handlePort(k,loc);
+}
+
+// ============================================================
+// LOCATION HANDLERS
+// ============================================================
+function handleCastle(k,loc){
+  if(k==='ariahan'){
+    if(!G.flags.metKing){
+      G.flags.metKing=true;
+      G.mapBgm='field';
+      showStory([
+        {t:'アリアハン城',b:'王座の間に入ると、白髭の老王が立ち上がった。\n\n「ようこそ、勇者よ。星の予言があなたの来訪を知らせていた。\nわが国を、いや世界を救ってくれ」'},
+        {t:'王の言葉',b:'「遠い北の地、暗黒大陸に魔王ゾーマが潜んでいる。\nやつが世界に闇を放つ前に倒さねばならぬ。\n\n旅に出る前に、各地の街を訪ね仲間と装備を整えよ」'},
+        {t:'旅立ちの命',b:'「まずはナジミの塔を攻略し、\n海を渡る手がかりを見つけるのだ。\n\n行け、勇者よ！　世界の命運はそなたの双肩にかかっておる！」'},
+      ],()=>{setMsg('王の使命を受けた！<br>ナジミの塔を目指そう（西の山のそば）');leaveLoc();});
+    } else { showTownMenu(loc); }
+  } else if(k==='romaly'){
+    if(!G.flags.metRomalyKing){
+      G.flags.metRomalyKing=true;
+      showStory([
+        {t:'ロマリア城',b:'「海の向こうの伝説の島、ジパングに行けば\n強力な武器が手に入ると言われる。\n\nだが、その前にネクロゴンドの洞窟を探すがよい」'},
+      ],()=>{setMsg('ロマリア王から情報を得た！');leaveLoc();});
+    } else { setMsg('ロマリア王：「元気でいるか、勇者よ。」'); leaveLoc(); }
+  }
+}
+function handleTown(k,loc){
+  G.mapBgm='town'; AUDIO.bgm('town');
+  setMsg(`<span style="color:#ffff88">${loc.name}</span>に着いた。`);
+  showTownMenu(loc);
+}
+function showTownMenu(loc){
+  const npcs={
+    'レーベの村':    '村人:「ナジミの塔には試練が待っているぞ。気をつけろ！」',
+    'カザーブ':      '村人:「砂漠の向こうにイシスという豊かな街がある」',
+    'イシス':        '村人:「ジパングの名刀まさむねは最強の武器らしい」',
+    'ジパング':      '村人:「暗黒大陸の魔王ゾーマは闇の衣をまとっているとか……」',
+    'ロマリア城':    '兵士:「北の洞窟の先は暗黒大陸。かなりの強敵がいる」',
+    'アリアハン城':  '兵士:「旅の前に宿屋で休んで行かれよ」',
+  };
+  const npc=npcs[loc.name]||'村人:「魔王を倒してくれ！」';
+  document.getElementById('cmdArea').innerHTML=`
+    <button class="btn" onclick="openShop('${loc.shop||''}')">どうぐや</button>
+    <button class="btn" onclick="openInn(${loc.inn||30})">やどや</button>
+    <button class="btn" onclick="npcTalk(\`${npc}\`)">はなす</button>
+    <button class="btn" onclick="leaveLoc()">でる</button>`;
+}
+function npcTalk(m){setMsg(m);}
+function leaveLoc(){
+  moveBlocked=false; resetCmds();
+  G.mapBgm='field'; AUDIO.bgm('field');
+  setMsg('旅を続ける。');
+}
+function resetCmds(){
+  document.getElementById('cmdArea').innerHTML=`
+    <button class="btn" onclick="cmdTalk()">はなす</button>
+    <button class="btn" onclick="cmdSearch()">しらべる</button>
+    <button class="btn" onclick="openMenu()">メニュー</button>
+    <button class="btn" onclick="saveGame()">セーブ</button>`;
+}
+function handleTower(k,loc){
+  if(!G.flags.clearedTower){
+    showStory([{t:'ナジミの塔',b:'薄暗い塔の中、魔物が跋扈している。\n\nここには海を渡るための秘宝があるという……'}],()=>{
+      setMsg(`${loc.name}に入った。<br>強い魔物が出るが、クリアすれば先へ進める！`);
+      document.getElementById('cmdArea').innerHTML=`
+        <button class="btn" onclick="startBossEvent('baramos')">塔の最上階へ</button>
+        <button class="btn" onclick="leaveLoc()">もどる</button>`;
+    });
+  } else { setMsg('ナジミの塔は攻略済みだ。船で海を渡れる。<br>東の岸（⚓）から出港できる。'); leaveLoc(); }
+}
+function handlePort(k,loc){
+  if(!G.hasShip){
+    setMsg('⚓ '+loc.name+'<br>まだ船がない。<br>ナジミの塔を攻略して船を手に入れよう！');
+    document.getElementById('cmdArea').innerHTML=`
+      <button class="btn" onclick="leaveLoc()">もどる</button>`;
+    return;
+  }
+  // 暗黒大陸への航海はバラモス撃破後のみ
+  const destNames={port_ariah:'アリアハン',port_romaly:'ロマリア',port_zipang:'ジパング',port_dark:'暗黒大陸'};
+  let btns=`<div style="font-size:12px;color:#aaffff;padding:2px 5px">⚓ ${loc.name} — どこへ向かう？</div>`;
+  loc.dest.forEach(d=>{
+    const dl=LOCS[d]; if(!dl) return;
+    const isDark=d==='port_dark';
+    if(isDark&&!G.flags.clearedTower){return;} // 暗黒大陸はバラモス撃破後
+    btns+=`<button class="btn" onclick="sailTo('${d}')">${destNames[d]}へ</button>`;
+  });
+  btns+=`<button class="btn" onclick="leaveLoc()">出港しない</button>`;
+  setMsg(`⛵ 出港準備完了。目的地を選べ。`);
+  document.getElementById('cmdArea').innerHTML=btns;
+}
+function sailTo(destKey){
+  const dl=LOCS[destKey]; if(!dl) return;
+  AUDIO.se('stair');
+  G.px=dl.x; G.py=dl.y;
+  moveBlocked=false; resetCmds();
+  G.mapBgm='field'; AUDIO.bgm('field');
+  updateCamera(); drawMap();
+  setMsg(`⛵ 航海を終え、<span style="color:#aaffff">${dl.name}</span>に上陸した！`);
+}
+function handleCave(k,loc){
+  if(k==='cave1'){
+    AUDIO.se('stair');
+    setMsg(`${loc.name}に入った。強い敵が出るが、奥に宝がある。`);
+    document.getElementById('cmdArea').innerHTML=`
+      <button class="btn" onclick="exploreCave()">奥へ進む</button>
+      <button class="btn" onclick="leaveLoc()">もどる</button>`;
+  } else if(k==='necro'){
+    if(!G.flags.clearedTower){setMsg('まずナジミの塔を攻略する必要がある。');leaveLoc();return;}
+    if(!G.flags.clearedNecro){
+      showStory([{t:'ネクロゴンドの洞窟',b:'暗黒大陸の入り口。冷たい風が吹きすさぶ。\nここを越えた先にゾーマの城がある。\n\n覚悟はいいか！'}],()=>{
+        document.getElementById('cmdArea').innerHTML=`
+          <button class="btn" onclick="startBossEvent('baramos')">先へ進む</button>
+          <button class="btn" onclick="leaveLoc()">もどる</button>`;
+      });
+    } else { setMsg('ネクロゴンドの洞窟は攻略済みだ。'); leaveLoc(); }
+  }
+}
+function handleDungeon(k,loc){
+  if(k==='zoma'){
+    if(!G.flags.clearedNecro){setMsg('まだここへ踏み込む力はない。\nネクロゴンドの洞窟を攻略しよう。');leaveLoc();return;}
+    if(!G.flags.defeatedZoma){
+      showStory([
+        {t:'ゾーマの城',b:'闇の城。あらゆる光が届かない深淵。\n\n大魔王ゾーマが待ち構えている。\nこれが最後の戦いだ！'},
+        {t:'大魔王の声',b:'「よく来たな、愚かなる勇者よ……\n我が闇の力、その身で味わうがよい！」\n\n大魔王ゾーマとの最終決戦が始まる！'},
+      ],()=>{startBossEvent('zoma');});
+    } else { setMsg('魔王はすでに倒された。世界に平和が戻った。'); leaveLoc(); }
+  }
+}
+function exploreCave(){
+  AUDIO.se('item');
+  const gold=rnd(50,200); G.gold+=gold;
+  addItem({name:'まほうのやくそう',type:'item',heal:80,count:1});
+  setMsg(`洞窟で <span style="color:#ffff44">${gold} G</span> と まほうのやくそう を発見した！`);
+  renderPartyBar(); leaveLoc();
+}
+function addItem(item){
+  const ex=G.items.find(i=>i.name===item.name);
+  if(ex) ex.count=(ex.count||1)+1;
+  else G.items.push({...item,count:1});
+}
+function startBossEvent(bossId){
+  const boss=MONS.find(m=>m.id===bossId);
+  if(!boss) return;
+  G.flags.inBoss=true; G.flags.currentBoss=bossId;
+  startBattleWith([boss]);
+}
+
+// ============================================================
+// SHOP
+// ============================================================
+let shopTabKey='items';
+function openShop(key){
+  if(!key||!SHOPS[key]){setMsg('ここにお店はない。');leaveLoc();return;}
+  G.shopKey=key; G.state='shop'; shopTabKey='items';
+  document.getElementById('shopOv').style.display='flex';
+  renderShop();
+}
+function shopTab(key){
+  shopTabKey=key;
+  document.querySelectorAll('.shopTab').forEach(t=>t.classList.remove('active'));
+  event.target.classList.add('active');
+  renderShop();
+}
+function renderShop(){
+  document.getElementById('shopGold').textContent=`所持金: ${G.gold} G`;
+  const items=(SHOPS[G.shopKey]||{})[shopTabKey]||[];
+  document.getElementById('shopList').innerHTML=items.map((it,i)=>
+    `<div class="shopRow" onclick="buyShopItem(${i})"><span>${it.name}<br><span class="sdesc">${it.desc||''}</span></span><span class="sprice">${it.price} G</span></div>`
+  ).join('');
+}
+function buyShopItem(idx){
+  const it=((SHOPS[G.shopKey]||{})[shopTabKey]||[])[idx];
+  if(!it) return;
+  if(G.gold<it.price){AUDIO.se('error');setMsg('お金が足りない！');return;}
+  G.gold-=it.price; AUDIO.se('buy');
+  if(it.type==='item'){addItem({...it,count:1});setMsg(`${it.name}を買った！`);}
+  else if(it.type==='weapon'||it.type==='armor'||it.type==='shield'){
+    const ch=G.party.find(c=>c.status!=='dead');
+    if(ch){const slot=it.type==='shield'?'shield':it.type; ch[slot]={...it}; setMsg(`${ch.name}は ${it.name} を装備した！`);}
+  }
+  renderShop(); renderPartyBar();
+}
+function closeShop(){
+  document.getElementById('shopOv').style.display='none';
+  G.state='map'; leaveLoc();
+}
+
+// ============================================================
+// INN
+// ============================================================
+function openInn(cost){
+  G.innCost=cost;
+  document.getElementById('innCost').textContent=cost;
+  document.getElementById('innOv').style.display='flex';
+  G.state='inn';
+}
+function doInn(){
+  if(G.gold<G.innCost){AUDIO.se('error');setMsg('お金が足りない！');closeInn();return;}
+  G.gold-=G.innCost; AUDIO.se('inn');
+  G.party.forEach(ch=>{if(ch.status!=='dead'){ch.hp=ch.maxHp;ch.mp=ch.maxMp;ch.status='ok';}});
+  closeInn(); renderPartyBar();
+  showStory([{t:'やどや',b:'ゆっくりと眠った……\n\nパーティのHPとMPが完全回復した！\n\n今日も冒険へ出発だ！'}],()=>{leaveLoc();});
+}
+function closeInn(){document.getElementById('innOv').style.display='none';G.state='map';}
+
+// ============================================================
+// MENU
+// ============================================================
+function openMenu(){
+  G.menuCharIdx=0; G.state='menu';
+  renderMenuTabs(); renderMenuBody();
+  document.getElementById('menuOv').style.display='flex';
+}
+function renderMenuTabs(){
+  document.getElementById('menuCharTabs').innerHTML=G.party.map((ch,i)=>
+    `<button class="menuTab${i===G.menuCharIdx?' active':''}" onclick="setMenuChar(${i})">${ch.emoji}${ch.name}</button>`
+  ).join('');
+}
+function setMenuChar(i){G.menuCharIdx=i;renderMenuTabs();renderMenuBody();}
+function renderMenuBody(){
+  const ch=G.party[G.menuCharIdx], cl=CLASSES[ch.classKey];
+  const en=EXP_TBL[ch.lv+1]||'MAX';
+  document.getElementById('menuBody').innerHTML=`
+    <div class="mrow"><span class="ml">職業</span><span class="mr">${cl.name}</span></div>
+    <div class="mrow"><span class="ml">Lv / EXP</span><span class="mr">${ch.lv} / ${ch.exp} (次まで${en==='MAX'?'MAX':en-ch.exp})</span></div>
+    <div class="mrow"><span class="ml">HP / MP</span><span class="mr">${ch.hp}/${ch.maxHp}　${ch.mp}/${ch.maxMp}</span></div>
+    <div class="mrow"><span class="ml">攻撃/守備</span><span class="mr">${charTotalAtk(ch)} / ${charTotalDef(ch)}</span></div>
+    <div class="mrow"><span class="ml">すばやさ</span><span class="mr">${ch.spd}</span></div>
+    <div class="mrow"><span class="ml">ぶき</span><span class="mr">${ch.weapon?.name||'なし'}</span></div>
+    <div class="mrow"><span class="ml">よろい</span><span class="mr">${ch.armor?.name||'なし'}</span></div>
+    <div class="mrow"><span class="ml">たて</span><span class="mr">${ch.shield?.name||'なし'}</span></div>
+    <div class="mrow"><span class="ml">状態</span><span class="mr">${{ok:'元気',poison:'毒',sleep:'眠り',dead:'戦闘不能'}[ch.status]||ch.status}</span></div>
+    <div class="mrow"><span class="ml">呪文</span><span class="mr" style="font-size:10px">${ch.spells.map(s=>SPELLS[s]?.name||s).join('・')||'なし'}</span></div>
+    <div style="margin-top:6px;font-size:11px;color:#888">所持金: ${G.gold} G</div>`;
+}
+function openItemMenu(){
+  if(!G.items.length){setMsg('どうぐを持っていない。');return;}
+  const list=G.items.map((it,i)=>`<button class="btn" style="margin:2px;font-size:11px" onclick="useItemMenu(${i})">${it.name}×${it.count||1}</button>`).join('');
+  document.getElementById('menuBody').innerHTML=`<div style="font-size:12px;color:#ffff88;margin-bottom:6px">どうぐ一覧</div>${list}<div style="margin-top:8px"><button class="btn" onclick="renderMenuBody()">もどる</button></div>`;
+}
+function useItemMenu(idx){
+  const it=G.items[idx]; if(!it) return;
+  const ch=G.party.find(c=>c.status!=='dead'); if(!ch) return;
+  applyItem(it,ch); AUDIO.se('item');
+  it.count=(it.count||1)-1; if(it.count<=0) G.items.splice(idx,1);
+  renderPartyBar(); setMsg(`${ch.name}は ${it.name} を使った！`); renderMenuBody();
+}
+function applyItem(it,ch){
+  if(it.heal) ch.hp=Math.min(ch.maxHp,ch.hp+(it.heal>=9999?ch.maxHp:it.heal));
+  if(it.mp)   ch.mp=Math.min(ch.maxMp,ch.mp+(it.mp>=9999?ch.maxMp:it.mp));
+}
+function closeMenu(){document.getElementById('menuOv').style.display='none';G.state='map';}
+
+// ============================================================
+// FIELD COMMANDS
+// ============================================================
+function cmdTalk(){
+  const msgs=['周りに誰もいない。','風の音だけが聞こえる……','かすかに魔物の気配を感じる。','遠くに城の影が見える。'];
+  setMsg(msgs[rnd(0,msgs.length-1)]);
+}
+function cmdSearch(){
+  const t=WMAP[G.py][G.px];
+  if(t===T.FOREST&&Math.random()<.3){const g=rnd(10,50);G.gold+=g;AUDIO.se('item');setMsg(`森を調べると ${g} G が落ちていた！`);}
+  else if(t===T.GRASS&&Math.random()<.15){addItem({name:'やくそう',type:'item',heal:30,count:1});AUDIO.se('item');setMsg('草むらにやくそうが落ちていた！');}
+  else if(t===T.BEACH&&Math.random()<.08){addItem({name:'エリクサー',type:'item',heal:9999,mp:9999,count:1});AUDIO.se('fanfare');setMsg('砂浜で光り輝くエリクサーを発見した！');}
+  else setMsg('何も見つからなかった……');
+  renderPartyBar();
+}
+
+// ============================================================
+// STORY SYSTEM
+// ============================================================
+function showStory(stories,cb){
+  G.storyQ=stories;G.storyIdx=0;G.storyCB=cb;
+  displayStory(); document.getElementById('storyOv').style.display='flex';
+}
+function displayStory(){
+  const s=G.storyQ[G.storyIdx];
+  document.getElementById('storyTitle').textContent=s.t;
+  document.getElementById('storyBody').innerHTML=s.b.replace(/\n/g,'<br>');
+}
+function nextStory(){
+  G.storyIdx++;
+  if(G.storyIdx>=G.storyQ.length){
+    document.getElementById('storyOv').style.display='none';
+    if(G.storyCB) G.storyCB();
+  } else displayStory();
+}
+
+// ============================================================
+// BATTLE SYSTEM
+// ============================================================
+let battleEnemies=[], pendingSpell=null, pendingActorIdx=null;
+
+function startRandBattle(){
+  const pool=MONS.filter(m=>!m.boss&&m.zone<=G.zone+1&&m.zone>=G.zone-1);
+  if(!pool.length) return;
+  const base=pool[rnd(0,pool.length-1)];
+  const count=rnd(1,Math.min(3,base.sz||1));
+  startBattleWith(Array.from({length:count},()=>mkEnemy(base)));
+}
+function mkEnemy(tmpl){
+  const hp=tmpl.hp+rnd(-Math.floor(tmpl.hp*.1),Math.floor(tmpl.hp*.1));
+  return{...tmpl,hp,maxHp:hp,alive:true};
+}
+function startBattleWith(enemies){
+  AUDIO.se('encounter');
+  battleEnemies=enemies.map(e=>({...e,alive:true,maxHp:e.hp}));
+  G.state='battle'; moveBlocked=true;
+  const isBoss=G.flags.inBoss;
+  AUDIO.bgm(isBoss?'boss':'battle');
+  renderBattleEnemies();
+  document.getElementById('battleOv').style.display='flex';
+  document.getElementById('battleContBtn').style.display='none';
+  bMsg(battleEnemies.length===1?`${battleEnemies[0].name}が現れた！`:`${battleEnemies[0].name}たちが現れた！`);
+  setTimeout(()=>nextBattleTurn(),600);
+}
+function renderBattleEnemies(){
+  for(let i=0;i<3;i++){
+    const blk=document.getElementById(`eblk${i}`),e=battleEnemies[i];
+    if(!e){blk.innerHTML='';continue;}
+    const pct=clamp(e.hp/e.maxHp*100,0,100);
+    blk.innerHTML=`<div class="enemyEmoji${e.alive?'':' dead'}" id="eemoji${i}">${e.emoji}</div>
+      <div class="enemyName">${e.name}</div>
+      <div class="enemyHpW"><div class="enemyHpI" id="ehpb${i}" style="width:${pct}%"></div></div>
+      <div style="font-size:9px;color:#ffaaaa">${e.hp}/${e.maxHp}</div>`;
+  }
+}
+function bMsg(txt){document.getElementById('battleMsg').innerHTML=txt;}
+function showBCmds(show){document.getElementById('battleCmds').style.display=show?'flex':'none';}
+function hideSP(){document.getElementById('spellPanel').style.display='none';}
+function hideTP(){document.getElementById('targetPanel').style.display='none';}
+function nextBattleTurn(){
+  if(battleEnemies.every(e=>!e.alive)){battleWin();return;}
+  if(G.party.every(ch=>ch.status==='dead')){battleLose();return;}
+  showBCmds(true); hideSP(); hideTP();
+  showBattlePlayerMenu(0);
+}
+function showBattlePlayerMenu(charIdx){
+  while(charIdx<G.party.length&&G.party[charIdx].status==='dead') charIdx++;
+  if(charIdx>=G.party.length){enemyTurns();return;}
+  pendingActorIdx=charIdx;
+  const ch=G.party[charIdx];
+  bMsg(`${ch.emoji}${ch.name}のターン (HP:${ch.hp} MP:${ch.mp})`);
+  showBCmds(true); hideSP(); hideTP();
+}
+function showSpellPanel(ch){
+  const panel=document.getElementById('spellPanel');
+  panel.innerHTML=ch.spells.map(s=>{
+    const sp=SPELLS[s];
+    return`<button class="btn" onclick="castSpell('${s}')" ${ch.mp<sp.mp?'disabled':''}>${sp.name}(${sp.mp}MP)</button>`;
+  }).join('');
+  const b=document.createElement('button');
+  b.className='btn'; b.textContent='もどる'; b.onclick=()=>{hideSP();showBCmds(true);};
+  panel.appendChild(b); panel.style.display='flex';
+}
+function showTargetPanel(enemies,cb){
+  const panel=document.getElementById('targetPanel');
+  panel.innerHTML=enemies.map((e)=>`<button class="btn" onclick="doTargetSelect(${battleEnemies.indexOf(e)})">${e.emoji}${e.name}</button>`).join('');
+  window._tgtCb=cb; panel.style.display='flex';
+}
+function doTargetSelect(eIdx){
+  hideTP(); const e=battleEnemies[eIdx];
+  if(window._tgtCb){window._tgtCb(e);window._tgtCb=null;}
+}
+function battleCmd(cmd){
+  const ch=G.party[pendingActorIdx]; if(!ch) return;
+  showBCmds(false);
+  if(cmd==='attack'){
+    const alive=battleEnemies.filter(e=>e.alive);
+    if(!alive.length) return;
+    if(alive.length===1){doPhysAtk(ch,alive[0]);setTimeout(()=>afterPlayerAction(),900);}
+    else{bMsg('どの敵を攻撃する？');showTargetPanel(alive,e=>{doPhysAtk(ch,e);setTimeout(()=>afterPlayerAction(),900);});}
+  } else if(cmd==='spell'){
+    if(!ch.spells.length){bMsg('呪文を知らない！');setTimeout(()=>showBCmds(true),500);return;}
+    showSpellPanel(ch);
+  } else if(cmd==='item'){
+    if(!G.items.length){bMsg('どうぐがない！');setTimeout(()=>showBCmds(true),500);return;}
+    showItemPanel(ch);
+  } else if(cmd==='defend'){
+    ch._defending=true;
+    bMsg(`${ch.name}はぼうぎょした！`);
+    setTimeout(()=>showBattlePlayerMenu(pendingActorIdx+1),700);
+  } else if(cmd==='run'){
+    const avg=battleEnemies.reduce((s,e)=>s+e.spd,0)/battleEnemies.length;
+    if(Math.random()<Math.min(.9,Math.max(.2,ch.spd/(ch.spd+avg)))){
+      bMsg('うまく逃げ切った！'); setTimeout(()=>endBattle(),900);
+    } else {
+      bMsg('逃げられなかった！'); setTimeout(()=>showBattlePlayerMenu(pendingActorIdx+1),900);
+    }
+  }
+}
+function showItemPanel(ch){
+  const panel=document.getElementById('targetPanel');
+  panel.innerHTML=G.items.map((it,i)=>`<button class="btn" onclick="useItemBattle(${i})" style="font-size:11px">${it.name}×${it.count||1}</button>`).join('');
+  const b=document.createElement('button');
+  b.className='btn'; b.textContent='もどる'; b.onclick=()=>{hideTP();showBCmds(true);};
+  panel.appendChild(b); panel.style.display='flex';
+}
+function useItemBattle(idx){
+  hideTP();
+  const it=G.items[idx]; if(!it){showBCmds(true);return;}
+  const ch=G.party[pendingActorIdx];
+  AUDIO.se('item');
+  const prevHp=ch.hp; applyItem(it,ch);
+  const healed=ch.hp-prevHp;
+  it.count=(it.count||1)-1; if(it.count<=0) G.items.splice(idx,1);
+  bMsg(`${ch.name}は ${it.name} を使った！<br>HPが <span style="color:#44ff44">${healed}</span> 回復！`);
+  renderPartyBar();
+  setTimeout(()=>showBattlePlayerMenu(pendingActorIdx+1),900);
+}
+function afterPlayerAction(){
+  if(battleEnemies.every(e=>!e.alive)) battleWin();
+  else showBattlePlayerMenu(pendingActorIdx+1);
+}
+function castSpell(key){
+  hideSP();
+  const ch=G.party[pendingActorIdx],sp=SPELLS[key];
+  if(!sp||ch.mp<sp.mp){bMsg('MPが足りない！');setTimeout(()=>showBCmds(true),500);return;}
+  ch.mp-=sp.mp; renderPartyBar();
+  AUDIO.se(sp.type==='heal'||sp.type==='healall'||sp.type==='revive'?'heal':'spell');
+
+  if(sp.type==='heal'||sp.type==='healall'){
+    if(sp.tgt==='all'){
+      G.party.filter(c=>c.status!=='dead').forEach(t=>{t.hp=Math.min(t.maxHp,t.hp+(sp.pow>=9999?t.maxHp:sp.pow));});
+      bMsg(`${ch.name}は ${sp.name}！<br>全員のHPが回復した！`);
+    } else {
+      const alive=G.party.filter(c=>c.status!=='dead');
+      if(alive.length===1){
+        const t=alive[0]; const h=Math.min(t.maxHp-t.hp,sp.pow>=9999?t.maxHp:sp.pow);
+        t.hp+=h; bMsg(`${ch.name}は ${sp.name}！　${t.name}のHP +${h} 回復！`);
+      } else {
+        bMsg(`${sp.name}：誰に使う？`);
+        const panel=document.getElementById('targetPanel');
+        panel.innerHTML=alive.map((t,i)=>`<button class="btn" onclick="healTargetBattle(${G.party.indexOf(t)},'${key}')">${t.emoji}${t.name}(${t.hp}/${t.maxHp})</button>`).join('');
+        panel.style.display='flex'; return;
+      }
+    }
+    renderPartyBar(); setTimeout(()=>showBattlePlayerMenu(pendingActorIdx+1),900);
+  } else if(sp.type==='revive'){
+    const dead=G.party.find(c=>c.status==='dead');
+    if(!dead){bMsg('戦闘不能の仲間がいない！');setTimeout(()=>showBCmds(true),500);return;}
+    dead.status='ok'; dead.hp=Math.ceil(dead.maxHp*.5);
+    bMsg(`${ch.name}は ${sp.name}！　${dead.name}が生き返った！`);
+    renderPartyBar(); setTimeout(()=>showBattlePlayerMenu(pendingActorIdx+1),900);
+  } else if(sp.type==='cure'){
+    const t=G.party.find(c=>c.status==='poison'||c.status==='sleep');
+    if(!t){bMsg('回復が必要な仲間がいない。');setTimeout(()=>showBCmds(true),500);return;}
+    t.status='ok'; bMsg(`${ch.name}は ${sp.name}！　${t.name}の異常が治った！`);
+    renderPartyBar(); setTimeout(()=>showBattlePlayerMenu(pendingActorIdx+1),900);
+  } else if(sp.type==='attack'){
+    const alive=battleEnemies.filter(e=>e.alive);
+    if(!alive.length){endBattle();return;}
+    animSpell();
+    if(sp.tgt==='all_e'||sp.tgt==='all'){
+      let msg=`${ch.name}は <span style="color:#44ffff">${sp.name}</span>！`;
+      alive.forEach(e=>{
+        const mag=Math.floor(sp.pow*(ch.int/15)*(.9+Math.random()*.2));
+        const dmg=Math.max(1,mag-Math.floor(e.def*.3));
+        e.hp=Math.max(0,e.hp-dmg); if(e.hp<=0){e.alive=false;}
+        msg+=`<br>${e.name}に <span style="color:#ffff44">${dmg}</span> ダメージ！`;
+      });
+      bMsg(msg); renderBattleEnemies();
+      setTimeout(()=>{if(battleEnemies.every(e=>!e.alive))battleWin();else showBattlePlayerMenu(pendingActorIdx+1);},1000);
+    } else {
+      if(alive.length===1){doSpellAtk(ch,alive[0],sp);setTimeout(()=>afterPlayerAction(),900);}
+      else{
+        bMsg(`${sp.name}：どの敵に？`); pendingSpell=sp;
+        showTargetPanel(alive,e=>{doSpellAtk(ch,e,pendingSpell);setTimeout(()=>afterPlayerAction(),900);});
+      }
+    }
+  } else if(sp.type==='escape'){
+    bMsg(`${ch.name}は ${sp.name} を唱えた！`);
+    setTimeout(()=>{endBattle();G.px=4;G.py=3;updateCamera();drawMap();},800);
+  }
+}
+function healTargetBattle(charIdx,key){
+  hideTP();
+  const ch=G.party[pendingActorIdx],t=G.party[charIdx],sp=SPELLS[key];
+  const h=Math.min(t.maxHp-t.hp,sp.pow>=9999?t.maxHp:sp.pow);
+  t.hp=Math.min(t.maxHp,t.hp+sp.pow);
+  bMsg(`${ch.name}は ${sp.name}！　${t.name}のHP +${h} 回復！`);
+  renderPartyBar(); setTimeout(()=>showBattlePlayerMenu(pendingActorIdx+1),900);
+}
+function doPhysAtk(ch,e){
+  AUDIO.se('attack');
+  const dmg=Math.max(1,Math.floor(charTotalAtk(ch)*(.85+Math.random()*.3))-Math.floor(e.def*.5));
+  e.hp=Math.max(0,e.hp-dmg); if(e.hp<=0) e.alive=false;
+  animHit(battleEnemies.indexOf(e)); renderBattleEnemies();
+  bMsg(`${ch.emoji}${ch.name}の攻撃！<br>${e.name}に <span style="color:#ffff44">${dmg}</span> のダメージ！${e.alive?'':'<br><span style="color:#ff4444">'+e.name+'を倒した！</span>'}`);
+}
+function doSpellAtk(ch,e,sp){
+  AUDIO.se('spell');
+  const mag=Math.floor(sp.pow*(ch.int/15)*(.9+Math.random()*.2));
+  const dmg=Math.max(1,mag-Math.floor(e.def*.3));
+  e.hp=Math.max(0,e.hp-dmg); if(e.hp<=0) e.alive=false;
+  animSpell(); renderBattleEnemies();
+  bMsg(`${ch.name}は <span style="color:#44ffff">${sp.name}</span>！<br>${e.name}に <span style="color:#ffff44">${dmg}</span> のダメージ！${e.alive?'':'<br><span style="color:#ff4444">'+e.name+'を倒した！</span>'}`);
+}
+function animHit(idx){
+  const el=document.getElementById(`eemoji${idx}`); if(!el) return;
+  el.classList.add('hit'); setTimeout(()=>el.classList.remove('hit'),200);
+}
+function animSpell(){
+  const bg=document.getElementById('battleBg');
+  bg.style.background='linear-gradient(180deg,#002244,#440088)';
+  setTimeout(()=>bg.style.background='linear-gradient(180deg,#001133,#002255 60%,#221100)',300);
+}
+function enemyTurns(){
+  const alive=battleEnemies.filter(e=>e.alive);
+  if(!alive.length){battleWin();return;}
+  const aliveP=G.party.filter(ch=>ch.status!=='dead');
+  if(!aliveP.length){battleLose();return;}
+  let msg='';
+  let idx=0;
+  function next(){
+    if(idx>=alive.length){
+      G.party.forEach(ch=>ch._defending=false);
+      renderPartyBar();
+      if(G.party.every(ch=>ch.status==='dead')){battleLose();return;}
+      bMsg(msg||'敵の攻撃！');
+      setTimeout(()=>nextBattleTurn(),1000);
+      return;
+    }
+    const e=alive[idx++];
+    const alP=G.party.filter(ch=>ch.status!=='dead');
+    if(!alP.length){battleLose();return;}
+    const t=alP[rnd(0,alP.length-1)];
+    AUDIO.se('damage');
+    if(e.sp&&Math.random()<.25&&e.mp>0){
+      const sp=SPELLS[e.sp];
+      if(sp&&sp.type==='attack'){
+        const mag=Math.floor(sp.pow*(.8+Math.random()*.4));
+        const def=charTotalDef(t)*(t._defending?.5:1);
+        const dmg=Math.max(1,mag-Math.floor(def*.4));
+        t.hp=Math.max(0,t.hp-dmg); if(t.hp<=0){t.hp=0;t.status='dead';}
+        msg+=`${e.name}は <span style="color:#ff8844">${sp.name}</span>！　${t.emoji}${t.name}に <span style="color:#ff8844">${dmg}</span> ダメージ！<br>`;
+      }
+    } else {
+      const def=charTotalDef(t)*(t._defending?.5:1);
+      const dmg=Math.max(1,Math.floor(e.atk*(.85+Math.random()*.3))-Math.floor(def*.5));
+      t.hp=Math.max(0,t.hp-dmg); if(t.hp<=0){t.hp=0;t.status='dead';}
+      msg+=`${e.name}の攻撃！　${t.emoji}${t.name}に <span style="color:#ff8844">${dmg}</span> ダメージ！<br>`;
+    }
+    if(t.status==='dead') msg+=`<span style="color:#ff4444">${t.name}は倒れた！</span><br>`;
+    next();
+  }
+  next();
+}
+
+function battleWin(){
+  showBCmds(false); hideSP(); hideTP();
+  let totalExp=0,totalGold=0;
+  battleEnemies.forEach(e=>{totalExp+=e.exp;totalGold+=e.gold;});
+  G.gold+=totalGold;
+  AUDIO.se('victory');
+
+  let msg=`<span style="color:#ffff44">勝利！</span><br>EXP +${totalExp}　GOLD +${totalGold}`;
+  let lvMsg='';
+  G.party.forEach(ch=>{
+    if(ch.status==='dead') return;
+    ch.exp+=totalExp;
+    while(ch.lv<20&&EXP_TBL[ch.lv+1]&&ch.exp>=EXP_TBL[ch.lv+1]){
+      const ns=lvupChar(ch);
+      lvMsg+=`<br>🌟 ${ch.name}はLv${ch.lv}に上がった！`;
+      if(ns.length) lvMsg+=`　✨${ns.join('・')}を覚えた！`;
+      setTimeout(()=>AUDIO.se('levelup'),500);
+    }
+  });
+  bMsg(msg+lvMsg); renderPartyBar();
+
+  if(G.flags.inBoss){
+    const bossId=G.flags.currentBoss; G.flags.inBoss=false;
+    setTimeout(()=>{
+      endBattle();
+      if(bossId==='baramos'){
+        G.flags.clearedTower=true; G.flags.clearedNecro=true;
+        G.hasShip=true;
+        AUDIO.bgm('field');
+        showStory([
+          {t:'バラモス撃破！',b:'強大な敵を倒した！\n\n「ガァァ……まだ……ゾーマが……いる……」\n\nバラモスの声が消えていった……'},
+          {t:'船を手に入れた！',b:'バラモスが封印していた船が解放された！\n\n⚓ 各地の港から世界中の島へ航海できる！\n\n地図の ⚓マーク に近づくと出港メニューが開く。\n暗黒大陸（南の島）でゾーマの城へ向かえ！'},
+        ],()=>{setMsg('🚢 船を手に入れた！<br>各地の ⚓港 から島間を移動できる。');drawMap();});
+      } else if(bossId==='zoma'){
+        G.flags.defeatedZoma=true;
+        showEnding();
+      }
+    },2000);
+    return;
+  }
+
+  // 通常戦闘：続けるボタンを表示してから戻る
+  setTimeout(()=>{
+    document.getElementById('battleContBtn').style.display='block';
+  },800);
+}
+
+function battleLose(){
+  showBCmds(false); hideSP(); hideTP();
+  AUDIO.se('dead');
+  bMsg(`<span style="color:#ff4444">全員が倒れてしまった……</span>`);
+  setTimeout(()=>{
+    AUDIO.bgm('gameover');
+    document.getElementById('battleOv').style.display='none';
+    document.getElementById('gameoverOv').style.display='flex';
+    G.state='gameover';
+  },2000);
+}
+
+function endBattle(){
+  document.getElementById('battleOv').style.display='none';
+  document.getElementById('battleContBtn').style.display='none';
+  showBCmds(true); hideSP(); hideTP();
+  G.state='map'; moveBlocked=false;
+  renderPartyBar(); resetCmds(); drawMap();
+  AUDIO.bgm(G.mapBgm||'field');
+  setMsg('戦闘が終わった。旅を続けよう。');
+}
+
+function reviveParty(){
+  AUDIO.bgm('field'); G.mapBgm='field';
+  document.getElementById('gameoverOv').style.display='none';
+  G.party.forEach(ch=>{
+    ch.hp=Math.max(1,Math.ceil(ch.maxHp*.5));
+    ch.mp=Math.max(0,Math.ceil(ch.maxMp*.5));
+    if(ch.status==='dead') ch.status='ok';
+  });
+  G.px=4; G.py=3; updateCamera(); drawMap();
+  G.state='map'; moveBlocked=false;
+  renderPartyBar(); resetCmds();
+  setMsg('アリアハン城で目を覚ました……<br>HP・MPが半分の状態で復活した。<br>宿屋で回復してから出発しよう。');
+}
+
+// ============================================================
+// ENDING
+// ============================================================
+function showEnding(){
+  AUDIO.bgm('ending');
+  document.getElementById('battleOv').style.display='none';
+  document.getElementById('endingOv').style.display='flex';
+  document.getElementById('endingText').innerHTML=`
+    大魔王ゾーマは倒れた。<br><br>
+    闇の力が消え去り、世界に光が戻った。<br><br>
+    ${G.party[0]?.name||'勇者'}たち勇者一行の名は、<br>
+    伝説として永遠に語り継がれるだろう……<br><br>
+    <span style="color:#ffff44">─ STAFF ROLL ─</span><br>
+    <span style="font-size:11px">
+    ${G.party.map(ch=>`${ch.emoji} ${ch.name}（${ch.cl.name}） Lv${ch.lv}`).join('<br>')}<br><br>
+    クリアレベル: ${G.party[0]?.lv||1} / 所持金: ${G.gold} G<br><br>
+    </span>
+    <span style="color:#aaaaff">ありがとうございました</span><br>
+    <span style="color:#888">©2026 CLAUDE SOFT</span>`;
+}
+
+// ============================================================
+// SAVE / LOAD
+// ============================================================
+function saveGame(){
+  const save={px:G.px,py:G.py,gold:G.gold,items:G.items,flags:G.flags,zone:G.zone,hasShip:G.hasShip,
+    party:G.party.map(ch=>({classKey:ch.classKey,name:ch.name,lv:ch.lv,exp:ch.exp,
+      hp:ch.hp,maxHp:ch.maxHp,mp:ch.mp,maxMp:ch.maxMp,atk:ch.atk,def:ch.def,
+      spd:ch.spd,int:ch.int,spells:ch.spells,status:ch.status,
+      weapon:ch.weapon,armor:ch.armor,shield:ch.shield}))};
+  localStorage.setItem('dq3save',JSON.stringify(save));
+  AUDIO.se('save'); setMsg('ゲームをセーブした！');
+}
+function loadGame(){
+  const raw=localStorage.getItem('dq3save');
+  if(!raw){setMsg('セーブデータがない。');return;}
+  try{
+    const s=JSON.parse(raw);
+    G.px=s.px||4;G.py=s.py||3;G.gold=s.gold||200;G.items=s.items||[];
+    G.flags=s.flags||{};G.zone=s.zone||1;G.hasShip=s.hasShip||false;
+    G.party=(s.party||[]).map(p=>{const ch=mkChar(p.classKey,p.name);Object.assign(ch,p);ch.cl=CLASSES[p.classKey];return ch;});
+    document.getElementById('titleOv').style.display='none';
+    G.state='map'; G.mapBgm='field'; AUDIO.bgm('field');
+    updateCamera();drawMap();renderPartyBar();resetCmds();
+    setMsg('冒険を再開した！');
+  } catch(e){setMsg('セーブデータの読み込みに失敗した。');}
+}
+
+// ============================================================
+// GAME START / CLASS SELECT
+// ============================================================
+function startNewGame(){
+  AUDIO.bgm('title');
+  document.getElementById('titleOv').style.display='none';
+  showStory([
+    {t:'〜 プロローグ 〜',b:'時は遠い昔……\n\n大魔王ゾーマが世界に闇をもたらし、\n人々は恐怖と絶望に打ちひしがれていた。'},
+    {t:'〜 星の予言 〜',b:'しかし、古文書にはこう記されていた。\n\n「アリアハンの勇者が現れし時、\n仲間とともに闇を討ち、\n光を世界に取り戻すであろう」'},
+    {t:'〜 パーティ編成 〜',b:'さあ、勇者よ。\n旅に出る前になかまを選ぶがよい。\n\n勇者のほかに２名のなかまを\nえらぶことができる。'},
+  ],()=>{openClassSelect();});
+}
+function openClassSelect(){
+  G.party=[mkChar('hero','勇者')];G.classSelection=[];G.classStep=0;
+  renderClassSelect(); document.getElementById('classOv').style.display='flex';
+}
+function renderClassSelect(){
+  const step=G.classStep;
+  document.getElementById('classTitle').textContent=['1人目のなかまを選べ','2人目のなかまを選べ'][step]||'えらべ';
+  const avail=Object.entries(CLASSES).filter(([k])=>k!=='hero');
+  document.getElementById('classList').innerHTML=avail.map(([k,cl])=>`
+    <button class="classCard${G.classSelection.includes(k)?' chosen':''}" onclick="selectClass('${k}')">
+      <span class="ce">${cl.emoji}</span>
+      <span class="ci"><div class="cn">${cl.name}</div><div class="cd">${cl.desc}</div>
+      <div class="cd" style="margin-top:2px;color:#666">HP:${cl.hp} ATK:${cl.atk} SPD:${cl.spd}</div></span>
+    </button>`).join('');
+}
+function selectClass(k){
+  if(G.classSelection.includes(k)){G.classSelection=G.classSelection.filter(c=>c!==k);G.classStep=Math.max(0,G.classStep-1);renderClassSelect();return;}
+  const names=['アンナ','ベルク','シア','ロン','カイ'];
+  G.classSelection.push(k);
+  G.party.push(mkChar(k,names[G.party.length-1]||CLASSES[k].name));
+  G.classStep++;
+  if(G.classStep>=2){document.getElementById('classOv').style.display='none';finishSetup();}
+  else renderClassSelect();
+}
+function finishSetup(){
+  G.state='map'; G.px=4;G.py=3; G.zone=1;
+  G.mapBgm='field'; AUDIO.bgm('field');
+  updateCamera();drawMap();renderPartyBar();resetCmds();
+  showStory([
+    {t:'旅立ち',b:`${G.party[0].name}は${G.party.slice(1).map(c=>`${c.name}（${c.cl.name}）`).join('と')}とともに\nアリアハン城を出発した！\n\nWASD または 矢印キーで移動。\nまず城の中心（🏰）で王様に話しかけよう！`},
+  ],()=>{setMsg('アリアハン城に到着！<br>★ WASD / 矢印キー で移動　★ 城の中心で王様に会おう');});
+}
+
+function setMsg(txt){
+  document.getElementById('msgText').innerHTML=txt;
+  document.getElementById('msgArr').style.display='none';
+}
+
+// INIT
+drawMap();
+setMsg('勇者伝説III へようこそ！<br>「はじめから」または「つづきから」を選んでください。');
+</script>
+</body>
+</html>
