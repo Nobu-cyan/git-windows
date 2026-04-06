@@ -6,38 +6,43 @@
 <title>ギャラガ</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; touch-action:none; }
-body {
+html, body {
+  width:100%; height:100%;
   background:#000;
+  overflow:hidden;
+  user-select:none;
+}
+body {
   display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:flex-start;
-  min-height:100vh;
   font-family:'Courier New',monospace;
-  overflow:hidden;
-  user-select:none;
 }
 #wrap {
   display:flex;
   flex-direction:column;
   align-items:center;
   width:100%;
+  height:100%;
+  max-width:480px;
 }
 #ui {
   color:#fff;
   display:flex;
   justify-content:space-between;
   width:100%;
-  max-width:480px;
-  padding:6px 8px;
-  font-size:13px;
+  padding:5px 10px;
+  font-size:clamp(10px, 3.2vw, 14px);
   letter-spacing:1px;
   background:#000;
+  flex-shrink:0;
 }
 #gameCanvas {
   display:block;
-  max-width:100%;
+  flex-shrink:0;
   image-rendering:pixelated;
+  image-rendering:crisp-edges;
 }
 /* モバイル操作ボタン */
 #controls {
@@ -46,38 +51,58 @@ body {
   justify-content:space-between;
   align-items:center;
   width:100%;
-  max-width:480px;
-  padding:10px 16px;
+  padding:6px 14px;
   background:#000;
-  gap:10px;
+  gap:8px;
+  flex-shrink:0;
+  flex:1;
 }
 #controls.show { display:flex; }
 .ctrl-group {
   display:flex;
-  gap:10px;
+  gap:clamp(6px, 2vw, 14px);
+  align-items:center;
 }
 .btn {
-  width:64px; height:64px;
+  width:clamp(52px, 14vw, 76px);
+  height:clamp(52px, 14vw, 76px);
   border-radius:50%;
   border:2px solid #444;
   background:rgba(255,255,255,0.08);
   color:#fff;
-  font-size:22px;
+  font-size:clamp(18px, 5.5vw, 26px);
   display:flex; align-items:center; justify-content:center;
   cursor:pointer;
   -webkit-tap-highlight-color:transparent;
   flex-shrink:0;
 }
-.btn:active, .btn.pressed { background:rgba(255,255,255,0.25); border-color:#aaf; }
+.btn:active, .btn.pressed { background:rgba(255,255,255,0.28); border-color:#aaf; }
 #btnFire {
-  width:80px; height:80px;
+  width:clamp(64px, 18vw, 92px);
+  height:clamp(64px, 18vw, 92px);
   background:rgba(255,50,50,0.15);
   border-color:#f44;
-  font-size:14px;
+  font-size:clamp(11px, 3.5vw, 15px);
   font-weight:bold;
   color:#f88;
 }
 #btnFire.pressed { background:rgba(255,50,50,0.4); }
+
+/* ランドスケープ（横向き）小画面対応 */
+@media (max-height: 480px) {
+  .btn {
+    width:clamp(40px, 10vw, 54px);
+    height:clamp(40px, 10vw, 54px);
+    font-size:clamp(14px, 4vw, 20px);
+  }
+  #btnFire {
+    width:clamp(50px, 12vw, 64px);
+    height:clamp(50px, 12vw, 64px);
+    font-size:clamp(9px, 2.5vw, 12px);
+  }
+  #controls { padding:3px 10px; }
+  #ui { padding:3px 8px; }
+}
 </style>
 </head>
 <body>
@@ -106,18 +131,45 @@ const canvas = document.getElementById('gameCanvas');
 const ctx    = canvas.getContext('2d');
 const CW = 480, CH = 600;
 
-// スマホ対応: 画面幅に合わせてスケール
+// スマホ対応: 画面サイズに合わせてスケール
 function resize() {
-  const scale = Math.min(1, (window.innerWidth) / CW,
-                          (window.innerHeight - 180) / CH);
-  canvas.style.width  = (CW * scale) + 'px';
-  canvas.style.height = (CH * scale) + 'px';
-  // モバイル判定
-  if ('ontouchstart' in window || window.innerWidth < 700) {
-    document.getElementById('controls').classList.add('show');
+  const isMobile = 'ontouchstart' in window || window.innerWidth < 700;
+  const ctrl = document.getElementById('controls');
+
+  if (isMobile) {
+    ctrl.classList.add('show');
+  } else {
+    ctrl.classList.remove('show');
   }
+
+  // UIバーの実高さを取得
+  const uiEl = document.getElementById('ui');
+  const uiH  = uiEl.getBoundingClientRect().height || 30;
+
+  // コントロールの高さ（表示時のみ）
+  let ctrlH = 0;
+  if (isMobile) {
+    const isLandscape = window.innerHeight < 500;
+    ctrlH = isLandscape ? 56 : 100;
+  }
+
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const availW = vw;
+  const availH = vh - uiH - ctrlH - 2;
+
+  const scale = Math.min(availW / CW, availH / CH, 1);
+  const cw = Math.floor(CW * scale);
+  const ch = Math.floor(CH * scale);
+  canvas.style.width  = cw + 'px';
+  canvas.style.height = ch + 'px';
+
+  // #wrap の横幅をキャンバスに合わせる（PC時はキャンバス幅に）
+  document.getElementById('wrap').style.maxWidth =
+    Math.max(cw, 280) + 'px';
 }
 window.addEventListener('resize', resize);
+window.addEventListener('orientationchange', () => setTimeout(resize, 150));
 resize();
 
 // ══════════════════════════════════════════════════
@@ -343,6 +395,7 @@ let capturedByBoss = false; // 捕獲中フラグ
 // 入力状態
 const inp = { left:false, right:false, fire:false };
 let firePrev = false;
+let fireRepeat = 0; // オートファイア用カウンター
 
 // ══════════════════════════════════════════════════
 // 入力: キーボード
@@ -458,9 +511,9 @@ function spawnFormation() {
         diveT:     0,
         divePath:  [],
         // 弾発射
-        shotTimer: 90 + Math.random()*120 + id*4,
+        shotTimer: 180 + Math.random()*180 + id*5,
         // ボス専用
-        beamCooldown: (row.type==='boss') ? 300+Math.random()*200 : 0,
+        beamCooldown: (row.type==='boss') ? 600+Math.random()*300 : 0,
         beamActive:   false,
         beamLen:      0,
         captured:     false,
@@ -557,17 +610,23 @@ function update() {
 
   // ── 自機 ──────────────────────────────────────
   if (player && state === 'playing') {
-    const spd = 4.5;
+    const spd = 5.5;
     if (inp.left  && player.x > 20)      player.x -= spd;
     if (inp.right && player.x < CW - 20) player.x += spd;
 
-    // 弾発射（押した瞬間）
+    // 弾発射（押した瞬間 or ホールドで連射）
     const fireNow = inp.fire;
-    if (fireNow && !firePrev) {
-      if (bullets.length < 2) {
-        bullets.push({ x: player.x, y: player.y - 16, vy: -13 });
-        sfxShoot();
+    if (fireNow) {
+      fireRepeat--;
+      if (!firePrev || fireRepeat <= 0) {
+        if (bullets.length < 3) {
+          bullets.push({ x: player.x, y: player.y - 16, vy: -14 });
+          sfxShoot();
+        }
+        fireRepeat = 12; // 12フレームごとに連射
       }
+    } else {
+      fireRepeat = 0;
     }
     firePrev = fireNow;
 
@@ -625,7 +684,7 @@ function update() {
         e.shotTimer--;
         if (e.shotTimer <= 0 && player && e.y < CH - 30) {
           fireEnemyBullet(e);
-          e.shotTimer = 35 + Math.random()*25;
+          e.shotTimer = 80 + Math.random()*50;
         }
       } else {
         // 画面外に出たらフォームに戻る
@@ -674,7 +733,7 @@ function update() {
       if (e.beamTimer <= 0) {
         e.beamActive = false;
         capturedByBoss = false;
-        e.beamCooldown = 350 + Math.random()*200;
+        e.beamCooldown = 700 + Math.random()*300;
       }
     }
 
@@ -682,14 +741,14 @@ function update() {
     e.shotTimer--;
     if (e.shotTimer <= 0) {
       // ダイブか弾発射か
-      if (Math.random() < 0.4 + stage*0.05) {
+      if (Math.random() < 0.25 + stage*0.03) {
         e.diving   = true;
         e.diveT    = 0;
         e.divePath = makeDivePath(e);
-        e.shotTimer = 100 + Math.random()*80;
+        e.shotTimer = 180 + Math.random()*120;
       } else {
         if (player) fireEnemyBullet(e);
-        e.shotTimer = 60 + Math.random()*60;
+        e.shotTimer = 120 + Math.random()*100;
       }
     }
   }
@@ -723,7 +782,7 @@ function update() {
   if (player && player.inv <= 0 && state === 'playing') {
     for (let bi = enemyBullets.length-1; bi >= 0; bi--) {
       const b = enemyBullets[bi];
-      if (hit(b.x, b.y, 5, player.x, player.y, 14)) {
+      if (hit(b.x, b.y, 5, player.x, player.y, 9)) {
         enemyBullets.splice(bi, 1);
         killPlayer();
         break;
@@ -733,7 +792,7 @@ function update() {
     if (player) {
       for (let ei = enemies.length-1; ei >= 0; ei--) {
         const e = enemies[ei];
-        if (e.diving && hit(e.x, e.y, 16, player.x, player.y, 14)) {
+        if (e.diving && hit(e.x, e.y, 12, player.x, player.y, 9)) {
           addExplosion(e.x, e.y, '#fa0', 12); sfxEnemyDie();
           addScore(e.baseScore, e.x, e.y);
           enemies.splice(ei, 1);
@@ -773,7 +832,7 @@ function fireEnemyBullet(e) {
   const py = player ? player.y : CH/2;
   const dx = px - e.x, dy = py - e.y;
   const dist = Math.sqrt(dx*dx + dy*dy) || 1;
-  const spd = 4 + stage * 0.4;
+  const spd = 2.8 + stage * 0.2;
   enemyBullets.push({
     x: e.x, y: e.y,
     vx: (dx/dist)*spd,
