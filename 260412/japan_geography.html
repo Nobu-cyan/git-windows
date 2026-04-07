@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>日本地理 大冒険</title>
+<style>
+:root{
+  --bg:#06080d;--card:rgba(255,255,255,.06);
+  --border:rgba(100,180,255,.18);
+  --gold:#f5c842;--cream:#f0e8d8;--muted:rgba(240,232,216,.48);
+  --r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;touch-action:manipulation}
+body{font-family:-apple-system,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;
+  background:var(--bg);color:var(--cream);user-select:none}
+button{cursor:pointer;font-family:inherit;border:none;outline:none;color:inherit;background:none}
+button:active{opacity:.72;transform:scale(.97)}
+
+.screen{display:none;position:fixed;inset:0;flex-direction:column;z-index:1;overflow:hidden}
+.screen.active{display:flex}
+.s-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0}
+.s-body::-webkit-scrollbar{display:none}
+
+/* TOPBAR */
+.topbar{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 16px 10px;flex-shrink:0;
+  background:rgba(6,8,13,.95);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+}
+.back-btn{
+  padding:6px 13px;border-radius:20px;
+  background:rgba(255,255,255,.07);font-size:.8rem;color:var(--muted);
+  flex-shrink:0;border:1px solid rgba(255,255,255,.08);
+}
+.topbar-title{font-size:.98rem;font-weight:900;color:var(--gold);letter-spacing:.06em;flex:1}
+.topbar-right{font-size:.76rem;color:var(--muted)}
+
+/* HOME */
+#screen-home{background:linear-gradient(170deg,#06080d 0%,#07101e 100%)}
+#screen-home::before{
+  content:'';position:fixed;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at 60% 20%,rgba(100,160,255,.05) 0%,transparent 60%),
+             radial-gradient(ellipse at 20% 80%,rgba(245,200,66,.04) 0%,transparent 50%);
+}
+.home-hero{text-align:center;padding:28px 20px 14px;flex-shrink:0;position:relative}
+.home-ttl{
+  font-size:clamp(2.2rem,10vw,3.5rem);font-weight:900;
+  color:var(--gold);letter-spacing:.12em;
+  text-shadow:0 0 40px rgba(245,200,66,.4),0 2px 12px rgba(0,0,0,.8);
+  line-height:1.1;
+}
+.home-sub{font-size:.78rem;color:var(--muted);margin-top:8px;letter-spacing:.14em}
+.home-stats{display:flex;justify-content:center;gap:8px;margin:14px 16px 0;flex-wrap:wrap}
+.hstat{
+  display:flex;align-items:center;gap:5px;
+  padding:5px 14px;border-radius:20px;
+  font-size:.78rem;font-weight:800;border:1px solid;
+}
+.xp-row{margin:10px 18px 0;display:flex;align-items:center;gap:8px}
+.xp-bar-bg{flex:1;height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
+.xp-bar-fg{height:100%;background:linear-gradient(90deg,var(--gold),#ff9500);border-radius:3px;transition:width .5s}
+.xp-text{font-size:.65rem;color:var(--muted);white-space:nowrap}
+
+.menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px 16px 30px}
+.menu-card{
+  border-radius:var(--r);padding:18px 14px 14px;
+  display:flex;flex-direction:column;align-items:flex-start;gap:5px;
+  background:var(--card);border:1px solid var(--border);
+  position:relative;overflow:hidden;text-align:left;
+  transition:transform .18s,box-shadow .18s;
+}
+.menu-card:active{transform:scale(.93)}
+.menu-card::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);
+}
+.mc-icon{font-size:2rem;line-height:1}
+.mc-title{font-size:.92rem;font-weight:900;letter-spacing:.04em}
+.mc-sub{font-size:.64rem;color:var(--muted)}
+.mc-wide{grid-column:1/-1}
+.mc-wide .mc-icon{font-size:2.4rem}
+.mc-badge{
+  position:absolute;top:8px;right:10px;
+  font-size:.6rem;font-weight:800;padding:2px 7px;
+  border-radius:10px;background:rgba(245,200,66,.15);
+  color:var(--gold);border:1px solid rgba(245,200,66,.3);
+}
+
+/* MAP */
+#screen-map{background:#090e1a}
+.map-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:6px;overflow:hidden}
+#mapSvg{width:100%;height:100%;max-width:480px;max-height:590px}
+.region-filter{
+  padding:7px 10px;display:flex;gap:5px;overflow-x:auto;flex-shrink:0;
+  border-bottom:1px solid var(--border);background:rgba(0,0,0,.25);
+}
+.region-filter::-webkit-scrollbar{display:none}
+.reg-btn{
+  padding:4px 11px;border-radius:20px;font-size:.68rem;font-weight:700;
+  white-space:nowrap;border:1px solid;opacity:.45;flex-shrink:0;
+  transition:opacity .2s;
+}
+.reg-btn.active{opacity:1}
+
+/* INFO */
+#screen-info{background:var(--bg)}
+.info-hero-wrap{
+  flex-shrink:0;border-bottom:1px solid var(--border);
+  position:relative;overflow:hidden;
+}
+.info-hero-bg{
+  position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at 80% 50%,var(--hero-col) 0%,transparent 70%);
+  opacity:.12;
+}
+.info-hero{display:flex;align-items:center;gap:14px;padding:18px 16px 14px;position:relative}
+.info-emoji-big{font-size:3.4rem;line-height:1;flex-shrink:0}
+.info-title-wrap{flex:1}
+.info-name{font-size:1.75rem;font-weight:900;letter-spacing:.08em}
+.info-read{font-size:.76rem;color:var(--muted);letter-spacing:.1em}
+.info-num{font-size:.68rem;color:var(--muted)}
+.info-reg-tag{
+  display:inline-block;margin-top:5px;
+  padding:3px 12px;border-radius:20px;font-size:.65rem;font-weight:800;
+  letter-spacing:.06em;border:1px solid;
+}
+.info-cards{padding:12px 16px 10px;display:flex;flex-direction:column;gap:10px}
+.info-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px}
+.ic-label{font-size:.6rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+.ic-val{font-size:1rem;font-weight:700}
+.ic-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ic-chip{padding:4px 11px;border-radius:20px;font-size:.72rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1)}
+.ic-fact-text{font-size:.88rem;line-height:1.65;margin-top:2px}
+.info-quiz-btn{
+  margin:8px 16px 20px;padding:14px;border-radius:var(--r);
+  background:linear-gradient(135deg,var(--gold),#ff9500);
+  color:#1a0800;font-size:.92rem;font-weight:900;letter-spacing:.06em;
+  text-align:center;width:calc(100% - 32px);display:block;
+}
+
+/* CARDS */
+#screen-cards{background:var(--bg)}
+.cards-filter{
+  padding:7px 10px;display:flex;gap:5px;overflow-x:auto;flex-shrink:0;
+  border-bottom:1px solid var(--border);background:rgba(0,0,0,.2);
+}
+.cards-filter::-webkit-scrollbar{display:none}
+.cf-btn{
+  padding:4px 11px;border-radius:20px;font-size:.68rem;font-weight:700;
+  border:1px solid;white-space:nowrap;opacity:.45;flex-shrink:0;transition:opacity .2s;
+}
+.cf-btn.active{opacity:1}
+.cards-grid{padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pref-card{
+  border-radius:var(--r);padding:13px 12px 11px;
+  display:flex;flex-direction:column;align-items:flex-start;gap:3px;
+  background:var(--card);border:1px solid var(--border);
+  position:relative;overflow:hidden;transition:transform .18s;text-align:left;
+}
+.pref-card:active{transform:scale(.93)}
+.pc-emoji{font-size:1.7rem;line-height:1;margin-bottom:2px}
+.pc-name{font-size:.92rem;font-weight:900}
+.pc-read{font-size:.62rem;color:var(--muted)}
+.pc-cap{font-size:.7rem;margin-top:3px;color:var(--muted)}
+
+/* REGION LIST */
+#screen-region{background:var(--bg)}
+.reg-list{padding:12px 16px 30px;display:flex;flex-direction:column;gap:10px}
+.reg-card{
+  border-radius:var(--r);padding:14px 14px;
+  background:var(--card);border:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;transition:transform .18s;text-align:left;width:100%;
+}
+.reg-card:active{transform:scale(.97)}
+.reg-color-bar{width:5px;height:50px;border-radius:3px;flex-shrink:0}
+.reg-info{flex:1;min-width:0}
+.reg-name{font-size:1rem;font-weight:900;margin-bottom:3px}
+.reg-pref-names{font-size:.65rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.reg-count{font-size:1.3rem;font-weight:900;color:var(--gold);flex-shrink:0}
+.reg-count span{font-size:.65rem;color:var(--muted)}
+
+/* QUIZ SELECT */
+#screen-quiz-sel{background:var(--bg)}
+.qs-body{padding:14px 16px 30px}
+.qs-section{font-size:.68rem;color:var(--muted);letter-spacing:.12em;margin-bottom:10px;margin-top:4px}
+.qs-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.qs-card{
+  padding:16px 12px 14px;border-radius:var(--r);
+  background:var(--card);border:2px solid var(--border);
+  text-align:center;transition:transform .18s,border-color .2s,background .2s;
+}
+.qs-card:active{transform:scale(.93)}
+.qs-card.sel{border-color:var(--gold);background:rgba(245,200,66,.1)}
+.qs-icon{font-size:1.8rem;margin-bottom:6px}
+.qs-name{font-size:.82rem;font-weight:900;margin-bottom:2px}
+.qs-desc{font-size:.63rem;color:var(--muted)}
+.qs-diff-wrap{display:flex;gap:8px;margin-bottom:16px}
+.qs-diff-btn{
+  flex:1;padding:11px 8px;border-radius:10px;font-size:.77rem;font-weight:800;
+  background:var(--card);border:2px solid var(--border);text-align:center;
+  transition:border-color .2s,color .2s;line-height:1.4;
+}
+.qs-diff-btn.sel{border-color:var(--gold);color:var(--gold)}
+.qs-start-btn{
+  width:100%;padding:15px;border-radius:var(--r);
+  background:linear-gradient(135deg,var(--gold),#ff9500);
+  color:#1a0800;font-size:1rem;font-weight:900;letter-spacing:.08em;
+}
+
+/* QUIZ */
+#screen-quiz{background:var(--bg)}
+.quiz-hdr{
+  padding:10px 14px 8px;flex-shrink:0;
+  background:rgba(0,0,0,.2);border-bottom:1px solid var(--border);
+}
+.quiz-progress-row{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.q-prog-bg{flex:1;height:5px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
+.q-prog-fg{height:100%;background:var(--gold);border-radius:3px;transition:width .35s}
+.q-prog-txt{font-size:.7rem;color:var(--muted);white-space:nowrap}
+.quiz-meta{display:flex;justify-content:space-between;align-items:center}
+.quiz-type-label{font-size:.64rem;color:var(--muted);letter-spacing:.08em}
+.quiz-streak-lbl{font-size:.76rem;color:#ff9500;font-weight:900}
+.quiz-question{padding:13px 16px 10px;flex-shrink:0}
+.quiz-q-text{font-size:1.1rem;font-weight:900;line-height:1.4}
+.quiz-q-hint{font-size:.76rem;color:var(--muted);margin-top:4px}
+.quiz-map-zone{flex:1;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:4px;min-height:0}
+.quiz-opts{
+  padding:10px 14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:8px;flex-shrink:0;
+}
+.opt-btn{
+  padding:12px 10px;border-radius:10px;
+  font-size:.84rem;font-weight:800;letter-spacing:.03em;
+  background:var(--card);border:2px solid var(--border);
+  transition:background .15s,border-color .15s,transform .15s;
+  line-height:1.35;text-align:center;
+}
+.opt-btn:active{transform:scale(.94)}
+.opt-btn.correct{background:rgba(74,217,120,.2)!important;border-color:#4ad978!important;color:#4ad978!important}
+.opt-btn.wrong{background:rgba(217,74,74,.2)!important;border-color:#d94a4a!important;color:#d94a4a!important}
+.opt-btn:disabled{cursor:default;transform:none}
+
+/* RESULT */
+#screen-result{background:linear-gradient(170deg,#06080d,#080d1a);align-items:center;justify-content:center}
+.res-wrap{padding:24px 20px;text-align:center;width:100%;max-width:420px}
+.res-big{font-size:5rem;line-height:1;margin-bottom:10px}
+.res-title{font-size:1.6rem;font-weight:900;color:var(--gold);margin-bottom:2px}
+.res-score{font-size:3rem;font-weight:900;margin:10px 0 4px}
+.res-xp{font-size:1rem;color:#f5c842;font-weight:800;margin-bottom:16px}
+.res-stat-row{
+  display:flex;justify-content:center;gap:0;margin-bottom:22px;
+  background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;
+}
+.res-stat{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:14px 8px;border-right:1px solid var(--border)}
+.res-stat:last-child{border-right:none}
+.rs-val{font-size:1.4rem;font-weight:900;color:var(--gold)}
+.rs-lbl{font-size:.6rem;color:var(--muted)}
+.res-btns{display:flex;flex-direction:column;gap:10px}
+.res-btn{padding:14px;border-radius:var(--r);font-size:.92rem;font-weight:900;letter-spacing:.06em;width:100%}
+.res-btn-main{background:linear-gradient(135deg,var(--gold),#ff9500);color:#1a0800}
+.res-btn-sub{background:var(--card);border:1px solid var(--border);color:var(--cream)}
+
+/* FLASH FEEDBACK */
+.flash{
+  position:fixed;inset:0;z-index:900;pointer-events:none;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .12s;
+}
+.flash.show{opacity:1}
+.flash-txt{font-size:4rem;font-weight:900;text-shadow:0 0 24px currentColor}
+
+/* STREAK POPUP */
+.streak-popup{
+  position:fixed;top:80px;left:50%;transform:translateX(-50%) scale(.8) translateY(-10px);
+  z-index:800;pointer-events:none;
+  background:linear-gradient(135deg,rgba(255,140,0,.9),rgba(255,80,0,.9));
+  padding:10px 22px;border-radius:30px;
+  font-size:1rem;font-weight:900;color:#fff;
+  opacity:0;transition:all .3s;white-space:nowrap;
+  box-shadow:0 4px 20px rgba(255,100,0,.5);
+}
+.streak-popup.show{opacity:1;transform:translateX(-50%) scale(1) translateY(0)}
+
+/* LEVEL UP */
+.levelup-overlay{
+  position:fixed;inset:0;z-index:950;pointer-events:none;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .3s;
+}
+.levelup-overlay.show{opacity:1}
+.levelup-box{
+  background:linear-gradient(135deg,rgba(245,200,66,.95),rgba(255,150,0,.95));
+  padding:24px 36px;border-radius:20px;text-align:center;
+  color:#1a0800;box-shadow:0 8px 40px rgba(245,200,66,.6);
+}
+.lu-title{font-size:.9rem;font-weight:900;letter-spacing:.1em;margin-bottom:4px}
+.lu-lv{font-size:3rem;font-weight:900;line-height:1}
+</style>
+</head>
+<body>
+
+<!-- Flash & popups -->
+<div class="flash" id="flash"><span class="flash-txt" id="flashTxt">⭕</span></div>
+<div class="streak-popup" id="streakPop"></div>
+<div class="levelup-overlay" id="lvupOverlay">
+  <div class="levelup-box">
+    <div class="lu-title">⭐ LEVEL UP!</div>
+    <div class="lu-lv" id="lvupNum">LV2</div>
+  </div>
+</div>
+
+<!-- ═══ HOME ═══ -->
+<div id="screen-home" class="screen active">
+  <div class="home-hero">
+    <div class="home-ttl">日本地理<br>大冒険</div>
+    <div class="home-sub">47都道府県を探求しよう！</div>
+    <div class="home-stats">
+      <div class="hstat" id="hstatLv" style="color:#f5c842;border-color:#f5c842">⭐ LV 1</div>
+      <div class="hstat" id="hstatStreak" style="color:#ff9500;border-color:#ff9500">🔥 0日</div>
+      <div class="hstat" id="hstatXp" style="color:#4ad978;border-color:#4ad978">XP 0</div>
+    </div>
+    <div class="xp-row">
+      <div class="xp-bar-bg"><div class="xp-bar-fg" id="homeXpBar" style="width:0%"></div></div>
+      <div class="xp-text" id="homeXpText">0/100 XP</div>
+    </div>
+  </div>
+  <div class="s-body">
+    <div class="menu-grid">
+      <button class="menu-card mc-wide" onclick="goMap()">
+        <div class="mc-icon">🗾</div>
+        <div class="mc-title">地図で学ぶ</div>
+        <div class="mc-sub">47都道府県をタップして探検！</div>
+        <div class="mc-badge">NEW</div>
+      </button>
+      <button class="menu-card" onclick="showScreen('screen-quiz-sel')">
+        <div class="mc-icon">🧩</div>
+        <div class="mc-title">クイズ</div>
+        <div class="mc-sub">4種類で腕試し</div>
+      </button>
+      <button class="menu-card" onclick="showScreen('screen-cards')">
+        <div class="mc-icon">📖</div>
+        <div class="mc-title">都道府県カード</div>
+        <div class="mc-sub">全47件を一覧で</div>
+      </button>
+      <button class="menu-card" onclick="showScreen('screen-region')">
+        <div class="mc-icon">🏔️</div>
+        <div class="mc-title">地方別</div>
+        <div class="mc-sub">8地方に分けて学ぶ</div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MAP ═══ -->
+<div id="screen-map" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="showScreen('screen-home')">◀ ホーム</button>
+    <div class="topbar-title">🗾 日本地図</div>
+    <div class="topbar-right">タップで詳細</div>
+  </div>
+  <div class="region-filter" id="regionFilter"></div>
+  <div class="map-wrap">
+    <svg id="mapSvg" viewBox="0 0 640 710" xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>
+</div>
+
+<!-- ═══ INFO ═══ -->
+<div id="screen-info" class="screen">
+  <div class="topbar">
+    <button class="back-btn" id="infoBackBtn" onclick="goBack()">◀ 戻る</button>
+    <div class="topbar-title" id="infoTopTitle"></div>
+  </div>
+  <div class="s-body">
+    <div class="info-hero-wrap">
+      <div class="info-hero-bg" id="infoHeroBg"></div>
+      <div class="info-hero" id="infoHero"></div>
+    </div>
+    <div class="info-cards" id="infoCards"></div>
+    <button class="info-quiz-btn" onclick="quickQuiz()">📝 この県のクイズに挑戦！</button>
+  </div>
+</div>
+
+<!-- ═══ CARDS ═══ -->
+<div id="screen-cards" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="showScreen('screen-home')">◀ ホーム</button>
+    <div class="topbar-title">📖 都道府県カード</div>
+    <div class="topbar-right" id="cardsCount">47件</div>
+  </div>
+  <div class="cards-filter" id="cardsFilter"></div>
+  <div class="s-body">
+    <div class="cards-grid" id="cardsGrid"></div>
+  </div>
+</div>
+
+<!-- ═══ REGION ═══ -->
+<div id="screen-region" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="showScreen('screen-home')">◀ ホーム</button>
+    <div class="topbar-title">🏔️ 地方別</div>
+  </div>
+  <div class="s-body">
+    <div class="reg-list" id="regList"></div>
+  </div>
+</div>
+
+<!-- ═══ QUIZ SELECT ═══ -->
+<div id="screen-quiz-sel" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="showScreen('screen-home')">◀ ホーム</button>
+    <div class="topbar-title">🧩 クイズ選択</div>
+  </div>
+  <div class="s-body">
+    <div class="qs-body">
+      <div class="qs-section">クイズの種類</div>
+      <div class="qs-grid" id="quizSelGrid"></div>
+      <div class="qs-section">問題数・難易度</div>
+      <div class="qs-diff-wrap" id="diffWrap"></div>
+      <button class="qs-start-btn" onclick="startQuiz()">スタート！</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ QUIZ ═══ -->
+<div id="screen-quiz" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="quitQuiz()">✕ やめる</button>
+    <div class="topbar-title" id="quizTitle">クイズ</div>
+    <div class="topbar-right" id="quizScoreLbl">0点</div>
+  </div>
+  <div class="quiz-hdr">
+    <div class="quiz-progress-row">
+      <div class="q-prog-bg"><div class="q-prog-fg" id="quizProgBar" style="width:0%"></div></div>
+      <div class="q-prog-txt" id="quizProgTxt">1/10</div>
+    </div>
+    <div class="quiz-meta">
+      <div class="quiz-type-label" id="quizTypeLabel"></div>
+      <div class="quiz-streak-lbl" id="quizStreakLbl"></div>
+    </div>
+  </div>
+  <div class="quiz-question" id="quizQuestion">
+    <div class="quiz-q-text" id="quizQText"></div>
+    <div class="quiz-q-hint" id="quizQHint"></div>
+  </div>
+  <div class="quiz-map-zone" id="quizMapZone" style="display:none">
+    <svg id="quizMapSvg" viewBox="0 0 640 710" xmlns="http://www.w3.org/2000/svg"
+      style="width:100%;height:100%;max-width:440px"></svg>
+  </div>
+  <div class="quiz-opts" id="quizOpts"></div>
+</div>
+
+<!-- ═══ RESULT ═══ -->
+<div id="screen-result" class="screen">
+  <div class="res-wrap">
+    <div class="res-big" id="resBig">🎉</div>
+    <div class="res-title" id="resTitle">クリア！</div>
+    <div class="res-score" id="resScore">10/10</div>
+    <div class="res-xp" id="resXp">+100 XP 獲得！</div>
+    <div class="res-stat-row">
+      <div class="res-stat"><div class="rs-val" id="resAcc">100%</div><div class="rs-lbl">正答率</div></div>
+      <div class="res-stat"><div class="rs-val" id="resStreak">10</div><div class="rs-lbl">最高連続</div></div>
+      <div class="res-stat"><div class="rs-val" id="resLv">LV1</div><div class="rs-lbl">レベル</div></div>
+    </div>
+    <div class="res-btns">
+      <button class="res-btn res-btn-main" onclick="retryQuiz()">もう一度！</button>
+      <button class="res-btn res-btn-sub" onclick="showScreen('screen-quiz-sel')">クイズ選択</button>
+      <button class="res-btn res-btn-sub" onclick="showScreen('screen-home')">ホームへ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// REGION DATA
+// ═══════════════════════════════════════════════════════
+const REG_COLORS = {
+  hokkaido:'#4A90D9', tohoku:'#4AB89A', kanto:'#D97A40',
+  chubu:'#8B4AC8',   kinki:'#C83A3A',  chugoku:'#38A87A',
+  shikoku:'#C8A030', kyushu:'#C83A88', okinawa:'#30B8C8',
+};
+const REG_NAMES = {
+  hokkaido:'北海道', tohoku:'東北', kanto:'関東',
+  chubu:'中部',      kinki:'近畿',  chugoku:'中国',
+  shikoku:'四国',    kyushu:'九州', okinawa:'沖縄',
+};
+const REG_FULL = {
+  hokkaido:'北海道地方', tohoku:'東北地方', kanto:'関東地方',
+  chubu:'中部地方',      kinki:'近畿地方',  chugoku:'中国地方',
+  shikoku:'四国地方',    kyushu:'九州地方', okinawa:'沖縄地方',
+};
+
+// ═══════════════════════════════════════════════════════
+// PROJECTION  viewBox "0 0 640 710"
+// x=(lon-129)*36+10  y=(45.5-lat)*47+10
+// ═══════════════════════════════════════════════════════
+function px(lon){ return (lon-129)*36+10; }
+function py(lat){ return (45.5-lat)*47+10; }
+function toPath(s){ return s.map((p,i)=>(i?'L':'M')+px(p[0]).toFixed(1)+','+py(p[1]).toFixed(1)).join('')+'Z'; }
+function pCtr(s){ const n=s.length; return [s.reduce((a,p)=>a+p[0],0)/n, s.reduce((a,p)=>a+p[1],0)/n]; }
+
+// ═══════════════════════════════════════════════════════
+// PREFECTURE DATA  shape=[[lon,lat],…] polygons (approx.)
+// ═══════════════════════════════════════════════════════
+const PREFS = [
+  // ── HOKKAIDO ─────────────────────────────────────────
+  {id:'hokkaido',name:'北海道',read:'ほっかいどう',rom:'Hokkaido',
+   cap:'札幌市',reg:'hokkaido',num:'01',
+   shape:[[141.4,45.5],[142.7,45.4],[143.5,44.4],[144.4,44.2],[145.5,43.5],[145.0,43.0],[144.0,42.5],[142.8,42.1],[141.8,41.8],[141.4,42.3],[141.0,41.7],[140.6,41.7],[140.2,42.5],[140.0,43.3],[140.4,44.2],[141.0,44.8]],
+   emoji:'🦀',food:['ラーメン','ジンギスカン','いくら丼','スープカレー'],
+   spot:'時計台・大通公園・小樽・旭山動物園',
+   fact:'日本最大の都道府県！面積は東京都の約21倍。雄大な自然と新鮮な海産物で人気のNo.1観光地。'},
+
+  // ── TOHOKU ────────────────────────────────────────────
+  {id:'aomori',name:'青森',read:'あおもり',rom:'Aomori',
+   cap:'青森市',reg:'tohoku',num:'02',
+   shape:[[140.0,40.4],[140.5,40.2],[141.0,40.2],[141.5,40.5],[141.7,41.1],[141.2,41.5],[140.8,41.6],[140.3,41.5],[139.9,41.1],[139.8,40.8]],
+   emoji:'🍎',food:['りんご','ほたて','いちご煮','南部せんべい'],
+   spot:'ねぶた祭り・白神山地・十和田湖',
+   fact:'日本一のりんご生産量！ねぶた祭りは東北四大祭りの一つ。世界遺産の白神山地がある。'},
+
+  {id:'iwate',name:'岩手',read:'いわて',rom:'Iwate',
+   cap:'盛岡市',reg:'tohoku',num:'03',
+   shape:[[140.8,38.5],[141.0,38.5],[141.4,38.8],[141.8,39.5],[141.8,40.3],[141.5,40.5],[140.9,40.5],[140.6,40.2],[140.6,39.5],[140.8,38.9]],
+   emoji:'🌊',food:['わんこそば','盛岡冷麺','盛岡じゃじゃ麺','南部鉄器'],
+   spot:'中尊寺・厳美渓・浄土ヶ浜',
+   fact:'面積は北海道に次いで全国2位！世界遺産の中尊寺金色堂は平安時代の傑作。'},
+
+  {id:'miyagi',name:'宮城',read:'みやぎ',rom:'Miyagi',
+   cap:'仙台市',reg:'tohoku',num:'04',
+   shape:[[140.4,37.8],[140.7,37.6],[141.2,37.8],[141.6,38.1],[141.6,38.8],[141.2,38.8],[140.8,38.6],[140.4,38.5],[140.3,38.1]],
+   emoji:'🦞',food:['牛タン','笹かまぼこ','ずんだもち','はらこ飯'],
+   spot:'松島・仙台七夕まつり・蔵王',
+   fact:'松尾芭蕉も訪れた松島は日本三景の一つ！牛タン焼きは仙台発祥のご当地グルメ。'},
+
+  {id:'akita',name:'秋田',read:'あきた',rom:'Akita',
+   cap:'秋田市',reg:'tohoku',num:'05',
+   shape:[[139.7,38.9],[140.0,38.8],[140.8,39.1],[140.9,39.5],[140.9,40.0],[140.5,40.2],[140.2,40.2],[140.0,40.1],[139.7,39.8],[139.5,39.3]],
+   emoji:'🌾',food:['きりたんぽ','稲庭うどん','ハタハタ','横手やきそば'],
+   spot:'角館・田沢湖・なまはげ館',
+   fact:'なまはげで有名！田沢湖は日本最深の湖。コメどころで秋田こまちが有名。'},
+
+  {id:'yamagata',name:'山形',read:'やまがた',rom:'Yamagata',
+   cap:'山形市',reg:'tohoku',num:'06',
+   shape:[[139.5,37.9],[139.8,37.7],[140.3,37.6],[140.7,37.5],[140.9,37.8],[140.9,38.2],[140.5,38.5],[140.2,38.7],[139.9,38.8],[139.5,38.3],[139.4,38.0]],
+   emoji:'🍒',food:['さくらんぼ','芋煮','だし','山形そば'],
+   spot:'山寺・蔵王温泉・銀山温泉',
+   fact:'さくらんぼの生産量全国1位！蔵王の樹氷（アイスモンスター）は冬の絶景として有名。'},
+
+  {id:'fukushima',name:'福島',read:'ふくしま',rom:'Fukushima',
+   cap:'福島市',reg:'tohoku',num:'07',
+   shape:[[139.3,37.1],[139.6,36.9],[140.0,36.8],[140.5,36.9],[141.0,37.0],[141.2,37.2],[141.0,37.7],[140.7,37.9],[140.3,38.0],[139.9,37.9],[139.5,37.8],[139.2,37.5]],
+   emoji:'🍑',food:['桃','喜多方ラーメン','会津馬刺し','いか人参'],
+   spot:'会津若松城・五色沼・磐梯山',
+   fact:'東北最大の面積を誇る！桃の生産量全国2位で「フルーツ王国」とも呼ばれる。'},
+
+  // ── KANTO ─────────────────────────────────────────────
+  {id:'ibaraki',name:'茨城',read:'いばらき',rom:'Ibaraki',
+   cap:'水戸市',reg:'kanto',num:'08',
+   shape:[[139.9,35.9],[140.3,35.7],[140.6,35.7],[140.9,35.9],[140.9,36.5],[140.7,36.8],[140.3,37.0],[140.0,37.0],[139.9,36.7],[139.8,36.2]],
+   emoji:'🌊',food:['納豆','あんこう','れんこん','水戸の梅'],
+   spot:'偕楽園・筑波山・袋田の滝',
+   fact:'納豆の生産量・消費量ともに全国1位！偕楽園は日本三名園の一つ。'},
+
+  {id:'tochigi',name:'栃木',read:'とちぎ',rom:'Tochigi',
+   cap:'宇都宮市',reg:'kanto',num:'09',
+   shape:[[139.3,36.2],[139.6,36.1],[140.0,36.2],[140.3,36.4],[140.3,36.8],[140.0,37.0],[139.6,37.0],[139.3,36.9],[139.2,36.5]],
+   emoji:'🍓',food:['いちご（とちおとめ）','宇都宮餃子','にらそば','鮎'],
+   spot:'日光東照宮・那須高原・足利フラワーパーク',
+   fact:'いちご生産量全国1位！日光東照宮・日光の社寺は世界遺産に登録されている。'},
+
+  {id:'gunma',name:'群馬',read:'ぐんま',rom:'Gunma',
+   cap:'前橋市',reg:'kanto',num:'10',
+   shape:[[138.5,36.2],[138.9,36.0],[139.2,36.1],[139.5,36.3],[139.5,36.6],[139.3,36.9],[139.0,37.0],[138.6,36.9],[138.3,36.6],[138.3,36.3]],
+   emoji:'♨️',food:['こんにゃく','焼きまんじゅう','水沢うどん','下仁田ネギ'],
+   spot:'草津温泉・富岡製糸場・伊香保温泉',
+   fact:'温泉大国！富岡製糸場は世界遺産。こんにゃく生産量全国1位で「こんにゃく芋の王国」。'},
+
+  {id:'saitama',name:'埼玉',read:'さいたま',rom:'Saitama',
+   cap:'さいたま市',reg:'kanto',num:'11',
+   shape:[[138.8,35.8],[139.2,35.7],[139.6,35.7],[139.9,35.9],[139.9,36.1],[139.6,36.2],[139.3,36.2],[139.0,36.1],[138.8,35.9]],
+   emoji:'🎋',food:['深谷ねぎ','草加せんべい','冷汁うどん','いがまんじゅう'],
+   spot:'川越・秩父・鉄道博物館',
+   fact:'海のない内陸県。小江戸・川越が人気観光地。深谷ねぎが名産。'},
+
+  {id:'chiba',name:'千葉',read:'ちば',rom:'Chiba',
+   cap:'千葉市',reg:'kanto',num:'12',
+   shape:[[139.9,35.9],[140.3,35.9],[140.6,35.7],[140.8,35.4],[140.9,35.1],[140.9,34.9],[140.6,34.9],[140.4,35.1],[140.2,35.4],[139.9,35.7]],
+   emoji:'🥜',food:['落花生','なし','さんが焼き','しょうゆアイス'],
+   spot:'成田山新勝寺・東京ディズニーリゾート・銚子',
+   fact:'落花生の生産量全国1位！東京ディズニーリゾートがあり、年間3000万人が訪れる。'},
+
+  {id:'tokyo',name:'東京',read:'とうきょう',rom:'Tokyo',
+   cap:'東京（新宿区）',reg:'kanto',num:'13',
+   shape:[[139.1,35.6],[139.4,35.5],[139.8,35.5],[139.9,35.7],[139.9,35.9],[139.5,36.0],[139.2,36.0],[139.1,35.8]],
+   emoji:'🗼',food:['もんじゃ焼き','深川飯','東京ラーメン','桜餅'],
+   spot:'東京タワー・浅草・スカイツリー・皇居',
+   fact:'日本の首都！人口約1400万人。世界最大の都市圏の一つで政治・経済・文化の中心。'},
+
+  {id:'kanagawa',name:'神奈川',read:'かながわ',rom:'Kanagawa',
+   cap:'横浜市',reg:'kanto',num:'14',
+   shape:[[139.0,35.5],[139.3,35.4],[139.6,35.3],[139.9,35.4],[139.9,35.6],[139.7,35.7],[139.4,35.7],[139.1,35.7],[139.0,35.5]],
+   emoji:'🏙️',food:['シュウマイ','横浜ラーメン','サンマーメン','湘南しらす'],
+   spot:'横浜中華街・鎌倉大仏・江ノ島・箱根',
+   fact:'横浜中華街は日本最大規模！鎌倉の大仏は鎌倉時代の傑作で高さ約11.3m。'},
+
+  // ── CHUBU ──────────────────────────────────────────────
+  {id:'niigata',name:'新潟',read:'にいがた',rom:'Niigata',
+   cap:'新潟市',reg:'chubu',num:'15',
+   shape:[[138.4,37.0],[138.8,36.9],[139.2,37.0],[139.5,37.1],[139.9,37.5],[139.8,37.8],[139.4,38.1],[139.1,38.4],[138.6,38.5],[138.2,38.2],[137.9,37.9],[137.7,37.6],[137.9,37.3]],
+   emoji:'🍚',food:['コシヒカリ','へぎそば','のっぺ','笹団子'],
+   spot:'佐渡島・清津峡・弥彦神社',
+   fact:'コシヒカリ発祥の地！米の生産量全国1位。佐渡島は金山で有名で独自の文化が息づく。'},
+
+  {id:'toyama',name:'富山',read:'とやま',rom:'Toyama',
+   cap:'富山市',reg:'chubu',num:'16',
+   shape:[[136.7,36.4],[137.1,36.3],[137.4,36.5],[137.6,36.8],[137.3,37.0],[137.0,37.0],[136.7,36.7]],
+   emoji:'🦐',food:['ます寿司','白えび','富山ブラック','ホタルイカ'],
+   spot:'黒部ダム・立山連峰・五箇山',
+   fact:'立山連峰と日本海に挟まれた絶景の県。ホタルイカの漁獲量1位。世界遺産の五箇山がある。'},
+
+  {id:'ishikawa',name:'石川',read:'いしかわ',rom:'Ishikawa',
+   cap:'金沢市',reg:'chubu',num:'17',
+   shape:[[136.2,36.0],[136.5,35.8],[136.7,36.0],[136.8,36.4],[137.0,36.5],[137.3,36.8],[137.5,37.1],[137.3,37.5],[137.0,37.5],[136.8,37.4],[136.5,37.0],[136.5,36.7],[136.4,36.3],[136.2,36.0]],
+   emoji:'🦀',food:['ズワイガニ','加賀料理','治部煮','金沢カレー'],
+   spot:'兼六園・金沢城・東茶屋街・輪島朝市',
+   fact:'加賀百万石の城下町・金沢は「小京都」とも呼ばれる。兼六園は日本三名園の一つ。'},
+
+  {id:'fukui',name:'福井',read:'ふくい',rom:'Fukui',
+   cap:'福井市',reg:'chubu',num:'18',
+   shape:[[135.6,35.3],[136.0,35.4],[136.2,35.7],[136.2,36.0],[135.9,36.2],[135.5,36.1],[135.2,35.9],[135.3,35.6],[135.6,35.3]],
+   emoji:'🦕',food:['越前ガニ','へしこ','油揚げ','羽二重もち'],
+   spot:'東尋坊・永平寺・恐竜博物館',
+   fact:'恐竜の化石の一大産地！越前ガニは日本三大蟹の一つ。曹洞宗の大本山・永平寺がある。'},
+
+  {id:'yamanashi',name:'山梨',read:'やまなし',rom:'Yamanashi',
+   cap:'甲府市',reg:'chubu',num:'19',
+   shape:[[138.3,35.4],[138.7,35.3],[138.9,35.3],[139.2,35.5],[139.2,35.7],[138.9,35.9],[138.5,35.9],[138.3,35.7],[138.2,35.5]],
+   emoji:'🍇',food:['ほうとう','ぶどう','桃','吉田うどん'],
+   spot:'富士山・河口湖・清里高原・昇仙峡',
+   fact:'ぶどう・桃の生産量全国1位！富士山のある県として国内外で有名。宝石の街・甲府も名所。'},
+
+  {id:'nagano',name:'長野',read:'ながの',rom:'Nagano',
+   cap:'長野市',reg:'chubu',num:'20',
+   shape:[[137.3,35.5],[137.8,35.3],[138.3,35.3],[138.6,35.5],[138.9,35.8],[138.9,36.2],[138.6,36.7],[138.4,37.0],[138.0,36.9],[137.6,36.6],[137.2,36.1]],
+   emoji:'⛷️',food:['信州そば','おやき','野沢菜漬け','馬刺し'],
+   spot:'善光寺・松本城・軽井沢・上高地',
+   fact:'1998年冬季オリンピック開催地！日本アルプスを擁する山岳県。海なし県で面積全国4位。'},
+
+  {id:'gifu',name:'岐阜',read:'ぎふ',rom:'Gifu',
+   cap:'岐阜市',reg:'chubu',num:'21',
+   shape:[[136.5,35.4],[137.0,35.2],[137.5,35.5],[137.6,35.9],[137.5,36.3],[137.2,36.5],[136.8,36.3],[136.5,36.0],[136.3,35.7]],
+   emoji:'🪩',food:['朴葉みそ','鶏ちゃん','飛騨牛','みたらし団子'],
+   spot:'白川郷・下呂温泉・岐阜城',
+   fact:'世界遺産の白川郷合掌造りが有名！下呂温泉は日本三名泉の一つ。信長ゆかりの岐阜城も人気。'},
+
+  {id:'shizuoka',name:'静岡',read:'しずおか',rom:'Shizuoka',
+   cap:'静岡市',reg:'chubu',num:'22',
+   shape:[[137.5,35.4],[137.8,35.1],[138.3,34.9],[138.6,34.7],[138.9,34.7],[139.1,35.1],[139.2,35.3],[138.8,35.5],[138.4,35.5],[137.8,35.4]],
+   emoji:'🍵',food:['お茶','うなぎ','桜えび','富士宮やきそば'],
+   spot:'富士山・熱海温泉・伊豆・寸又峡',
+   fact:'日本一のお茶（緑茶）の産地！富士山の眺めが美しく、うなぎの生産量も全国1位。'},
+
+  {id:'aichi',name:'愛知',read:'あいち',rom:'Aichi',
+   cap:'名古屋市',reg:'chubu',num:'23',
+   shape:[[136.5,35.3],[136.8,35.0],[137.0,34.7],[137.3,34.6],[137.7,34.7],[137.7,35.0],[137.5,35.3],[137.1,35.5],[136.7,35.5],[136.5,35.3]],
+   emoji:'🍱',food:['みそカツ','ひつまぶし','手羽先','あんかけスパ'],
+   spot:'名古屋城・熱田神宮・犬山城・ジブリパーク',
+   fact:'トヨタ自動車の本拠地で国内最大の工業生産額を誇る。名古屋めしが豊富でGDP全国3位。'},
+
+  // ── KINKI ──────────────────────────────────────────────
+  {id:'mie',name:'三重',read:'みえ',rom:'Mie',
+   cap:'津市',reg:'kinki',num:'24',
+   shape:[[136.0,35.0],[136.4,34.8],[136.7,34.4],[136.9,34.0],[136.8,33.7],[136.5,33.5],[136.0,33.8],[135.8,34.3],[135.9,34.8],[136.0,35.0]],
+   emoji:'🦪',food:['松阪牛','伊勢うどん','手こね寿司','伊勢えび'],
+   spot:'伊勢神宮・鳥羽水族館・熊野古道',
+   fact:'日本最大の神社・伊勢神宮がある神聖な地！松阪牛は日本三大和牛の一つ。熊野古道は世界遺産。'},
+
+  {id:'shiga',name:'滋賀',read:'しが',rom:'Shiga',
+   cap:'大津市',reg:'kinki',num:'25',
+   shape:[[135.9,35.0],[136.2,34.9],[136.5,35.2],[136.6,35.4],[136.5,35.7],[136.2,35.8],[135.9,35.7],[135.8,35.4],[135.9,35.0]],
+   emoji:'🏞️',food:['近江牛','ふなずし','鮒ずし','丁字麩'],
+   spot:'琵琶湖・彦根城・比叡山延暦寺',
+   fact:'日本最大の湖・琵琶湖がある！近畿の水がめとして重要。彦根城は国宝で桜の名所。'},
+
+  {id:'kyoto',name:'京都',read:'きょうと',rom:'Kyoto',
+   cap:'京都市',reg:'kinki',num:'26',
+   shape:[[135.4,34.9],[135.7,34.8],[135.9,35.0],[136.0,35.4],[135.8,35.7],[135.5,35.8],[135.2,35.7],[135.0,35.5],[134.9,35.2],[135.0,35.0],[135.4,34.9]],
+   emoji:'⛩️',food:['湯豆腐','懐石料理','漬物','抹茶スイーツ'],
+   spot:'金閣寺・清水寺・嵐山・伏見稲荷',
+   fact:'794年から1000年以上も日本の都！世界遺産が17か所もある古都で年間5000万人が訪れる。'},
+
+  {id:'osaka',name:'大阪',read:'おおさか',rom:'Osaka',
+   cap:'大阪市',reg:'kinki',num:'27',
+   shape:[[135.3,34.6],[135.5,34.4],[135.7,34.5],[135.7,34.7],[135.5,34.9],[135.3,34.9],[135.2,34.7],[135.3,34.6]],
+   emoji:'🐙',food:['たこ焼き','お好み焼き','串カツ','551蓬莱の豚まん'],
+   spot:'道頓堀・大阪城・ユニバーサル・スタジオ',
+   fact:'食い倒れの街！天下の台所と呼ばれ日本の経済・文化の中心地。人口は全国3位。'},
+
+  {id:'hyogo',name:'兵庫',read:'ひょうご',rom:'Hyogo',
+   cap:'神戸市',reg:'kinki',num:'28',
+   shape:[[134.3,35.5],[134.8,35.4],[135.2,35.3],[135.5,35.2],[135.6,34.8],[135.4,34.5],[135.0,34.3],[134.5,34.3],[134.2,34.6],[134.0,34.9],[134.0,35.3],[134.3,35.5]],
+   emoji:'🐄',food:['神戸ビーフ','明石焼き','いかなごのくぎ煮','播磨ラーメン'],
+   spot:'姫路城・有馬温泉・淡路島・神戸港',
+   fact:'世界遺産の姫路城がある！神戸は異国情緒あふれる港町で、神戸ビーフは世界的に有名。'},
+
+  {id:'nara',name:'奈良',read:'なら',rom:'Nara',
+   cap:'奈良市',reg:'kinki',num:'29',
+   shape:[[135.6,34.7],[136.0,34.6],[136.2,34.5],[136.1,34.2],[135.9,34.0],[135.6,33.9],[135.3,34.0],[135.3,34.3],[135.5,34.6],[135.6,34.7]],
+   emoji:'🦌',food:['柿の葉寿司','三輪そうめん','葛もち','大和野菜'],
+   spot:'東大寺・春日大社・法隆寺・若草山',
+   fact:'奈良の大仏と鹿が有名！法隆寺は世界最古の木造建築物。世界遺産が8か所もある古都。'},
+
+  {id:'wakayama',name:'和歌山',read:'わかやま',rom:'Wakayama',
+   cap:'和歌山市',reg:'kinki',num:'30',
+   shape:[[135.0,34.4],[135.3,34.3],[135.9,34.1],[136.0,33.7],[135.7,33.5],[135.3,33.5],[135.0,33.8],[134.9,34.1],[135.0,34.4]],
+   emoji:'🍊',food:['みかん','梅干し','クエ鍋','金山寺みそ'],
+   spot:'熊野古道・高野山・白浜温泉・那智の滝',
+   fact:'みかんの生産量全国1位！世界遺産の熊野古道と高野山がある、精神の聖地。'},
+
+  // ── CHUGOKU ────────────────────────────────────────────
+  {id:'tottori',name:'鳥取',read:'とっとり',rom:'Tottori',
+   cap:'鳥取市',reg:'chugoku',num:'31',
+   shape:[[133.3,35.3],[133.7,35.2],[134.2,35.2],[134.6,35.4],[134.4,35.6],[133.8,35.6],[133.4,35.5],[133.3,35.3]],
+   emoji:'🏜️',food:['松葉ガニ','二十世紀梨','とうふちくわ','大山どり'],
+   spot:'鳥取砂丘・大山・水木しげるロード',
+   fact:'日本唯一の砂丘・鳥取砂丘がある！人口が最も少ない県だが、カニと梨で有名。'},
+
+  {id:'shimane',name:'島根',read:'しまね',rom:'Shimane',
+   cap:'松江市',reg:'chugoku',num:'32',
+   shape:[[131.8,35.1],[132.2,34.8],[132.7,34.6],[133.1,34.6],[133.4,34.9],[133.5,35.2],[133.4,35.6],[133.0,35.5],[132.5,35.4],[132.0,35.3],[131.8,35.1]],
+   emoji:'⛩️',food:['のどぐろ','出雲そば','しじみ汁','赤天'],
+   spot:'出雲大社・松江城・石見銀山',
+   fact:'縁結びの神様を祀る出雲大社がある！石見銀山は世界遺産。古事記に多く登場する神話の地。'},
+
+  {id:'okayama',name:'岡山',read:'おかやま',rom:'Okayama',
+   cap:'岡山市',reg:'chugoku',num:'33',
+   shape:[[133.3,35.1],[133.7,35.0],[134.2,34.9],[134.5,35.0],[134.4,35.3],[134.1,35.4],[133.6,35.4],[133.2,35.3],[133.2,35.0]],
+   emoji:'🍑',food:['桃','マスカット','黄ニラ','ばら寿司'],
+   spot:'後楽園・岡山城・倉敷美観地区',
+   fact:'晴れの国おかやま！後楽園は日本三名園の一つ。桃とマスカットの生産量が多い。'},
+
+  {id:'hiroshima',name:'広島',read:'ひろしま',rom:'Hiroshima',
+   cap:'広島市',reg:'chugoku',num:'34',
+   shape:[[132.0,35.0],[132.4,34.8],[133.0,34.5],[133.5,34.4],[134.0,34.5],[134.0,35.0],[133.5,35.2],[133.0,35.2],[132.5,35.1],[132.0,35.0]],
+   emoji:'🦪',food:['お好み焼き','牡蠣','穴子めし','もみじまんじゅう'],
+   spot:'原爆ドーム・宮島（厳島神社）・尾道',
+   fact:'原爆ドームと厳島神社が世界遺産！牡蠣の生産量全国1位。広島風お好み焼きも絶品。'},
+
+  {id:'yamaguchi',name:'山口',read:'やまぐち',rom:'Yamaguchi',
+   cap:'山口市',reg:'chugoku',num:'35',
+   shape:[[130.9,34.5],[131.3,34.2],[131.7,34.0],[132.0,34.0],[132.0,34.5],[131.9,34.7],[131.5,34.8],[131.0,34.9],[130.8,34.7],[130.9,34.5]],
+   emoji:'🐡',food:['ふぐ（ふく）','うに','岩国寿司','瓦そば'],
+   spot:'秋吉台・角島大橋・萩城下町・関門海峡',
+   fact:'ふぐ料理の本場！秋吉台は日本最大のカルスト台地。萩は幕末の志士・吉田松陰ゆかりの地。'},
+
+  // ── SHIKOKU ────────────────────────────────────────────
+  {id:'tokushima',name:'徳島',read:'とくしま',rom:'Tokushima',
+   cap:'徳島市',reg:'shikoku',num:'36',
+   shape:[[133.7,34.2],[134.0,34.1],[134.5,33.9],[134.4,33.5],[134.0,33.4],[133.7,33.6],[133.4,33.9],[133.7,34.2]],
+   emoji:'💃',food:['すだち','鳴門金時','たらいうどん','徳島ラーメン'],
+   spot:'阿波踊り・大塚国際美術館・鳴門の渦潮',
+   fact:'阿波踊りは日本最大の盆踊りで毎年100万人以上が訪れる！鳴門の渦潮も世界的に有名。'},
+
+  {id:'kagawa',name:'香川',read:'かがわ',rom:'Kagawa',
+   cap:'高松市',reg:'shikoku',num:'37',
+   shape:[[133.4,34.2],[133.8,34.2],[134.3,34.2],[134.4,34.4],[134.1,34.5],[133.5,34.5],[133.3,34.4],[133.4,34.2]],
+   emoji:'🍜',food:['讃岐うどん','オリーブ','しょうゆ豆','骨付き鳥'],
+   spot:'栗林公園・金刀比羅宮・小豆島',
+   fact:'日本一小さい都道府県！讃岐うどんは全国的に有名で「うどん県」とも自称している。'},
+
+  {id:'ehime',name:'愛媛',read:'えひめ',rom:'Ehime',
+   cap:'松山市',reg:'shikoku',num:'38',
+   shape:[[132.4,34.1],[132.9,34.0],[133.4,34.1],[133.5,33.9],[133.2,33.4],[132.8,33.3],[132.4,33.6],[132.3,33.9],[132.4,34.1]],
+   emoji:'🍊',food:['みかん（伊予かん）','鯛めし','じゃこ天','いよかん'],
+   spot:'道後温泉・松山城・しまなみ海道',
+   fact:'みかんの生産量全国2位！道後温泉は日本最古の温泉地の一つで「千と千尋」のモデルとも。'},
+
+  {id:'kochi',name:'高知',read:'こうち',rom:'Kochi',
+   cap:'高知市',reg:'shikoku',num:'39',
+   shape:[[132.6,33.8],[133.0,33.6],[133.5,33.5],[134.0,33.5],[134.3,33.7],[134.0,33.9],[133.5,34.0],[133.0,33.9],[132.6,33.8]],
+   emoji:'🐟',food:['かつおのたたき','皿鉢料理','ゆず','アイスクリン'],
+   spot:'桂浜・高知城・四万十川',
+   fact:'坂本龍馬の出身地！四万十川は「日本最後の清流」と呼ばれ、かつおの一本釣りが有名。'},
+
+  // ── KYUSHU ─────────────────────────────────────────────
+  {id:'fukuoka',name:'福岡',read:'ふくおか',rom:'Fukuoka',
+   cap:'福岡市',reg:'kyushu',num:'40',
+   shape:[[130.3,33.8],[130.7,33.6],[131.0,33.4],[131.2,33.6],[131.0,34.0],[130.5,34.1],[130.2,33.9],[130.3,33.8]],
+   emoji:'🍜',food:['博多ラーメン','もつ鍋','水炊き','明太子'],
+   spot:'太宰府天満宮・博多祇園山笠・門司港レトロ',
+   fact:'九州最大の都市・博多！明太子と博多ラーメンが名物。アジアの玄関口として国際色豊か。'},
+
+  {id:'saga',name:'佐賀',read:'さが',rom:'Saga',
+   cap:'佐賀市',reg:'kyushu',num:'41',
+   shape:[[129.7,33.3],[130.0,33.1],[130.3,33.1],[130.5,33.3],[130.3,33.6],[130.0,33.6],[129.7,33.5],[129.7,33.3]],
+   emoji:'🏺',food:['呼子のイカ','佐賀牛','シシリアンライス','佐賀のり'],
+   spot:'吉野ヶ里遺跡・伊万里・唐津くんち',
+   fact:'有田焼・伊万里焼・唐津焼の陶磁器の産地！呼子のイカは日本一の透明度で有名。'},
+
+  {id:'nagasaki',name:'長崎',read:'ながさき',rom:'Nagasaki',
+   cap:'長崎市',reg:'kyushu',num:'42',
+   shape:[[129.5,33.5],[129.7,33.3],[130.0,33.0],[130.3,33.0],[130.2,32.7],[129.9,32.6],[129.6,32.8],[129.3,33.1],[129.5,33.5]],
+   emoji:'⛪',food:['ちゃんぽん','佐世保バーガー','カステラ','トルコライス'],
+   spot:'グラバー園・軍艦島・ハウステンボス',
+   fact:'江戸時代に唯一開港していた出島がある！外国文化が根付く異国情緒の街。世界遺産の軍艦島も有名。'},
+
+  {id:'kumamoto',name:'熊本',read:'くまもと',rom:'Kumamoto',
+   cap:'熊本市',reg:'kyushu',num:'43',
+   shape:[[130.2,33.1],[130.6,32.9],[131.0,32.8],[131.3,32.9],[131.3,33.2],[131.0,33.5],[130.5,33.5],[130.3,33.3],[130.2,33.1]],
+   emoji:'🐻',food:['馬刺し','辛子蓮根','太平燕','いきなり団子'],
+   spot:'熊本城・阿蘇山・黒川温泉',
+   fact:'くまモンで有名！阿蘇山は世界最大級のカルデラを持つ活火山。2016年の地震を乗り越えて復興中。'},
+
+  {id:'oita',name:'大分',read:'おおいた',rom:'Oita',
+   cap:'大分市',reg:'kyushu',num:'44',
+   shape:[[130.9,33.3],[131.2,33.2],[131.5,33.0],[131.8,33.2],[131.7,33.6],[131.4,33.8],[131.0,33.9],[130.8,33.8],[130.9,33.3]],
+   emoji:'♨️',food:['関サバ・関アジ','とり天','だんご汁','りゅうきゅう'],
+   spot:'別府温泉・由布院・地獄めぐり',
+   fact:'温泉湧出量・源泉数ともに全国1位！別府・由布院は世界的温泉リゾートとして人気。'},
+
+  {id:'miyazaki',name:'宮崎',read:'みやざき',rom:'Miyazaki',
+   cap:'宮崎市',reg:'kyushu',num:'45',
+   shape:[[130.7,32.7],[131.0,32.5],[131.4,31.9],[131.7,31.4],[131.4,31.3],[131.0,31.5],[130.8,32.0],[130.6,32.5],[130.7,32.7]],
+   emoji:'🌴',food:['チキン南蛮','地鶏の炭火焼き','冷汁','日向夏'],
+   spot:'高千穂峡・青島神社・日南海岸',
+   fact:'日本神話の舞台・高千穂峡がある！マンゴーと地鶏が有名。温暖な気候でフェニックスが街路樹。'},
+
+  {id:'kagoshima',name:'鹿児島',read:'かごしま',rom:'Kagoshima',
+   cap:'鹿児島市',reg:'kyushu',num:'46',
+   shape:[[130.0,32.1],[130.3,31.9],[130.8,31.5],[131.0,31.2],[130.7,30.9],[130.3,31.0],[129.9,31.3],[129.6,31.8],[129.8,32.0],[130.0,32.1]],
+   emoji:'🌋',food:['黒豚しゃぶしゃぶ','薩摩揚げ','鶏刺し','さつまいも焼酎'],
+   spot:'桜島・屋久島・知覧・霧島温泉',
+   fact:'活火山・桜島が市内から見える！世界自然遺産の屋久島がある。西郷隆盛ゆかりの地。'},
+
+  // ── OKINAWA ─────────────────────────────────────────────
+  {id:'okinawa',name:'沖縄',read:'おきなわ',rom:'Okinawa',
+   cap:'那覇市',reg:'okinawa',num:'47',
+   shape:null,
+   insetPath:'M486,650 L506,638 L534,635 L562,641 L572,653 L562,664 L534,669 L505,667 L484,656Z',
+   insetLabel:[528,652],
+   emoji:'🌊',food:['沖縄そば','タコス','チャンプルー','ゴーヤー'],
+   spot:'首里城・美ら海水族館・慶良間諸島',
+   fact:'日本最南端の県！美しいサンゴ礁と独自の琉球文化。世界屈指の長寿地域として知られる。'},
+];
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+let xp       = +(localStorage.getItem('geo_xp') || 0);
+let streak   = +(localStorage.getItem('geo_streak') || 0);
+let lastDate = localStorage.getItem('geo_lastDate') || '';
+
+let quizType   = 'map';
+let quizDiff   = 10;
+let quizQueue  = [];
+let quizIdx    = 0;
+let quizScore  = 0;
+let quizStreak = 0;
+let maxStreak  = 0;
+let quizAnswered = false;
+let quizCurrentPref = null;
+let prevScreen = 'screen-home';
+let lastOpenPrefId = null;
+let activeRegion = 'all';
+let lastQuizType = 'map';
+let lastQuizDiff = 10;
+
+function getLevel(v){ return Math.floor(v / 100) + 1; }
+function saveState(){ localStorage.setItem('geo_xp',xp); localStorage.setItem('geo_streak',streak); localStorage.setItem('geo_lastDate',lastDate); }
+
+// ═══════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function goBack(){ showScreen(prevScreen); }
+function goMap(){ renderMapFilter(); showScreen('screen-map'); renderMap('mapSvg', false); }
+
+// ═══════════════════════════════════════════════════════
+// HOME
+// ═══════════════════════════════════════════════════════
+function updateHome(){
+  const lv = getLevel(xp);
+  const prog = (xp % 100);
+  document.getElementById('hstatLv').textContent    = '⭐ LV ' + lv;
+  document.getElementById('hstatStreak').textContent = '🔥 ' + streak + '日';
+  document.getElementById('hstatXp').textContent    = 'XP ' + xp;
+  document.getElementById('homeXpBar').style.width  = prog + '%';
+  document.getElementById('homeXpText').textContent  = prog + '/100 XP';
+}
+
+// ═══════════════════════════════════════════════════════
+// SVG MAP RENDERING
+// ═══════════════════════════════════════════════════════
+function renderMap(svgId, quizMode, highlightId, correctId){
+  const svg = document.getElementById(svgId);
+  if(!svg) return;
+  svg.innerHTML = '';
+  const NS = 'http://www.w3.org/2000/svg';
+
+  // Sea background
+  const bg = document.createElementNS(NS,'rect');
+  Object.entries({width:640,height:710,fill:'#0a1422'}).forEach(([k,v])=>bg.setAttribute(k,v));
+  svg.appendChild(bg);
+
+  // Dot pattern for sea
+  const defs = document.createElementNS(NS,'defs');
+  defs.innerHTML = `<pattern id="sp_${svgId}" x="0" y="0" width="18" height="18" patternUnits="userSpaceOnUse">
+    <circle cx="9" cy="9" r=".7" fill="rgba(100,160,220,.14)"/>
+  </pattern>`;
+  svg.appendChild(defs);
+  const dotBg = document.createElementNS(NS,'rect');
+  Object.entries({width:640,height:710,fill:`url(#sp_${svgId})`}).forEach(([k,v])=>dotBg.setAttribute(k,v));
+  svg.appendChild(dotBg);
+
+  // Okinawa inset frame (lower-right — empty ocean area)
+  const insetRect = document.createElementNS(NS,'rect');
+  Object.entries({x:472,y:622,width:162,height:62,rx:5,fill:'rgba(8,16,36,.9)',stroke:'rgba(100,160,220,.3)','stroke-width':1}).forEach(([k,v])=>insetRect.setAttribute(k,v));
+  svg.appendChild(insetRect);
+  const insetLbl = document.createElementNS(NS,'text');
+  Object.entries({x:553,y:630,'text-anchor':'middle','font-size':5.5,'font-family':'sans-serif',fill:'rgba(180,210,255,.4)'}).forEach(([k,v])=>insetLbl.setAttribute(k,v));
+  insetLbl.textContent = '▲実際はもっと南西';
+  svg.appendChild(insetLbl);
+
+  // Draw each prefecture
+  PREFS.forEach(p => {
+    const isActive  = activeRegion === 'all' || activeRegion === p.reg;
+    const isHighlight = p.id === highlightId;
+    const isCorrect   = p.id === correctId;
+    const col = REG_COLORS[p.reg];
+
+    // Path data
+    const pathD = p.id === 'okinawa' ? p.insetPath : (p.shape ? toPath(p.shape) : null);
+    if(!pathD) return;
+
+    // SVG-space centre for label
+    const ctr = p.id === 'okinawa'
+      ? p.insetLabel
+      : (()=>{ const c=pCtr(p.shape); return [px(c[0]), py(c[1])]; })();
+
+    // Approximate width for font-size
+    const shapeW = p.shape
+      ? Math.max(...p.shape.map(pt=>px(pt[0]))) - Math.min(...p.shape.map(pt=>px(pt[0])))
+      : 40;
+    const fs = Math.max(5.5, Math.min(9.5, shapeW / Math.max(p.name.length, 1) * 0.55));
+
+    // Pulse glow for quiz highlight
+    if(quizMode && isHighlight){
+      const glow = document.createElementNS(NS,'path');
+      glow.setAttribute('d', pathD);
+      glow.setAttribute('fill', col);
+      glow.setAttribute('opacity', '.2');
+      glow.setAttribute('stroke', col);
+      glow.setAttribute('stroke-width', '10');
+      glow.setAttribute('stroke-linejoin', 'round');
+      glow.innerHTML = '<animate attributeName="opacity" values=".08;.35;.08" dur="1.2s" repeatCount="indefinite"/>';
+      svg.appendChild(glow);
+    }
+
+    // Main path
+    const path = document.createElementNS(NS,'path');
+    path.setAttribute('d', pathD);
+    path.setAttribute('stroke-linejoin', 'round');
+
+    if(!isActive){
+      path.setAttribute('fill','rgba(80,100,130,.2)');
+      path.setAttribute('stroke','rgba(80,100,130,.25)');
+      path.setAttribute('stroke-width','0.5');
+    } else if(isCorrect){
+      path.setAttribute('fill','rgba(74,217,120,.85)');
+      path.setAttribute('stroke','#4ad978');
+      path.setAttribute('stroke-width','1.5');
+    } else {
+      path.setAttribute('fill', col);
+      path.setAttribute('fill-opacity','.78');
+      path.setAttribute('stroke','rgba(0,0,0,.5)');
+      path.setAttribute('stroke-width','1');
+    }
+
+    if(!quizMode && isActive){
+      path.style.cursor = 'pointer';
+      path.addEventListener('click',()=>openPref(p.id,'screen-map'));
+    } else if(quizMode && quizType === 'map' && !quizAnswered && !correctId){
+      path.style.cursor = 'pointer';
+      path.addEventListener('click',()=>quizMapClick(p.id));
+    }
+    svg.appendChild(path);
+
+    // Label
+    if(isActive){
+      const txtEl = document.createElementNS(NS,'text');
+      Object.entries({
+        x:ctr[0], y:ctr[1],
+        'text-anchor':'middle','dominant-baseline':'middle',
+        fill:'rgba(255,255,255,.92)','font-weight':'700',
+        'font-size':fs,'font-family':'-apple-system,sans-serif',
+        'pointer-events':'none'
+      }).forEach(([k,v])=>txtEl.setAttribute(k,v));
+      txtEl.textContent = p.name;
+      svg.appendChild(txtEl);
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// MAP REGION FILTER
+// ═══════════════════════════════════════════════════════
+function renderMapFilter(){
+  const rf = document.getElementById('regionFilter');
+  if(rf.children.length > 0) return; // already built
+  // All button
+  const allBtn = makeRegBtn('all','全て','rgba(200,220,255,.7)','rgba(200,220,255,.3)');
+  allBtn.classList.add('active');
+  allBtn.onclick = ()=> filterMap('all', allBtn);
+  rf.appendChild(allBtn);
+  Object.entries(REG_NAMES).forEach(([k,v])=>{
+    const btn = makeRegBtn(k, v, REG_COLORS[k], REG_COLORS[k]);
+    btn.onclick = ()=> filterMap(k, btn);
+    rf.appendChild(btn);
+  });
+}
+function makeRegBtn(k, label, color, border){
+  const btn = document.createElement('button');
+  btn.className = 'reg-btn'; btn.dataset.reg = k;
+  btn.style.color = color; btn.style.borderColor = border;
+  btn.textContent = label;
+  return btn;
+}
+function filterMap(reg, btn){
+  activeRegion = reg;
+  document.querySelectorAll('#regionFilter .reg-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderMap('mapSvg', false);
+}
+
+// ═══════════════════════════════════════════════════════
+// PREFECTURE INFO
+// ═══════════════════════════════════════════════════════
+function openPref(id, from){
+  prevScreen = from || 'screen-home';
+  const p = PREFS.find(x=>x.id===id);
+  if(!p) return;
+  lastOpenPrefId = id;
+  const col = REG_COLORS[p.reg];
+
+  document.getElementById('infoTopTitle').textContent = p.name;
+  document.getElementById('infoBackBtn').textContent  = '◀ ' + (from==='screen-map' ? '地図' : from==='screen-cards' ? '一覧' : '戻る');
+
+  // Hero bg color
+  const bgEl = document.getElementById('infoHeroBg');
+  bgEl.style.setProperty('--hero-col', col);
+  bgEl.style.background = `radial-gradient(ellipse at 80% 50%, ${col} 0%, transparent 70%)`;
+
+  document.getElementById('infoHero').innerHTML = `
+    <div style="font-size:3.4rem;line-height:1;flex-shrink:0">${p.emoji}</div>
+    <div style="flex:1">
+      <div class="info-name" style="color:${col}">${p.name}</div>
+      <div class="info-read">${p.read}（${p.rom}）</div>
+      <div class="info-num">都道府県番号：第 ${p.num} 号</div>
+      <div class="info-reg-tag" style="color:${col};border-color:${col}">${REG_FULL[p.reg]}</div>
+    </div>
+  `;
+
+  document.getElementById('infoCards').innerHTML = `
+    <div class="info-card">
+      <div class="ic-label">🏛 県庁所在地</div>
+      <div class="ic-val" style="color:${col}">${p.cap}</div>
+    </div>
+    <div class="info-card">
+      <div class="ic-label">🍜 名産・グルメ</div>
+      <div class="ic-chips">${p.food.map(f=>`<div class="ic-chip">${f}</div>`).join('')}</div>
+    </div>
+    <div class="info-card">
+      <div class="ic-label">🏔️ 観光スポット</div>
+      <div class="ic-val" style="font-size:.88rem;line-height:1.6;margin-top:2px">${p.spot}</div>
+    </div>
+    <div class="info-card" style="border-color:${col}44;background:${col}12">
+      <div class="ic-label">💡 豆知識</div>
+      <div class="ic-fact-text">${p.fact}</div>
+    </div>
+  `;
+
+  showScreen('screen-info');
+}
+
+function quickQuiz(){
+  quizType = 'capital';
+  quizDiff = 10;
+  startQuiz();
+}
+
+// ═══════════════════════════════════════════════════════
+// CARDS
+// ═══════════════════════════════════════════════════════
+function buildCardsFilter(){
+  const cf = document.getElementById('cardsFilter');
+  const allBtn = document.createElement('button');
+  allBtn.className = 'cf-btn active'; allBtn.dataset.reg = 'all';
+  allBtn.style.color = 'rgba(200,220,255,.8)'; allBtn.style.borderColor = 'rgba(200,220,255,.4)';
+  allBtn.textContent = '全て';
+  allBtn.onclick = ()=>{ filterCards('all',allBtn); };
+  cf.appendChild(allBtn);
+  Object.entries(REG_NAMES).forEach(([k,v])=>{
+    const btn = document.createElement('button');
+    btn.className='cf-btn'; btn.dataset.reg=k;
+    btn.style.color=REG_COLORS[k]; btn.style.borderColor=REG_COLORS[k];
+    btn.textContent=v;
+    btn.onclick=()=>{ filterCards(k,btn); };
+    cf.appendChild(btn);
+  });
+}
+function filterCards(reg, btn){
+  document.querySelectorAll('.cf-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  buildCards(reg);
+}
+function buildCards(reg='all'){
+  const list = reg==='all' ? PREFS : PREFS.filter(p=>p.reg===reg);
+  document.getElementById('cardsCount').textContent = list.length + '件';
+  document.getElementById('cardsGrid').innerHTML = list.map(p=>`
+    <button class="pref-card" onclick="openPref('${p.id}','screen-cards')">
+      <div class="pc-emoji">${p.emoji}</div>
+      <div class="pc-name" style="color:${REG_COLORS[p.reg]}">${p.name}</div>
+      <div class="pc-read">${p.read}</div>
+      <div class="pc-cap">🏛 ${p.cap}</div>
+    </button>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// REGION LIST
+// ═══════════════════════════════════════════════════════
+function buildRegionList(){
+  document.getElementById('regList').innerHTML = Object.entries(REG_FULL).map(([k,v])=>{
+    const prefs = PREFS.filter(p=>p.reg===k);
+    return `
+      <button class="reg-card" onclick="goRegionCards('${k}')">
+        <div class="reg-color-bar" style="background:${REG_COLORS[k]}"></div>
+        <div class="reg-info">
+          <div class="reg-name" style="color:${REG_COLORS[k]}">${v}</div>
+          <div class="reg-pref-names">${prefs.map(p=>p.name).join('・')}</div>
+        </div>
+        <div class="reg-count">${prefs.length}<span>県</span></div>
+      </button>
+    `;
+  }).join('');
+}
+function goRegionCards(reg){
+  showScreen('screen-cards');
+  const btn = document.querySelector(`#cardsFilter [data-reg="${reg}"]`);
+  if(btn) filterCards(reg, btn);
+}
+
+// ═══════════════════════════════════════════════════════
+// QUIZ SELECT
+// ═══════════════════════════════════════════════════════
+const QUIZ_TYPES = [
+  {id:'map',    icon:'🗺️', name:'地図クイズ',   desc:'県名を見て地図上の場所を探そう'},
+  {id:'name',   icon:'📍', name:'名前クイズ',   desc:'地図上の県の名前を当てよう'},
+  {id:'capital',icon:'🏛️', name:'県庁所在地',   desc:'都道府県の県庁所在地を当てよう'},
+  {id:'food',   icon:'🍜', name:'名産クイズ',   desc:'名産品から都道府県を当てよう'},
+];
+const QUIZ_DIFFS = [
+  {n:10,  label:'🌱 かんたん', sub:'10問'},
+  {n:20,  label:'🌿 ふつう',   sub:'20問'},
+  {n:47,  label:'🌳 むずかしい',sub:'全47問'},
+];
+
+function buildQuizSel(){
+  const grid = document.getElementById('quizSelGrid');
+  QUIZ_TYPES.forEach((q,i)=>{
+    const btn = document.createElement('button');
+    btn.className = 'qs-card' + (i===0?' sel':'');
+    btn.innerHTML = `<div class="qs-icon">${q.icon}</div><div class="qs-name">${q.name}</div><div class="qs-desc">${q.desc}</div>`;
+    btn.onclick = ()=>{
+      document.querySelectorAll('.qs-card').forEach(c=>c.classList.remove('sel'));
+      btn.classList.add('sel');
+      quizType = q.id;
+    };
+    grid.appendChild(btn);
+  });
+  const dw = document.getElementById('diffWrap');
+  QUIZ_DIFFS.forEach((d,i)=>{
+    const btn = document.createElement('button');
+    btn.className = 'qs-diff-btn' + (i===0?' sel':'');
+    btn.innerHTML = `${d.label}<br><small>${d.sub}</small>`;
+    btn.onclick = ()=>{
+      document.querySelectorAll('.qs-diff-btn').forEach(b=>b.classList.remove('sel'));
+      btn.classList.add('sel');
+      quizDiff = d.n;
+    };
+    dw.appendChild(btn);
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// QUIZ LOGIC
+// ═══════════════════════════════════════════════════════
+function shuffle(arr){ return [...arr].sort(()=>Math.random()-.5); }
+function randN(arr,n){ return shuffle(arr).slice(0,n); }
+function rand(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+function startQuiz(){
+  lastQuizType = quizType;
+  lastQuizDiff = quizDiff;
+  quizIdx = 0; quizScore = 0; quizStreak = 0; maxStreak = 0; quizAnswered = false;
+  quizQueue = randN(PREFS, Math.min(quizDiff, PREFS.length));
+  showScreen('screen-quiz');
+  updateQuizProgress();
+  nextQuestion();
+}
+
+function nextQuestion(){
+  if(quizIdx >= quizQueue.length){ showResult(); return; }
+  const p = quizQueue[quizIdx];
+  quizCurrentPref = p;
+  quizAnswered = false;
+
+  const qt = QUIZ_TYPES.find(t=>t.id===quizType);
+  document.getElementById('quizTitle').textContent     = qt.name;
+  document.getElementById('quizTypeLabel').textContent = qt.icon + ' ' + qt.name;
+  document.getElementById('quizScoreLbl').textContent  = quizScore + '点';
+  updateQuizProgress();
+
+  const zone = document.getElementById('quizMapZone');
+  const opts = document.getElementById('quizOpts');
+
+  if(quizType === 'map'){
+    document.getElementById('quizQText').textContent = `「${p.name}」はどこ？`;
+    document.getElementById('quizQHint').textContent = p.read + '　' + REG_FULL[p.reg];
+    zone.style.display = 'flex'; opts.style.display = 'none';
+    renderMap('quizMapSvg', true, null, null);
+  } else if(quizType === 'name'){
+    document.getElementById('quizQText').textContent = 'この都道府県の名前は？';
+    document.getElementById('quizQHint').textContent = p.emoji + '　ヒント：' + REG_FULL[p.reg];
+    zone.style.display = 'flex'; opts.style.display = 'grid';
+    renderMap('quizMapSvg', true, p.id, null);
+    buildOptions(p, 'name');
+  } else if(quizType === 'capital'){
+    document.getElementById('quizQText').textContent = `「${p.name}」${p.emoji} の県庁所在地は？`;
+    document.getElementById('quizQHint').textContent = REG_FULL[p.reg];
+    zone.style.display = 'none'; opts.style.display = 'grid';
+    buildOptions(p, 'capital');
+  } else if(quizType === 'food'){
+    const foodItem = rand(p.food);
+    document.getElementById('quizQText').textContent = `「${foodItem}」が有名な都道府県は？`;
+    document.getElementById('quizQHint').textContent = 'ヒント：' + REG_FULL[p.reg];
+    zone.style.display = 'none'; opts.style.display = 'grid';
+    buildOptions(p, 'name');
+  }
+}
+
+function buildOptions(correct, mode){
+  const others = randN(PREFS.filter(p=>p.id!==correct.id), 3);
+  const all = shuffle([correct, ...others]);
+  const opts = document.getElementById('quizOpts');
+  opts.innerHTML = '';
+  all.forEach(p=>{
+    const label = mode==='capital' ? p.cap : p.name;
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.textContent = label;
+    btn.dataset.id = p.id;
+    btn.addEventListener('click', ()=>checkAnswer(p.id, correct.id));
+    opts.appendChild(btn);
+  });
+}
+
+function checkAnswer(selected, correct){
+  if(quizAnswered) return;
+  quizAnswered = true;
+  const ok = selected === correct;
+
+  document.querySelectorAll('.opt-btn').forEach(btn=>{
+    btn.disabled = true;
+    if(btn.dataset.id === correct) btn.classList.add('correct');
+    else if(btn.dataset.id === selected && !ok) btn.classList.add('wrong');
+  });
+
+  processResult(ok, correct);
+}
+
+function quizMapClick(id){
+  if(quizAnswered || quizType!=='map') return;
+  quizAnswered = true;
+  const ok = id === quizCurrentPref.id;
+  renderMap('quizMapSvg', true, null, quizCurrentPref.id);
+  processResult(ok, quizCurrentPref.id);
+}
+
+function processResult(ok, correctId){
+  if(ok){
+    quizScore++;
+    quizStreak++;
+    if(quizStreak > maxStreak) maxStreak = quizStreak;
+    showFlash('⭕','#4ad978');
+    document.getElementById('quizScoreLbl').textContent = quizScore + '点';
+    if(quizStreak >= 3){
+      showStreakPop(`🔥 ${quizStreak}連続！`);
+    }
+    document.getElementById('quizStreakLbl').textContent = quizStreak >= 2 ? `🔥×${quizStreak}` : '';
+  } else {
+    quizStreak = 0;
+    showFlash('✕','#d94a4a');
+    document.getElementById('quizStreakLbl').textContent = '';
+  }
+  setTimeout(()=>{ quizIdx++; nextQuestion(); }, ok ? 700 : 1400);
+}
+
+function updateQuizProgress(){
+  const total = quizQueue.length;
+  const pct   = total > 0 ? (quizIdx / total * 100) : 0;
+  document.getElementById('quizProgBar').style.width = pct + '%';
+  document.getElementById('quizProgTxt').textContent = `${Math.min(quizIdx+1,total)} / ${total}`;
+}
+
+function quitQuiz(){
+  showScreen('screen-quiz-sel');
+}
+function retryQuiz(){
+  quizType = lastQuizType;
+  quizDiff = lastQuizDiff;
+  startQuiz();
+}
+
+// ═══════════════════════════════════════════════════════
+// RESULT
+// ═══════════════════════════════════════════════════════
+function showResult(){
+  const total = quizQueue.length;
+  const pct   = Math.round(quizScore / total * 100);
+
+  let earned = quizScore * 10;
+  if(pct === 100) earned += 50;
+  if(maxStreak >= 5) earned += 20;
+
+  const prevLv = getLevel(xp);
+  xp += earned;
+  const newLv  = getLevel(xp);
+
+  // Streak date
+  const today = new Date().toDateString();
+  if(lastDate !== today){ streak++; lastDate = today; }
+  saveState();
+
+  let emoji='😢', title='もう少し！';
+  if(pct===100){emoji='🏆';title='完璧！！パーフェクト！'}
+  else if(pct>=90){emoji='🥇';title='素晴らしい！'}
+  else if(pct>=70){emoji='🎉';title='よく頑張った！'}
+  else if(pct>=50){emoji='😊';title='まずまず！'}
+  else if(pct>=30){emoji='💪';title='もっと学ぼう！'}
+
+  document.getElementById('resBig').textContent   = emoji;
+  document.getElementById('resTitle').textContent = title;
+  document.getElementById('resScore').textContent = `${quizScore}/${total}`;
+  document.getElementById('resXp').textContent    = `+${earned} XP 獲得！`;
+  document.getElementById('resAcc').textContent   = pct + '%';
+  document.getElementById('resStreak').textContent = maxStreak;
+  document.getElementById('resLv').textContent    = 'LV' + newLv;
+
+  showScreen('screen-result');
+  updateHome();
+
+  if(newLv > prevLv) setTimeout(()=>showLevelUp(newLv), 600);
+}
+
+// ═══════════════════════════════════════════════════════
+// FEEDBACK
+// ═══════════════════════════════════════════════════════
+let flashTO, streakTO, lvTO;
+
+function showFlash(txt, color){
+  const el=document.getElementById('flash'), t=document.getElementById('flashTxt');
+  clearTimeout(flashTO);
+  t.textContent=txt; t.style.color=color;
+  el.classList.add('show');
+  flashTO=setTimeout(()=>el.classList.remove('show'),550);
+}
+
+function showStreakPop(txt){
+  const el=document.getElementById('streakPop');
+  clearTimeout(streakTO);
+  el.textContent=txt;
+  el.classList.add('show');
+  streakTO=setTimeout(()=>el.classList.remove('show'),1600);
+}
+
+function showLevelUp(lv){
+  const ov=document.getElementById('lvupOverlay');
+  document.getElementById('lvupNum').textContent='LV'+lv;
+  ov.classList.add('show');
+  lvTO=setTimeout(()=>ov.classList.remove('show'),2200);
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+function init(){
+  updateHome();
+  buildCardsFilter();
+  buildCards();
+  buildRegionList();
+  buildQuizSel();
+}
+
+init();
+</script>
+</body>
+</html>
