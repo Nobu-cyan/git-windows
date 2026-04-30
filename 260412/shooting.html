@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PLASTIC WARRIOR - ペットボトル防衛隊</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  font-family: 'Courier New', monospace;
+  overflow: hidden;
+}
+canvas {
+  display: block;
+  border: 2px solid #0af;
+  box-shadow: 0 0 30px #0af4, 0 0 60px #0af2;
+}
+#info {
+  color: #0af;
+  font-size: 12px;
+  margin-top: 8px;
+  text-align: center;
+  letter-spacing: 1px;
+  opacity: 0.7;
+}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="info">← → 移動 ｜ SPACE 射撃 ｜ S シェイク必殺技（炭酸ゲージMAX時）</div>
+<script>
+const C = document.getElementById('c');
+const ctx = C.getContext('2d');
+const W = 480, H = 640;
+C.width = W; C.height = H;
+
+// --- STATE ---
+let state = 'title'; // title | play | over | clear
+let score = 0, wave = 1, highScore = 0;
+let frameCount = 0;
+let shakeTimer = 0; // 画面シェイク演出用
+let shakeMag = 0;
+
+// --- PLAYER ---
+const player = {
+  x: W/2, y: H - 80, w: 32, h: 52,
+  speed: 4, water: 100, maxWater: 100,
+  soda: 0, maxSoda: 100, // 炭酸ゲージ
+  shotCool: 0, alive: true,
+  invincible: 0,
+  dx: 0,
+};
+
+// --- COLLECTIONS ---
+let bullets = [];
+let aliens = [];
+let particles = [];
+let drops = []; // 水滴ドロップ
+let stars = [];
+let explosionWaves = [];
+
+// --- INPUT ---
+const keys = {};
+window.addEventListener('keydown', e => {
+  keys[e.code] = true;
+  if (e.code === 'KeyS' && state === 'play') tryShake();
+  if (e.code === 'Space' && state === 'title') startGame();
+  if (e.code === 'Space' && state === 'over') startGame();
+  if (e.code === 'Space' && state === 'clear') startGame();
+  if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
+});
+window.addEventListener('keyup', e => keys[e.code] = false);
+
+// タッチ操作
+let touchLeft = false, touchRight = false, touchShoot = false;
+C.addEventListener('touchstart', handleTouch, {passive:false});
+C.addEventListener('touchmove', handleTouch, {passive:false});
+C.addEventListener('touchend', e => {
+  touchLeft = false; touchRight = false; touchShoot = false;
+  e.preventDefault();
+}, {passive:false});
+
+function handleTouch(e) {
+  e.preventDefault();
+  touchLeft = false; touchRight = false; touchShoot = false;
+  for (let t of e.touches) {
+    const rect = C.getBoundingClientRect();
+    const tx = (t.clientX - rect.left) * (W / rect.width);
+    const ty = (t.clientY - rect.top) * (H / rect.height);
+    if (ty > H * 0.6) {
+      if (tx < W / 3) touchLeft = true;
+      else if (tx > W * 2/3) touchRight = true;
+      else touchShoot = true;
+    }
+  }
+}
+
+// --- STARS ---
+function initStars() {
+  stars = [];
+  for (let i = 0; i < 120; i++) {
+    stars.push({ x: Math.random()*W, y: Math.random()*H, s: Math.random()*2+0.5, speed: Math.random()*1.5+0.3, bright: Math.random() });
+  }
+}
+
+// --- DRAW FUNCTIONS ---
+
+function drawPetBottle(x, y, w, h, waterRatio, invincible) {
+  ctx.save();
+  ctx.translate(x, y);
+
+  const alpha = (invincible > 0 && Math.floor(invincible/4)%2===0) ? 0.4 : 1;
+  ctx.globalAlpha = alpha;
+
+  // キャップ
+  ctx.fillStyle = '#e74c3c';
+  ctx.beginPath();
+  ctx.roundRect(-w*0.25, -h*0.5 - h*0.18, w*0.5, h*0.18, 3);
+  ctx.fill();
+  ctx.strokeStyle = '#c0392b';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // ネック
+  ctx.fillStyle = 'rgba(200,240,255,0.85)';
+  ctx.beginPath();
+  ctx.roundRect(-w*0.18, -h*0.5, w*0.36, h*0.12, 2);
+  ctx.fill();
+
+  // ボトル本体アウトライン
+  ctx.fillStyle = 'rgba(180,230,255,0.25)';
+  ctx.strokeStyle = 'rgba(150,220,255,0.9)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.roundRect(-w*0.5, -h*0.38, w, h*0.88, 8);
+  ctx.fill();
+  ctx.stroke();
+
+  // 水（水量に応じて色・高さが変わる）
+  const waterH = h * 0.78 * waterRatio;
+  const waterY = h*0.5 - waterH - h*0.1;
+  const waterColor = waterRatio > 0.5 ? `rgba(0,150,255,${0.6 + waterRatio*0.3})` : `rgba(255,100,0,${0.5 + waterRatio*0.4})`;
+  ctx.save();
+  ctx.beginPath();
+  ctx.roundRect(-w*0.45, -h*0.38, w*0.9, h*0.83, 6);
+  ctx.clip();
+  ctx.fillStyle = waterColor;
+  ctx.fillRect(-w*0.5, waterY, w, waterH + h*0.1);
+
+  // 水面の波紋
+  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.ellipse(0, waterY + 2, w*0.35, 3, 0, 0, Math.PI*2);
+  ctx.stroke();
+  ctx.restore();
+
+  // ハイライト
+  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  ctx.beginPath();
+  ctx.roundRect(-w*0.38, -h*0.32, w*0.15, h*0.5, 4);
+  ctx.fill();
+
+  // くびれ横線
+  ctx.strokeStyle = 'rgba(150,200,255,0.5)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 3; i++) {
+    const ly = -h*0.2 + i * h*0.2;
+    ctx.beginPath();
+    ctx.moveTo(-w*0.5, ly);
+    ctx.lineTo(w*0.5, ly);
+    ctx.stroke();
+  }
+
+  // 目（かわいく）
+  ctx.fillStyle = '#333';
+  ctx.beginPath(); ctx.arc(-w*0.15, -h*0.1, 3.5, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(w*0.15, -h*0.1, 3.5, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.beginPath(); ctx.arc(-w*0.13, -h*0.12, 1.2, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(w*0.17, -h*0.12, 1.2, 0, Math.PI*2); ctx.fill();
+
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+function drawAlien(a) {
+  ctx.save();
+  ctx.translate(a.x, a.y);
+  ctx.rotate(a.rot);
+
+  switch(a.type) {
+    case 'bag': drawBagAlien(a); break;
+    case 'bottle': drawBottleAlien(a); break;
+    case 'trash': drawTrashAlien(a); break;
+    case 'boss': drawBossAlien(a); break;
+  }
+  ctx.restore();
+
+  // HPバー
+  if (a.type === 'boss') {
+    ctx.fillStyle = '#333';
+    ctx.fillRect(a.x - 40, a.y - a.r - 16, 80, 7);
+    ctx.fillStyle = a.hp/a.maxHp > 0.5 ? '#2ecc71' : '#e74c3c';
+    ctx.fillRect(a.x - 40, a.y - a.r - 16, 80 * (a.hp/a.maxHp), 7);
+  }
+}
+
+function drawBagAlien(a) {
+  // プラスチック袋エイリアン
+  const r = a.r;
+  const wobble = Math.sin(frameCount * 0.08 + a.phase) * 3;
+  ctx.fillStyle = `hsla(${120 + a.hue},70%,65%,0.7)`;
+  ctx.strokeStyle = `hsla(${120 + a.hue},80%,75%,0.9)`;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.ellipse(0, wobble*0.3, r + wobble, r*0.8 - wobble*0.2, 0, 0, Math.PI*2);
+  ctx.fill(); ctx.stroke();
+  // 触手
+  for (let i = 0; i < 4; i++) {
+    const ang = (i/4)*Math.PI*2 + frameCount*0.04;
+    ctx.strokeStyle = `hsla(${120+a.hue},60%,70%,0.8)`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(ang)*r*0.7, Math.sin(ang)*r*0.5);
+    ctx.quadraticCurveTo(Math.cos(ang+0.5)*(r+8), Math.sin(ang+0.5)*r, Math.cos(ang)*r*1.3, Math.sin(ang)*r);
+    ctx.stroke();
+  }
+  // 目
+  ctx.fillStyle = '#111';
+  ctx.beginPath(); ctx.ellipse(-r*0.3, -r*0.15, 4, 5, 0, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(r*0.3, -r*0.15, 4, 5, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#f00';
+  ctx.beginPath(); ctx.ellipse(0, r*0.2, r*0.4, 3, 0, 0, Math.PI*2); ctx.fill();
+}
+
+function drawBottleAlien(a) {
+  // ペットボトルエイリアン（逆さペットボトル）
+  const r = a.r;
+  ctx.fillStyle = `hsla(${200+a.hue},80%,60%,0.85)`;
+  ctx.strokeStyle = `hsla(${200+a.hue},90%,75%,1)`;
+  ctx.lineWidth = 2;
+  // ボディ（逆三角形っぽい）
+  ctx.beginPath();
+  ctx.roundRect(-r*0.6, -r*0.8, r*1.2, r*1.6, 6);
+  ctx.fill(); ctx.stroke();
+  // 中の液体（怪しい色）
+  ctx.fillStyle = `hsla(${280+a.hue},90%,50%,0.6)`;
+  const lh = r*1.2*(a.hp/a.maxHp);
+  ctx.fillRect(-r*0.5, r*0.8-lh-r*0.1, r, lh);
+  // キャップ（足みたいな）
+  ctx.fillStyle = '#e74c3c';
+  ctx.fillRect(-r*0.2, r*0.75, r*0.4, r*0.35);
+  // 目
+  ctx.fillStyle = '#fff';
+  ctx.beginPath(); ctx.arc(-r*0.22, -r*0.2, 5, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(r*0.22, -r*0.2, 5, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#f0f';
+  ctx.beginPath(); ctx.arc(-r*0.22, -r*0.2, 2.5, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(r*0.22, -r*0.2, 2.5, 0, Math.PI*2); ctx.fill();
+  // HP示すひび
+  if (a.hp < a.maxHp * 0.5) {
+    ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(-r*0.3, -r*0.5); ctx.lineTo(r*0.1, r*0.2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(r*0.2, -r*0.3); ctx.lineTo(-r*0.1, r*0.3); ctx.stroke();
+  }
+}
+
+function drawTrashAlien(a) {
+  // ゴミ袋エイリアン（分裂する）
+  const r = a.r;
+  ctx.fillStyle = `hsla(${40+a.hue},60%,40%,0.9)`;
+  ctx.strokeStyle = `hsla(${40+a.hue},70%,55%,1)`;
+  ctx.lineWidth = 2;
+  // いびつな形
+  ctx.beginPath();
+  const pts = 7;
+  for (let i = 0; i <= pts; i++) {
+    const ang = (i/pts)*Math.PI*2;
+    const rr = r * (0.8 + 0.25*Math.sin(ang*3 + a.phase + frameCount*0.05));
+    if (i===0) ctx.moveTo(Math.cos(ang)*rr, Math.sin(ang)*rr);
+    else ctx.lineTo(Math.cos(ang)*rr, Math.sin(ang)*rr);
+  }
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  // 目（複数の目）
+  const eyePos = [[-r*0.3,-r*0.1],[r*0.3,-r*0.1],[0,-r*0.4]];
+  for (const [ex,ey] of eyePos) {
+    ctx.fillStyle = '#ff0';
+    ctx.beginPath(); ctx.arc(ex, ey, 3.5, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#000';
+    ctx.beginPath(); ctx.arc(ex, ey, 1.5, 0, Math.PI*2); ctx.fill();
+  }
+}
+
+function drawBossAlien(a) {
+  const r = a.r;
+  const t = frameCount * 0.05;
+  // 外殻
+  ctx.fillStyle = `hsla(${300+Math.sin(t)*30},80%,35%,0.9)`;
+  ctx.strokeStyle = `hsla(${300+Math.sin(t)*30},90%,60%,1)`;
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  for (let i = 0; i <= 12; i++) {
+    const ang = (i/12)*Math.PI*2;
+    const rr = r * (1 + 0.15*Math.sin(ang*4 + t));
+    if (i===0) ctx.moveTo(Math.cos(ang)*rr, Math.sin(ang)*rr);
+    else ctx.lineTo(Math.cos(ang)*rr, Math.sin(ang)*rr);
+  }
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  // コア
+  ctx.fillStyle = `hsla(${300+Math.sin(t*2)*60},100%,60%,0.8)`;
+  ctx.beginPath(); ctx.arc(0, 0, r*0.45, 0, Math.PI*2); ctx.fill();
+  // 目（大きく怖い）
+  for (let i = 0; i < 3; i++) {
+    const ang = (i/3)*Math.PI*2 + t;
+    const ex = Math.cos(ang)*r*0.35, ey = Math.sin(ang)*r*0.35;
+    ctx.fillStyle = '#ff0';
+    ctx.beginPath(); ctx.arc(ex, ey, 8, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#f00';
+    ctx.beginPath(); ctx.arc(ex + Math.cos(t)*2, ey + Math.sin(t)*2, 4, 0, Math.PI*2); ctx.fill();
+  }
+  // 触手（回転）
+  for (let i = 0; i < 6; i++) {
+    const ang = (i/6)*Math.PI*2 + t*0.5;
+    ctx.strokeStyle = `hsla(${300},70%,50%,0.7)`;
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(ang)*r, Math.sin(ang)*r);
+    ctx.quadraticCurveTo(
+      Math.cos(ang+0.8)*(r+20), Math.sin(ang+0.8)*(r+20),
+      Math.cos(ang+1.2)*r*0.5, Math.sin(ang+1.2)*r*0.5
+    );
+    ctx.stroke();
+  }
+}
+
+// --- PARTICLES ---
+function spawnExplosion(x, y, color, count=16) {
+  for (let i = 0; i < count; i++) {
+    const ang = Math.random()*Math.PI*2;
+    const spd = 1.5 + Math.random()*4;
+    particles.push({
+      x, y,
+      vx: Math.cos(ang)*spd, vy: Math.sin(ang)*spd,
+      life: 30 + Math.random()*20, maxLife: 50,
+      r: 2 + Math.random()*4,
+      color,
+      type: 'spark'
+    });
+  }
+}
+
+function spawnWaterDrop(x, y) {
+  for (let i = 0; i < 5; i++) {
+    const ang = -Math.PI/2 + (Math.random()-0.5)*Math.PI;
+    const spd = 1 + Math.random()*3;
+    particles.push({
+      x, y,
+      vx: Math.cos(ang)*spd, vy: Math.sin(ang)*spd - 2,
+      life: 20 + Math.random()*15, maxLife: 35,
+      r: 1.5 + Math.random()*2.5,
+      color: '#4af',
+      type: 'water'
+    });
+  }
+}
+
+function spawnRecycle(x, y) {
+  for (let i = 0; i < 8; i++) {
+    const ang = Math.random()*Math.PI*2;
+    particles.push({
+      x, y,
+      vx: Math.cos(ang)*(0.5+Math.random()*2), vy: Math.sin(ang)*(0.5+Math.random()*2),
+      life: 40, maxLife: 40,
+      r: 3+Math.random()*3,
+      color: '#2ecc71',
+      type: 'recycle'
+    });
+  }
+}
+
+// --- BULLETS ---
+function shoot() {
+  if (player.water <= 0 || player.shotCool > 0) return;
+  bullets.push({
+    x: player.x, y: player.y - player.h*0.5,
+    w: 6, h: 14,
+    vy: -10,
+    type: 'water'
+  });
+  player.water = Math.max(0, player.water - 3);
+  player.shotCool = 10;
+  player.soda = Math.min(player.maxSoda, player.soda + 4);
+  spawnWaterDrop(player.x, player.y - player.h*0.5);
+}
+
+function tryShake() {
+  if (player.soda < player.maxSoda) return;
+  player.soda = 0;
+  shakeTimer = 40; shakeMag = 10;
+  explosionWaves.push({ x: player.x, y: player.y, r: 0, maxR: W, life: 40 });
+  spawnExplosion(player.x, player.y, '#0ff', 40);
+  // 全エイリアンに大ダメージ
+  for (const a of aliens) {
+    a.hp -= 40;
+    spawnExplosion(a.x, a.y, '#fff', 8);
+  }
+}
+
+// --- ALIEN SPAWNING ---
+function spawnWave(waveNum) {
+  aliens = [];
+  const rows = Math.min(3 + Math.floor(waveNum/2), 6);
+  const cols = Math.min(4 + waveNum, 8);
+
+  // ボス波
+  if (waveNum % 5 === 0) {
+    aliens.push({
+      x: W/2, y: 100, r: 50,
+      hp: 200 + waveNum*30, maxHp: 200 + waveNum*30,
+      type: 'boss',
+      score: 500,
+      rot: 0, phase: 0, hue: Math.random()*60,
+      dx: 1.5, dy: 0,
+      shotCool: 0, shotRate: 80,
+      drops: true
+    });
+    return;
+  }
+
+  const types = ['bag','bottle','trash'];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const t = types[(r + waveNum) % types.length];
+      const baseHp = t==='bag' ? 1 : t==='bottle' ? 3 : 2;
+      aliens.push({
+        x: 60 + c*(W-80)/(cols-1),
+        y: 60 + r*55,
+        r: t==='trash' ? 14 : t==='bottle' ? 16 : 18,
+        hp: baseHp + Math.floor(waveNum/3),
+        maxHp: baseHp + Math.floor(waveNum/3),
+        type: t,
+        score: t==='bag' ? 10 : t==='bottle' ? 30 : 20,
+        rot: 0, phase: Math.random()*Math.PI*2, hue: Math.random()*40-20,
+        dx: (0.5 + waveNum*0.1) * (c%2===0 ? 1 : -1),
+        dy: 0,
+        shotCool: Math.floor(Math.random()*120),
+        shotRate: Math.max(40, 120 - waveNum*8),
+        drops: t==='bottle',
+      });
+    }
+  }
+}
+
+// --- ALIEN BULLETS ---
+let alienBullets = [];
+
+function alienShoot(a) {
+  alienBullets.push({
+    x: a.x, y: a.y + a.r,
+    vx: (player.x - a.x) * 0.02,
+    vy: 2 + wave*0.3,
+    r: 5,
+    type: a.type==='boss' ? 'boss' : 'normal'
+  });
+}
+
+// --- WATER DROP COLLECTIBLES ---
+function spawnDrop(x, y) {
+  drops.push({ x, y, vy: 1.5, r: 8, life: 200 });
+}
+
+// --- UPDATE ---
+function update() {
+  frameCount++;
+  if (player.shotCool > 0) player.shotCool--;
+
+  // 入力
+  if ((keys['ArrowLeft'] || touchLeft) && player.x > player.w/2) player.x -= player.speed;
+  if ((keys['ArrowRight'] || touchRight) && player.x < W - player.w/2) player.x += player.speed;
+  if ((keys['Space'] || touchShoot)) shoot();
+
+  if (player.invincible > 0) player.invincible--;
+
+  // バレット更新
+  bullets = bullets.filter(b => b.y > -b.h);
+  for (const b of bullets) b.y += b.vy;
+
+  // エイリアン弾更新
+  alienBullets = alienBullets.filter(b => b.y < H + 10 && b.x > -10 && b.x < W+10);
+  for (const b of alienBullets) {
+    b.x += b.vx; b.y += b.vy;
+    // プレイヤーとの当たり判定
+    if (player.invincible === 0 &&
+        Math.abs(b.x - player.x) < 18 && Math.abs(b.y - player.y) < 26) {
+      player.water = Math.max(0, player.water - (b.type==='boss' ? 20 : 8));
+      player.invincible = 60;
+      spawnExplosion(b.x, b.y, '#f80', 8);
+      b.y = H+100;
+      shakeTimer = 10; shakeMag = 5;
+      if (player.water <= 0) { player.alive = false; state = 'over'; }
+    }
+  }
+
+  // エイリアン更新
+  let edgeHit = false;
+  for (const a of aliens) {
+    a.x += a.dx + (a.type==='boss' ? Math.sin(frameCount*0.03)*1.5 : 0);
+    a.rot += 0.01;
+    a.phase += 0.03;
+
+    if (a.type==='boss') {
+      a.y += Math.sin(frameCount*0.02) * 0.5;
+    }
+
+    if (a.x - a.r < 0 || a.x + a.r > W) {
+      a.dx *= -1; edgeHit = true;
+    }
+
+    // エイリアン射撃
+    a.shotCool--;
+    if (a.shotCool <= 0) {
+      alienShoot(a);
+      a.shotCool = a.shotRate + Math.floor(Math.random()*30);
+    }
+
+    // バレットとの当たり判定
+    for (let i = bullets.length-1; i >= 0; i--) {
+      const b = bullets[i];
+      if (Math.abs(b.x - a.x) < a.r + b.w/2 && Math.abs(b.y - a.y) < a.r + b.h/2) {
+        a.hp--;
+        bullets.splice(i, 1);
+        spawnWaterDrop(b.x, b.y);
+        if (a.hp <= 0) {
+          score += a.score;
+          spawnExplosion(a.x, a.y, a.type==='boss' ? '#ff0' : '#0ff', a.type==='boss' ? 40 : 12);
+          if (a.drops) spawnDrop(a.x, a.y);
+          spawnRecycle(a.x, a.y);
+          // ゴミエイリアン分裂
+          if (a.type==='trash' && a.r > 8) {
+            for (let j=0; j<2; j++) {
+              aliens.push({
+                x: a.x + (j?10:-10), y: a.y,
+                r: a.r*0.6,
+                hp:1, maxHp:1, type:'trash', score:10,
+                rot:0, phase:Math.random()*Math.PI*2, hue:a.hue,
+                dx: (j?1:-1)*(0.8+wave*0.1), dy:0,
+                shotCool: 60, shotRate: a.shotRate,
+                drops: false
+              });
+            }
+          }
+          a.hp = -9999; // 削除フラグ
+        }
+      }
+    }
+
+    // プレイヤーへの衝突
+    if (player.invincible === 0 && Math.abs(a.x - player.x) < a.r + 16 && Math.abs(a.y - player.y) < a.r + 26) {
+      player.water = Math.max(0, player.water - 15);
+      player.invincible = 80;
+      shakeTimer = 15; shakeMag = 8;
+      if (player.water <= 0) { player.alive = false; state = 'over'; }
+    }
+  }
+
+  if (edgeHit) {
+    for (const a of aliens) if (a.type !== 'boss') a.y += 15;
+  }
+
+  // 画面下まで到達
+  for (const a of aliens) {
+    if (a.y + a.r > H - 40) { state = 'over'; }
+  }
+
+  aliens = aliens.filter(a => a.hp > -100);
+
+  // ドロップ更新
+  drops = drops.filter(d => d.y < H && d.life > 0);
+  for (const d of drops) {
+    d.y += d.vy; d.life--;
+    if (Math.abs(d.x - player.x) < 24 && Math.abs(d.y - player.y) < 30) {
+      player.water = Math.min(player.maxWater, player.water + 25);
+      spawnRecycle(d.x, d.y);
+      d.life = 0;
+    }
+  }
+
+  // パーティクル更新
+  particles = particles.filter(p => p.life > 0);
+  for (const p of particles) {
+    p.x += p.vx; p.y += p.vy;
+    p.vy += 0.08;
+    p.vx *= 0.97;
+    p.life--;
+  }
+
+  // 爆発波更新
+  explosionWaves = explosionWaves.filter(e => e.life > 0);
+  for (const e of explosionWaves) {
+    e.r += e.maxR / 30;
+    e.life--;
+  }
+
+  // 星更新
+  for (const s of stars) {
+    s.y += s.speed;
+    if (s.y > H) { s.y = 0; s.x = Math.random()*W; }
+  }
+
+  // ウェーブクリア
+  if (aliens.length === 0) {
+    wave++;
+    if (wave > 10) { state = 'clear'; return; }
+    spawnWave(wave);
+  }
+
+  // シェイクタイマー
+  if (shakeTimer > 0) shakeTimer--;
+}
+
+// --- DRAW ---
+function draw() {
+  // シェイク
+  let sx = 0, sy = 0;
+  if (shakeTimer > 0) {
+    sx = (Math.random()-0.5)*shakeMag;
+    sy = (Math.random()-0.5)*shakeMag;
+  }
+  ctx.save();
+  ctx.translate(sx, sy);
+
+  // 背景
+  const grad = ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0, '#050015');
+  grad.addColorStop(0.5, '#001030');
+  grad.addColorStop(1, '#000820');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // 星
+  for (const s of stars) {
+    const br = 0.5 + Math.abs(Math.sin(frameCount*0.02 + s.bright*10))*0.5;
+    ctx.fillStyle = `rgba(200,220,255,${br * (s.s/2.5)})`;
+    ctx.beginPath(); ctx.arc(s.x, s.y, s.s*0.5, 0, Math.PI*2); ctx.fill();
+  }
+
+  // 爆発波
+  for (const e of explosionWaves) {
+    ctx.strokeStyle = `rgba(0,255,255,${e.life/40 * 0.8})`;
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(e.x, e.y, e.r, 0, Math.PI*2); ctx.stroke();
+  }
+
+  // パーティクル
+  for (const p of particles) {
+    const a = p.life / p.maxLife;
+    ctx.globalAlpha = a;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    if (p.type === 'water') {
+      ctx.ellipse(p.x, p.y, p.r*0.6, p.r, 0, 0, Math.PI*2);
+    } else {
+      ctx.arc(p.x, p.y, p.r * (0.5 + a*0.5), 0, Math.PI*2);
+    }
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  // ドロップ（水補充アイテム）
+  for (const d of drops) {
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, d.life/30);
+    ctx.fillStyle = '#4af';
+    ctx.strokeStyle = '#8ef';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(d.x, d.y, d.r, 0, Math.PI*2);
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 10px Arial';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('💧', d.x, d.y);
+    ctx.restore();
+  }
+
+  // エイリアン弾
+  for (const b of alienBullets) {
+    ctx.save();
+    if (b.type === 'boss') {
+      ctx.fillStyle = '#f0f';
+      ctx.shadowColor = '#f0f'; ctx.shadowBlur = 8;
+      ctx.beginPath(); ctx.arc(b.x, b.y, b.r+2, 0, Math.PI*2); ctx.fill();
+    } else {
+      ctx.fillStyle = '#fa0';
+      ctx.shadowColor = '#fa0'; ctx.shadowBlur = 6;
+      ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  // プレイヤー弾
+  for (const b of bullets) {
+    ctx.save();
+    ctx.fillStyle = '#0cf';
+    ctx.shadowColor = '#0cf'; ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.ellipse(b.x, b.y, b.w/2, b.h/2, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // エイリアン
+  for (const a of aliens) drawAlien(a);
+
+  // プレイヤー
+  drawPetBottle(player.x, player.y, player.w, player.h, player.water/player.maxWater, player.invincible);
+
+  // タッチUI
+  if ('ontouchstart' in window) {
+    ctx.globalAlpha = 0.25;
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, H*0.7, W/3, H*0.3);
+    ctx.fillRect(W*2/3, H*0.7, W/3, H*0.3);
+    ctx.fillRect(W/3, H*0.7, W/3, H*0.3);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 24px Arial';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('◀', W/6, H*0.85);
+    ctx.fillText('▶', W*5/6, H*0.85);
+    ctx.fillText('●', W/2, H*0.85);
+  }
+
+  // HUD
+  drawHUD();
+
+  ctx.restore();
+
+  // タイトル/ゲームオーバー/クリア画面（シェイク外）
+  if (state === 'title') drawTitle();
+  else if (state === 'over') drawGameOver();
+  else if (state === 'clear') drawClear();
+}
+
+function drawHUD() {
+  // スコア
+  ctx.fillStyle = '#0af';
+  ctx.font = 'bold 18px Courier New';
+  ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  ctx.fillText(`SCORE: ${score}`, 10, 10);
+
+  ctx.textAlign = 'right';
+  ctx.fillText(`WAVE: ${wave}/10`, W-10, 10);
+
+  // 水量バー
+  const bx = 10, by = 34, bw = 140, bh = 14;
+  ctx.fillStyle = '#111';
+  ctx.fillRect(bx, by, bw, bh);
+  const wr = player.water / player.maxWater;
+  const wColor = wr > 0.5 ? '#0af' : wr > 0.25 ? '#fa0' : '#f30';
+  ctx.fillStyle = wColor;
+  ctx.fillRect(bx, by, bw*wr, bh);
+  ctx.strokeStyle = '#0af';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(bx, by, bw, bh);
+  ctx.fillStyle = '#fff';
+  ctx.font = '10px Courier New';
+  ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  ctx.fillText('WATER', bx+2, by+2);
+
+  // 炭酸ゲージ
+  const sx2 = 10, sy2 = 52, sw = 140, sh = 10;
+  ctx.fillStyle = '#111';
+  ctx.fillRect(sx2, sy2, sw, sh);
+  const sr = player.soda / player.maxSoda;
+  ctx.fillStyle = sr >= 1 ? '#0ff' : `rgba(0,200,200,0.7)`;
+  ctx.fillRect(sx2, sy2, sw*sr, sh);
+  ctx.strokeStyle = '#0aa';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(sx2, sy2, sw, sh);
+  ctx.fillStyle = sr>=1 ? '#0ff' : '#088';
+  ctx.font = '9px Courier New';
+  ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  ctx.fillText(sr>=1 ? '★ SHAKE! [S]' : 'SODA', sx2+2, sy2+1);
+}
+
+function drawTitle() {
+  ctx.fillStyle = 'rgba(0,0,0,0.75)';
+  ctx.fillRect(0, 0, W, H);
+
+  // タイトル
+  ctx.save();
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.shadowColor = '#0ff'; ctx.shadowBlur = 20;
+  ctx.fillStyle = '#0ff';
+  ctx.font = 'bold 36px Courier New';
+  ctx.fillText('PLASTIC', W/2, H/2 - 110);
+  ctx.fillStyle = '#0af';
+  ctx.font = 'bold 30px Courier New';
+  ctx.fillText('WARRIOR', W/2, H/2 - 72);
+  ctx.shadowBlur = 0;
+
+  // キャラ
+  drawPetBottle(W/2, H/2 - 10, 36, 58, 0.85, 0);
+
+  ctx.fillStyle = '#aef';
+  ctx.font = '13px Courier New';
+  ctx.fillText('ペットボトル防衛隊', W/2, H/2 + 50);
+
+  ctx.fillStyle = '#fff';
+  ctx.font = '12px Courier New';
+  ctx.fillText('← → 移動   SPACE 射撃', W/2, H/2 + 80);
+  ctx.fillText('炭酸ゲージMAXで S キー → 必殺技！', W/2, H/2 + 98);
+  ctx.fillText('ボトルエイリアンを倒すと水補充', W/2, H/2 + 116);
+
+  ctx.shadowColor = '#ff0'; ctx.shadowBlur = 12;
+  ctx.fillStyle = Math.floor(frameCount/20)%2===0 ? '#ff0' : '#fa0';
+  ctx.font = 'bold 16px Courier New';
+  ctx.fillText('[ SPACE ] START', W/2, H/2 + 155);
+  ctx.restore();
+}
+
+function drawGameOver() {
+  ctx.fillStyle = 'rgba(0,0,0,0.8)';
+  ctx.fillRect(0, 0, W, H);
+  ctx.save();
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.shadowColor = '#f30'; ctx.shadowBlur = 20;
+  ctx.fillStyle = '#f30';
+  ctx.font = 'bold 42px Courier New';
+  ctx.fillText('GAME OVER', W/2, H/2 - 60);
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = '#fff';
+  ctx.font = '20px Courier New';
+  ctx.fillText(`SCORE: ${score}`, W/2, H/2);
+  ctx.fillStyle = '#aaa';
+  ctx.font = '14px Courier New';
+  ctx.fillText(`WAVE ${wave} まで到達`, W/2, H/2 + 30);
+  if (score > highScore) {
+    ctx.fillStyle = '#ff0';
+    ctx.font = 'bold 16px Courier New';
+    ctx.fillText('NEW HIGH SCORE!', W/2, H/2 + 58);
+  }
+  ctx.fillStyle = Math.floor(frameCount/20)%2===0 ? '#0af' : '#08f';
+  ctx.font = 'bold 15px Courier New';
+  ctx.fillText('[ SPACE ] RETRY', W/2, H/2 + 90);
+  ctx.restore();
+}
+
+function drawClear() {
+  ctx.fillStyle = 'rgba(0,0,0,0.8)';
+  ctx.fillRect(0, 0, W, H);
+  ctx.save();
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.shadowColor = '#ff0'; ctx.shadowBlur = 30;
+  ctx.fillStyle = '#ff0';
+  ctx.font = 'bold 38px Courier New';
+  ctx.fillText('CLEAR!!', W/2, H/2 - 70);
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = '#0ff';
+  ctx.font = '16px Courier New';
+  ctx.fillText('地球の海を守った！', W/2, H/2 - 30);
+  ctx.fillStyle = '#fff';
+  ctx.font = '20px Courier New';
+  ctx.fillText(`FINAL SCORE: ${score}`, W/2, H/2 + 10);
+  ctx.fillStyle = Math.floor(frameCount/20)%2===0 ? '#0af' : '#08f';
+  ctx.font = 'bold 15px Courier New';
+  ctx.fillText('[ SPACE ] PLAY AGAIN', W/2, H/2 + 60);
+  ctx.restore();
+}
+
+// --- INIT / START ---
+function startGame() {
+  if (score > highScore) highScore = score;
+  score = 0; wave = 1;
+  player.x = W/2; player.y = H - 80;
+  player.water = 100; player.soda = 0;
+  player.alive = true; player.invincible = 0;
+  player.shotCool = 0;
+  bullets = []; aliens = []; particles = [];
+  drops = []; alienBullets = []; explosionWaves = [];
+  frameCount = 0;
+  spawnWave(1);
+  state = 'play';
+}
+
+function loop() {
+  if (state === 'play') update();
+  else {
+    frameCount++;
+    for (const s of stars) { s.y += s.speed; if (s.y > H) { s.y = 0; s.x = Math.random()*W; } }
+    for (const p of particles) { p.x += p.vx; p.y += p.vy; p.vy += 0.08; p.life--; }
+    particles = particles.filter(p => p.life > 0);
+  }
+  draw();
+  requestAnimationFrame(loop);
+}
+
+initStars();
+loop();
+</script>
+</body>
+</html>

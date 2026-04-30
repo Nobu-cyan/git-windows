@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日本の古典を読む - Japanese Classics Learning</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Serif JP', serif;
+            background-color: #f5f0e8;
+            color: #3a2e25;
+            line-height: 1.8;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, #2d1b14 0%, #4a3228 50%, #2d1b14 100%);
+            color: #f5f0e8;
+            text-align: center;
+            padding: 50px 20px 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(199, 163, 105, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, #c7a369, #d4af37, #c7a369, transparent);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            color: #d4af37;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        header p.subtitle {
+            font-size: 1.1rem;
+            color: #c7a369;
+            font-weight: 400;
+            letter-spacing: 0.1em;
+            position: relative;
+        }
+
+        /* Navigation */
+        nav {
+            background-color: #3a2e25;
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        nav ul li {
+            position: relative;
+        }
+
+        nav ul li a {
+            display: block;
+            color: #c7a369;
+            text-decoration: none;
+            padding: 14px 24px;
+            font-size: 1rem;
+            letter-spacing: 0.08em;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            cursor: pointer;
+        }
+
+        nav ul li a:hover,
+        nav ul li a.active {
+            background-color: #4a3228;
+            color: #d4af37;
+        }
+
+        nav ul li a.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 20%;
+            right: 20%;
+            height: 3px;
+            background-color: #d4af37;
+            border-radius: 2px 2px 0 0;
+        }
+
+        /* Main Content */
+        main {
+            max-width: 880px;
+            margin: 0 auto;
+            padding: 40px 20px 60px;
+        }
+
+        /* Work Card */
+        .work-card {
+            display: none;
+            background-color: #fffcf5;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(45, 27, 20, 0.12);
+            overflow: hidden;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .work-card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Card Header */
+        .card-header {
+            background: linear-gradient(135deg, #4a3228, #5c4033);
+            padding: 30px 35px;
+            position: relative;
+        }
+
+        .card-header h2 {
+            font-size: 1.8rem;
+            color: #d4af37;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            margin-bottom: 6px;
+        }
+
+        .card-header .meta {
+            color: #c7a369;
+            font-size: 0.95rem;
+            letter-spacing: 0.05em;
+        }
+
+        .badge {
+            display: inline-block;
+            background-color: #d4af37;
+            color: #2d1b14;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 3px 12px;
+            border-radius: 12px;
+            margin-top: 10px;
+            letter-spacing: 0.05em;
+        }
+
+        /* Card Body */
+        .card-body {
+            padding: 35px;
+        }
+
+        /* Toggle Buttons */
+        .toggle-group {
+            display: flex;
+            gap: 0;
+            margin-bottom: 28px;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 2px solid #4a3228;
+            width: fit-content;
+        }
+
+        .toggle-btn {
+            padding: 10px 22px;
+            border: none;
+            background-color: #fffcf5;
+            color: #4a3228;
+            font-family: 'Noto Serif JP', serif;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            letter-spacing: 0.05em;
+        }
+
+        .toggle-btn:not(:last-child) {
+            border-right: 2px solid #4a3228;
+        }
+
+        .toggle-btn.active {
+            background-color: #4a3228;
+            color: #d4af37;
+        }
+
+        .toggle-btn:hover:not(.active) {
+            background-color: #f0e6d3;
+        }
+
+        /* Text Content */
+        .text-content {
+            position: relative;
+            min-height: 120px;
+        }
+
+        .text-block {
+            display: none;
+            animation: textFade 0.4s ease;
+        }
+
+        .text-block.active {
+            display: block;
+        }
+
+        @keyframes textFade {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .text-block h3 {
+            font-size: 1.1rem;
+            color: #4a3228;
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e8dcc8;
+            letter-spacing: 0.08em;
+        }
+
+        .text-block .passage {
+            font-size: 1.05rem;
+            line-height: 2;
+            color: #3a2e25;
+            padding: 20px 24px;
+            background-color: #faf6ee;
+            border-left: 4px solid #c7a369;
+            border-radius: 0 6px 6px 0;
+            margin-bottom: 24px;
+        }
+
+        /* Commentary */
+        .commentary {
+            margin-top: 28px;
+            padding-top: 24px;
+            border-top: 2px solid #e8dcc8;
+        }
+
+        .commentary h3 {
+            font-size: 1.1rem;
+            color: #4a3228;
+            margin-bottom: 12px;
+            letter-spacing: 0.08em;
+        }
+
+        .commentary p {
+            font-size: 0.98rem;
+            line-height: 1.9;
+            color: #5c4a3d;
+            padding: 16px 20px;
+            background-color: #f9f3e8;
+            border-radius: 6px;
+            border: 1px solid #e8dcc8;
+        }
+
+        /* Vocabulary Section */
+        .vocabulary {
+            margin-top: 28px;
+            padding-top: 24px;
+            border-top: 2px solid #e8dcc8;
+        }
+
+        .vocabulary h3 {
+            font-size: 1.1rem;
+            color: #4a3228;
+            margin-bottom: 14px;
+            letter-spacing: 0.08em;
+        }
+
+        .vocab-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .vocab-item {
+            background: linear-gradient(135deg, #f5ede0, #f0e6d3);
+            border: 1px solid #d4c5a9;
+            border-radius: 6px;
+            padding: 10px 16px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .vocab-item .word {
+            font-weight: 600;
+            color: #4a3228;
+        }
+
+        .vocab-item .meaning {
+            color: #7a6555;
+            margin-left: 4px;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #2d1b14;
+            color: #c7a369;
+            text-align: center;
+            padding: 30px 20px;
+            font-size: 0.88rem;
+            letter-spacing: 0.05em;
+        }
+
+        footer p {
+            margin-bottom: 4px;
+        }
+
+        footer .footer-sub {
+            color: #8a7560;
+            font-size: 0.8rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            header p.subtitle {
+                font-size: 0.95rem;
+            }
+
+            nav ul li a {
+                padding: 12px 16px;
+                font-size: 0.88rem;
+            }
+
+            main {
+                padding: 24px 14px 40px;
+            }
+
+            .card-header {
+                padding: 22px 20px;
+            }
+
+            .card-header h2 {
+                font-size: 1.4rem;
+            }
+
+            .card-body {
+                padding: 22px 18px;
+            }
+
+            .text-block .passage {
+                padding: 16px 18px;
+                font-size: 1rem;
+            }
+
+            .toggle-btn {
+                padding: 9px 16px;
+                font-size: 0.88rem;
+            }
+
+            .vocab-list {
+                gap: 8px;
+            }
+
+            .vocab-item {
+                padding: 8px 12px;
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header {
+                padding: 35px 16px 28px;
+            }
+
+            header h1 {
+                font-size: 1.5rem;
+            }
+
+            nav ul {
+                justify-content: stretch;
+            }
+
+            nav ul li {
+                flex: 1;
+            }
+
+            nav ul li a {
+                text-align: center;
+                padding: 12px 8px;
+                font-size: 0.82rem;
+            }
+
+            .card-header h2 {
+                font-size: 1.25rem;
+            }
+
+            .toggle-group {
+                width: 100%;
+            }
+
+            .toggle-btn {
+                flex: 1;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>日本の古典を読む</h1>
+        <p class="subtitle">日本の古文・古典文学を楽しめる</p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a class="nav-link active" data-target="taketori">竹取物語</a></li>
+            <li><a class="nav-link" data-target="makura">枕草子</a></li>
+            <li><a class="nav-link" data-target="heike">平家物語</a></li>
+            <li><a class="nav-link" data-target="ise">伊勢物語</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <!-- 竹取物語 -->
+        <div class="work-card active" id="taketori">
+            <div class="card-header">
+                <h2>竹取物語</h2>
+                <div class="meta">平安時代初期 ・ 作者不詳</div>
+                <span class="badge">入門</span>
+            </div>
+            <div class="card-body">
+                <div class="toggle-group">
+                    <button class="toggle-btn active" data-view="original" data-card="taketori">原文</button>
+                    <button class="toggle-btn" data-view="modern" data-card="taketori">現代語訳</button>
+                </div>
+                <div class="text-content">
+                    <div class="text-block active" id="taketori-original">
+                        <h3>原文</h3>
+                        <div class="passage">今は昔、竹取の翁といふものありけり。野山にまじりて竹を取りつつ、よろづのことに使ひけり。名をば、さぬきの造となむ言ひける。その竹の中に、もと光る竹なむ一筋ありける。あやしがりて、寄りて見るに、筒の中光りたり。それを見れば、三寸ばかりなる人、いとうつくしうてゐたり。</div>
+                    </div>
+                    <div class="text-block" id="taketori-modern">
+                        <h3>現代語訳</h3>
+                        <div class="passage">今となっては昔のことだが、竹取の翁という者がいた。野山に分け入って竹を取っては、いろいろなことに使っていた。名を、さぬきの造といった。その竹の中に、根元が光る竹が一本あった。不思議に思って、近寄って見ると、筒の中が光っている。それを見ると、三寸（約9cm）ほどの人が、たいそうかわいらしい様子で座っていた。</div>
+                    </div>
+                </div>
+                <div class="commentary">
+                    <h3>解説</h3>
+                    <p>日本最古の物語文学。かぐや姫の誕生シーンです。「いとうつくしうて」は「とても可愛らしくて」の意味。</p>
+                </div>
+                <div class="vocabulary">
+                    <h3>重要古語</h3>
+                    <div class="vocab-list">
+                        <div class="vocab-item"><span class="word">翁（おきな）</span><span class="meaning">― 老人</span></div>
+                        <div class="vocab-item"><span class="word">よろづ</span><span class="meaning">― 様々な・万</span></div>
+                        <div class="vocab-item"><span class="word">あやしがる</span><span class="meaning">― 不思議に思う</span></div>
+                        <div class="vocab-item"><span class="word">いと</span><span class="meaning">― とても・非常に</span></div>
+                        <div class="vocab-item"><span class="word">うつくし</span><span class="meaning">― かわいらしい</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 枕草子 -->
+        <div class="work-card" id="makura">
+            <div class="card-header">
+                <h2>枕草子</h2>
+                <div class="meta">平安時代中期 ・ 清少納言</div>
+                <span class="badge">入門</span>
+            </div>
+            <div class="card-body">
+                <div class="toggle-group">
+                    <button class="toggle-btn active" data-view="original" data-card="makura">原文</button>
+                    <button class="toggle-btn" data-view="modern" data-card="makura">現代語訳</button>
+                </div>
+                <div class="text-content">
+                    <div class="text-block active" id="makura-original">
+                        <h3>原文</h3>
+                        <div class="passage">春はあけぼの。やうやう白くなりゆく山ぎは、すこしあかりて、紫だちたる雲の細くたなびきたる。夏は夜。月のころはさらなり、闇もなほ、蛍の多く飛びちがひたる。また、ただ一つ二つなど、ほのかにうち光りて行くもをかし。雨など降るもをかし。</div>
+                    </div>
+                    <div class="text-block" id="makura-modern">
+                        <h3>現代語訳</h3>
+                        <div class="passage">春は夜明け前が良い。だんだん白くなっていく山際が、少し明るくなって、紫がかった雲が細くたなびいているのが良い。夏は夜が良い。月が出ている頃は言うまでもなく、闇夜もやはり、蛍がたくさん飛び交っているのが良い。また、ほんの一つ二つなど、かすかに光って飛んでいくのも趣がある。雨などが降るのも趣がある。</div>
+                    </div>
+                </div>
+                <div class="commentary">
+                    <h3>解説</h3>
+                    <p>日本三大随筆の一つ。「をかし」は趣がある・素敵だという美的感覚を表す重要な古語です。</p>
+                </div>
+                <div class="vocabulary">
+                    <h3>重要古語</h3>
+                    <div class="vocab-list">
+                        <div class="vocab-item"><span class="word">あけぼの</span><span class="meaning">― 夜明け前</span></div>
+                        <div class="vocab-item"><span class="word">やうやう</span><span class="meaning">― だんだん</span></div>
+                        <div class="vocab-item"><span class="word">をかし</span><span class="meaning">― 趣がある</span></div>
+                        <div class="vocab-item"><span class="word">さらなり</span><span class="meaning">― 言うまでもない</span></div>
+                        <div class="vocab-item"><span class="word">たなびく</span><span class="meaning">― 横に長く引く</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 平家物語 -->
+        <div class="work-card" id="heike">
+            <div class="card-header">
+                <h2>平家物語</h2>
+                <div class="meta">鎌倉時代 ・ 作者不詳（信濃前司行長説あり）</div>
+                <span class="badge">入門</span>
+            </div>
+            <div class="card-body">
+                <div class="toggle-group">
+                    <button class="toggle-btn active" data-view="original" data-card="heike">原文</button>
+                    <button class="toggle-btn" data-view="modern" data-card="heike">現代語訳</button>
+                </div>
+                <div class="text-content">
+                    <div class="text-block active" id="heike-original">
+                        <h3>原文</h3>
+                        <div class="passage">祇園精舎の鐘の声、諸行無常の響きあり。沙羅双樹の花の色、盛者必衰の理をあらはす。おごれる人も久しからず、ただ春の夜の夢のごとし。猛き者もつひにはほろびぬ、ひとへに風の前の塵に同じ。</div>
+                    </div>
+                    <div class="text-block" id="heike-modern">
+                        <h3>現代語訳</h3>
+                        <div class="passage">祇園精舎の鐘の音には、諸行無常（すべてのものは常に変化する）の響きがある。沙羅双樹の花の色は、盛んな者も必ず衰えるという道理を表している。おごり高ぶった人も長くは続かない、まるで春の夜の夢のようだ。勇猛な者もついには滅びてしまう、まったく風の前の塵と同じである。</div>
+                    </div>
+                </div>
+                <div class="commentary">
+                    <h3>解説</h3>
+                    <p>平家の栄華と没落を描いた軍記物語の冒頭。「諸行無常」「盛者必衰」は仏教の教えに基づく重要な概念です。</p>
+                </div>
+                <div class="vocabulary">
+                    <h3>重要古語</h3>
+                    <div class="vocab-list">
+                        <div class="vocab-item"><span class="word">諸行無常</span><span class="meaning">― すべては変化する</span></div>
+                        <div class="vocab-item"><span class="word">盛者必衰</span><span class="meaning">― 栄える者は必ず衰える</span></div>
+                        <div class="vocab-item"><span class="word">おごる</span><span class="meaning">― おごり高ぶる</span></div>
+                        <div class="vocab-item"><span class="word">ほろぶ</span><span class="meaning">― 滅びる</span></div>
+                        <div class="vocab-item"><span class="word">ひとへに</span><span class="meaning">― まったく・ひたすら</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 伊勢物語 -->
+        <div class="work-card" id="ise">
+            <div class="card-header">
+                <h2>伊勢物語</h2>
+                <div class="meta">平安時代 ・ 作者不詳（在原業平がモデル）</div>
+                <span class="badge">入門</span>
+            </div>
+            <div class="card-body">
+                <div class="toggle-group">
+                    <button class="toggle-btn active" data-view="original" data-card="ise">原文</button>
+                    <button class="toggle-btn" data-view="modern" data-card="ise">現代語訳</button>
+                </div>
+                <div class="text-content">
+                    <div class="text-block active" id="ise-original">
+                        <h3>原文</h3>
+                        <div class="passage">昔、男ありけり。奈良の京春日の里に、しるよしして、狩りにいにけり。その里に、いとなまめいたる女はらから住みけり。この男、かいまみてけり。思ほえず、ふるさとにいとはしたなくてありければ、心地まどひにけり。</div>
+                    </div>
+                    <div class="text-block" id="ise-modern">
+                        <h3>現代語訳</h3>
+                        <div class="passage">昔、ある男がいた。奈良の都の春日の里に、領地を持つ縁があって、鷹狩りに出かけた。その里に、たいそう優美な姉妹が住んでいた。この男は、垣間見をしてしまった。思いがけず、このような古い都に不釣り合いなほど美しい人がいたので、心が乱れてしまった。</div>
+                    </div>
+                </div>
+                <div class="commentary">
+                    <h3>解説</h3>
+                    <p>在原業平がモデルとされる歌物語。「かいまみ」は垣根の間から覗き見ること。平安時代の恋愛の始まりを描いています。</p>
+                </div>
+                <div class="vocabulary">
+                    <h3>重要古語</h3>
+                    <div class="vocab-list">
+                        <div class="vocab-item"><span class="word">なまめく</span><span class="meaning">― 優美である</span></div>
+                        <div class="vocab-item"><span class="word">はらから</span><span class="meaning">― 兄弟姉妹</span></div>
+                        <div class="vocab-item"><span class="word">かいまみ</span><span class="meaning">― 垣間見・覗き見</span></div>
+                        <div class="vocab-item"><span class="word">ふるさと</span><span class="meaning">― 古い都・故郷</span></div>
+                        <div class="vocab-item"><span class="word">まどふ</span><span class="meaning">― 心が乱れる</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 日本の古典を読む - Japanese Classics Learning</p>
+        <p class="footer-sub">古典文学の世界をお楽しみください</p>
+    </footer>
+
+    <script>
+        // Navigation
+        document.querySelectorAll('.nav-link').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                var target = this.getAttribute('data-target');
+
+                // Update nav active state
+                document.querySelectorAll('.nav-link').forEach(function(l) {
+                    l.classList.remove('active');
+                });
+                this.classList.add('active');
+
+                // Show target card
+                document.querySelectorAll('.work-card').forEach(function(card) {
+                    card.classList.remove('active');
+                });
+                document.getElementById(target).classList.add('active');
+            });
+        });
+
+        // Toggle between original and modern text
+        document.querySelectorAll('.toggle-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var view = this.getAttribute('data-view');
+                var cardId = this.getAttribute('data-card');
+
+                // Update toggle button active state within this group
+                var group = this.parentElement;
+                group.querySelectorAll('.toggle-btn').forEach(function(b) {
+                    b.classList.remove('active');
+                });
+                this.classList.add('active');
+
+                // Show the corresponding text block
+                var card = document.getElementById(cardId);
+                card.querySelectorAll('.text-block').forEach(function(block) {
+                    block.classList.remove('active');
+                });
+                document.getElementById(cardId + '-' + view).classList.add('active');
+            });
+        });
+    </script>
+
+</body>
+</html>
