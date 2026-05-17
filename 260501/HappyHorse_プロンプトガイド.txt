@@ -1,0 +1,371 @@
+================================================================
+  Happy Horse 1.0（通称：Happy House）完全プロンプトガイド
+  作成日：2026-05-02
+================================================================
+
+
+【ツール概要】
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+開発元    ：Alibaba（アリババ）
+発表日    ：2026年4月
+特徴      ：世界の動画生成AIランキング1位（Artificial Analysis Video Arena）
+生成品質  ：1080p映画級（最大2K）
+生成時間  ：約10〜38秒
+動画の長さ：最大15秒
+対応形式  ：16:9 / 9:16 / 4:3 / 3:4 / 21:9 / 1:1
+音声      ：動画と完全同期して自動生成（環境音・効果音含む）
+多言語    ：日本語・英語・中国語・韓国語・ドイツ語・フランス語 対応
+
+【利用できるサービス】
+・fal.ai         → 公式APIパートナー（日本語UI対応）
+・happyhorse.app → API直接利用
+・Qwen App       → Alibaba公式スマホアプリ
+・ComfyUI        → 上級者向けカスタマイズ可能な統合環境
+
+【4つの生成モード】
+1. Text to Video   ：テキスト説明から動画を生成
+2. Image to Video  ：静止画をアニメーション化
+3. Subject to Video：参照画像から被写体を抽出して新しい動画に組み込み
+4. Video Edit      ：既存動画の編集
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ■ プロンプトの書き方：基本ルール
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+【基本テンプレート】
+  [被写体の詳細] + [動作] + [環境・背景] + [カメラワーク] + [照明・雰囲気]
+
+【重要なコツ】
+  OK：約20語が最適（長すぎると品質が落ちる）
+  OK：目に見える動きを書く（「感情」ではなく「表情や体の動き」）
+  OK：カメラワードはプロンプトの最後に配置
+  OK：音声が欲しい場合は末尾に「Audio:」セクションを追加
+  NG：「beautifully」「dramatically」などの装飾的な副詞は避ける
+  NG：感情状態だけを書かない（「悲しんでいる」→「涙がゆっくり流れる」）
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ■ カメラワーク・動きの描写 完全解説
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+【A. 前後に動く（近づく・離れる）】
+─────────────────────────────────────────
+  slow dolly-in / slow push-in   → ゆっくり近づく（注目・緊張感）
+  slow dolly-out / pull back     → ゆっくり離れる（全体像・孤独感）
+  slow zoom-in                   → ズームイン（圧縮感・ドラマ感）
+  slow zoom-out                  → ズームアウト（文脈を見せる）
+
+  例：slow dolly-in toward her face as she speaks
+      （彼女が話す顔にゆっくり近づくカメラ）
+
+【B. 横・縦にスライドする】
+─────────────────────────────────────────
+  lateral tracking shot          → 左右にスライド（場所の広がり）
+  slow drift from right to left  → 右から左へ移動
+  slow tilt down                 → 上から下へ（全体から足元へ）
+  slow tilt up                   → 下から上へ（足元から顔・空へ）
+
+  例：camera slowly drifts left to right revealing the entire street
+      （カメラがゆっくり左から右へ動き、通り全体を映し出す）
+
+【C. 被写体の周りを回る（Orbit）】
+─────────────────────────────────────────
+  slow orbit around the subject  → ゆっくり周回（立体感・映画っぽさ）
+  lateral orbit                  → 横から周回（かっこいい人物紹介）
+  helicopter arc                 → 空中で弧を描く（壮大な景観）
+
+  例：slow orbit around the statue, 180 degrees, left to right
+      （像の周りを左から右へ180度ゆっくり回る）
+
+【D. 固定・手持ち】
+─────────────────────────────────────────
+  locked-off shot / static camera → 完全固定（安定感・静寂感）
+  handheld camera                 → 手持ち（リアル感・臨場感）
+  steadicam                       → なめらか手持ち（映画的な動き）
+
+  例：locked-off camera, nothing moves except the falling leaves
+      （落ち葉以外は何も動かない固定カメラ）
+
+【E. 空撮・特殊ショット】
+─────────────────────────────────────────
+  overhead shot / bird's eye view → 真上から見下ろす（地図・全体像）
+  low-angle shot                  → 低い位置から（迫力・英雄感）
+  eye-level shot                  → 目線の高さ（自然・親しみやすさ）
+  drone aerial shot               → ドローン空撮（広大さ・旅感）
+  crane shot rising upward        → クレーン上昇（旅立ち感）
+
+
+【速度の指定】
+─────────────────────────────────────────
+  very slowly / imperceptibly slow → とてもゆっくり
+  slowly / gently                  → ゆっくり
+  （何も書かない）                 → 普通の速さ
+  quickly / rapidly                → 速く
+  suddenly / abruptly              → 突然
+  gradually / progressively        → 徐々に
+
+  例：clouds drift very slowly from left to right
+      （雲がとてもゆっくり左から右へ流れる）
+
+
+【被写体の動き】
+─────────────────────────────────────────
+  ■ 人物
+  walks slowly / strides confidently → 歩く（ゆっくり・力強く）
+  slowly turns head toward camera    → ゆっくりカメラの方を向く
+  a faint smile forms on their lips  → かすかな笑みが浮かぶ
+  breathes naturally, chest rising and falling → 自然な呼吸
+  eyes blinking gently               → 目がそっとまばたきする
+  tears slowly roll down her cheek   → 涙がゆっくり頬を流れる
+  hands slowly reach forward         → 手がゆっくり前に伸びる
+
+  ■ 自然物（Image to Videoで特に重要）
+  sways gently in the breeze         → 風でそっとなびく（木・草）
+  drifts slowly across the sky       → 空をゆっくり流れる（雲）
+  ripples gently                     → そっとさざ波立つ（水面）
+  flickers softly                    → 柔らかくゆらめく（炎・蝋燭）
+  mist slowly rolls through          → 霧がゆっくり流れ込む
+  petals fall slowly                 → 花びらがゆっくり落ちる
+  steam rises and curls upward       → 蒸気が立ち上り渦巻く
+  rain falls steadily                → 雨が静かに降り続ける
+  snowflakes drift downward slowly   → 雪がゆっくり舞い落ちる
+  light shimmers on the surface      → 光が表面できらめく
+
+
+【時間変化・状況変化の描写】
+─────────────────────────────────────────
+  light shifts from daylight to golden hour → 昼→夕暮れへ
+  darkness slowly gives way to dawn light   → 夜→夜明けへ
+  clouds gather overhead gradually          → 晴れ→曇りへ
+  waves grow from calm to crashing          → 穏やか→嵐へ
+  light slowly fades, shadows deepen        → 明るく→暗く
+
+
+【カメラ高さの指定】
+─────────────────────────────────────────
+  ground level                    → 地面スレスレ
+  low angle                       → 低い位置（膝〜腰）
+  hip height                      → 腰の高さ
+  eye level                       → 目線の高さ（自然な視点）
+  shoulder height                 → 肩の高さ
+  overhead                        → 真上から
+  aerial / high altitude          → 空撮
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ■ カメラ・動き：早見表まとめ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  カメラ前後   ：slow dolly-in / pull back / zoom-in / zoom-out
+  カメラ横移動 ：lateral tracking / slow drift left to right / tilt
+  カメラ回転   ：orbit around / helicopter arc / 180-degree arc
+  カメラ固定   ：locked-off / static camera
+  カメラ手持ち ：handheld / steadicam
+  カメラ高さ   ：low-angle / eye-level / overhead / aerial
+
+  自然の動き   ：sways / drifts / ripples / flickers / shimmers / curls
+  人物の動き   ：slowly turns / walks forward / a smile forms / blinks
+  速度調整     ：very slowly / gradually / suddenly / gently / rapidly
+  時間変化     ：light shifts from X to Y / waves grow from X to Y
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ■ TEXT TO VIDEO 最適化プロンプト10選
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+※ テキストから動画を作るときは「見た目・動き・環境・カメラ」を
+  すべてテキストで伝える必要があります。
+
+─────────────────────────────────────────
+1. 【夜の都市・ノワール】
+─────────────────────────────────────────
+A woman in a red coat with short black hair walks down a rain-soaked
+Tokyo street at midnight. Neon signs in pink and blue reflected in
+puddles. Slow dolly-in from behind. Cinematic noir atmosphere.
+
+（赤いコートと黒い短髪の女性が深夜の雨でぬれた東京の街を歩く。
+ピンクと青のネオンが水たまりに反射。後方からゆっくり前進するカメラ。）
+
+─────────────────────────────────────────
+2. 【壮大な自然景観】
+─────────────────────────────────────────
+Aerial view of a misty mountain valley at dawn. Golden light breaking
+through low clouds over ancient cedar forest. Slow helicopter arc
+from left to right. Epic wide-angle lens, breathtaking scale.
+
+（夜明けの霧がかかった山の谷の空撮。杉林の上に差し込む黄金の光。
+左から右へゆっくりヘリコプター旋回。広角レンズで壮大なスケール感。）
+
+─────────────────────────────────────────
+3. 【人物の感情表現】
+─────────────────────────────────────────
+An elderly fisherman with weathered skin, silver stubble, and
+calloused hands sits on a wooden dock mending a net. Late afternoon
+sun casts long shadows. Camera holds steady at eye level.
+Audio: seagulls calling, soft wind, rope rubbing on wood.
+
+─────────────────────────────────────────
+4. 【SF・変身シーン】
+─────────────────────────────────────────
+A sleek silver sports car drifting around a desert highway bend,
+then transforming into a giant mech robot with folding armor plates,
+hydraulic pistons, and a glowing blue energy core.
+Low-angle hero shot, sparks flying, dramatic lens flare.
+
+─────────────────────────────────────────
+5. 【洞窟探検・音響付き】
+─────────────────────────────────────────
+A flashlight beam moving slowly through a dark cave, illuminating
+wet limestone stalactites and glittering crystal formations.
+Bright caustic light patterns ripple on the flooded stone floor.
+Handheld camera, slow pan right to left.
+Audio: dripping water echoing, footsteps on wet rock, steady breathing.
+
+─────────────────────────────────────────
+6. 【料理・商品動画】
+─────────────────────────────────────────
+A steaming bowl of ramen with chashu pork, soft-boiled egg, and
+nori placed on a dark wooden table. Slow close-up push-in from
+the side. Steam rising gracefully. Soft studio lighting from
+above-left. Shallow depth of field, food photography style.
+
+─────────────────────────────────────────
+7. 【ミニチュアワールド】
+─────────────────────────────────────────
+A tiny detailed cityscape of Tokyo at night viewed from directly above.
+Miniature buildings with warm glowing windows, toy-like vehicles
+moving on illuminated streets. 3D diorama style, tilt-shift lens blur
+on edges, slow overhead crane shot rotating clockwise.
+
+─────────────────────────────────────────
+8. 【アクション・パルクール】
+─────────────────────────────────────────
+A parkour athlete in all-black clothing sprinting across rooftops
+at dusk, leaping between buildings with precision. City skyline
+glowing orange behind. Tracking shot at shoulder height keeping pace.
+Motion blur on fast movements, athletic energy.
+
+─────────────────────────────────────────
+9. 【静寂・詩的な日本情緒】
+─────────────────────────────────────────
+Cherry blossom petals falling in slow motion over a quiet Zen garden.
+A woman in a white kimono sits perfectly still facing away, hands
+folded in her lap. Locked-off wide framing. Diffused morning light.
+Audio: faint wind, single temple bell in the distance.
+
+─────────────────────────────────────────
+10. 【嵐・自然現象】
+─────────────────────────────────────────
+Storm clouds rapidly building over the open ocean, lightning flickering
+inside dark cumulonimbus towers. Waves growing from calm to crashing
+in 10 seconds. Wide shot from a cliff edge, dramatic perspective.
+Audio: distant thunder rumbling, wind building, waves crashing.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ■ IMAGE TO VIDEO 最適化プロンプト10選
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+※ 画像から動画を作るときは「見た目の説明は不要」です。
+  「何が動くか」「カメラはどう動くか」「何が変化するか」に集中します。
+
+【鉄則】
+  OK：動き・変化・カメラワークだけを指示する
+  OK：「何が静止」して「何が動く」かを明確に
+  OK：風・水・煙など自然な揺れを加えると自然な動画になる
+  NG：画像の外見を再説明しない（短い方が良い）
+
+─────────────────────────────────────────
+1. 【人物写真 → 自然な動き】
+─────────────────────────────────────────
+The subject slowly turns their head to look toward the camera,
+a faint smile forming. Hair gently moves in a soft breeze.
+Camera holds still. Natural, lifelike motion.
+
+─────────────────────────────────────────
+2. 【風景写真 → 空と雲の流れ】
+─────────────────────────────────────────
+Clouds drift slowly across the sky from left to right.
+Grass and trees sway gently in the wind.
+Camera slowly zooms out to reveal the full scene.
+
+─────────────────────────────────────────
+3. 【建物・街並み写真 → 時間経過】
+─────────────────────────────────────────
+Time transitions from day to dusk. Lights in windows begin to glow
+one by one. Shadows grow longer. People and vehicles move
+through the streets. Camera remains locked-off.
+
+─────────────────────────────────────────
+4. 【花・植物の写真 → 成長・揺れ】
+─────────────────────────────────────────
+Petals gently sway in a soft breeze. A single petal slowly falls.
+Camera does a very slow macro push-in toward the center of the flower.
+
+─────────────────────────────────────────
+5. 【水辺・海の写真 → 波・水面】
+─────────────────────────────────────────
+Water surface gently ripples. Small waves lap at the shore rhythmically.
+Reflections on the water shimmer and distort.
+Camera holds steady with a slow subtle zoom-in.
+
+─────────────────────────────────────────
+6. 【食べ物・料理写真 → 湯気・質感】
+─────────────────────────────────────────
+Steam rises gently from the dish, curling upward and dissipating.
+The surface of the liquid shimmers slightly.
+Camera does a very slow close-up push-in from the side.
+
+─────────────────────────────────────────
+7. 【ポートレート → 照明変化】
+─────────────────────────────────────────
+Light slowly shifts from soft daylight to warm golden hour glow,
+casting dramatic shadows across the subject's face.
+The subject breathes naturally, eyes blinking gently.
+Camera stays locked-off.
+
+─────────────────────────────────────────
+8. 【森・山の写真 → 霧・光線】
+─────────────────────────────────────────
+Morning mist slowly rolls through the trees, thinning as sunlight
+strengthens. Rays of light appear between tree trunks.
+Leaves tremble in a gentle breeze. Camera holds completely still.
+
+─────────────────────────────────────────
+9. 【夜景・イルミネーション → 光のちらめき】
+─────────────────────────────────────────
+Lights twinkle and shimmer. Light reflections on surfaces pulse gently.
+Camera performs a very slow lateral drift from left to right,
+as if floating through the scene.
+
+─────────────────────────────────────────
+10. 【グループ写真 → 生き生きとした動き】
+─────────────────────────────────────────
+People in the scene begin to move naturally — subtle shifts in posture,
+turning slightly toward each other, gentle laughter.
+Background elements like trees or fabric move in a light wind.
+Camera slowly pulls back to reveal more of the environment.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ■ テキスト vs 画像 プロンプトの違いまとめ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                TEXT TO VIDEO          IMAGE TO VIDEO
+  ───────────────────────────────────────────────────
+  外見の描写    詳しく書く（必須）      書かない（画像が担う）
+  動きの描写    書く                    重点的に書く（最重要）
+  カメラ指示    書く                    書く
+  環境描写      詳しく書く              変化があれば書く
+  音声指示      Audio: で追加可         Audio: で追加可
+  プロンプト長  20語前後が最適          より短くて良い（10〜15語）
+  ───────────────────────────────────────────────────
+
+
+================================================================
+  公式リソース
+================================================================
+  fal.ai 公式ガイド  ：https://fal.ai/learn/tools/prompting-happy-horse
+  プロンプト集       ：https://www.happyhorseprompts.com/
+  コミュニティGitHub ：https://github.com/ZeroLu/awesome-happy-horse
+  50プロンプト集     ：https://www.imagine.art/blogs/happy-horse-1-0-prompt-guide
+================================================================
