@@ -1,0 +1,524 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>実写画像生成プロンプト 荒木誠一</title><style>body{font-family:'Yu Gothic UI','Meiryo',sans-serif;max-width:980px;margin:40px auto;padding:0 24px 60px;line-height:1.9;color:#222}h1{color:#1a5c1a;border-bottom:3px solid #1a5c1a;padding-bottom:10px;margin-top:40px;font-size:1.8em}h2{color:#1a5c1a;border-bottom:2px solid #b5d9b5;padding-bottom:6px;margin-top:48px;font-size:1.35em}h3{color:#333;border-left:4px solid #1a5c1a;padding-left:10px;margin-top:32px;font-size:1.1em}h4{color:#555;margin-top:24px}table{border-collapse:collapse;width:100%;margin:16px 0 24px;font-size:.92em}th{background:#1a5c1a;color:#fff;padding:9px 12px;text-align:left}td{border:1px solid #ccc;padding:8px 12px;vertical-align:top}tr:nth-child(even) td{background:#f4f9f4}blockquote{border-left:4px solid #1a5c1a;margin:20px 0;padding:12px 20px;background:#f4f9f4}pre{background:#f5f5f5;border:1px solid #ddd;border-radius:4px;padding:16px;overflow-x:auto;font-size:.88em}code{background:#f0f0f0;padding:1px 5px;border-radius:3px;font-size:.9em}pre code{background:none;padding:0}ul,ol{padding-left:24px}li{margin:4px 0}hr{border:none;border-top:2px solid #ddd;margin:36px 0}strong{color:#1a5c1a}p{margin:8px 0 12px}.badge{display:inline-block;background:#1a5c1a;color:#fff;font-size:.78em;padding:2px 8px;border-radius:12px;margin-left:6px;vertical-align:middle}.badge-gray{background:#777}.memo{background:#fffbe6;border-left:4px solid #e6c000;padding:10px 16px;margin:12px 0;font-size:.92em}</style></head><body>
+
+<h1>実写画像生成プロンプト：荒木誠一（架空ペルソナ）</h1>
+
+<p><strong>作成日</strong>: 2026年5月19日</p>
+<p><strong>対象</strong>: 字コンテ「荒木誠一の人生」実写写真・近影カット（15カット）</p>
+<p><strong>参照ファイル</strong>: 260519_字コンテ_荒木誠一.md</p>
+<p><strong>使用ツール</strong>: Midjourney v6 / DALL-E 3 / Adobe Firefly</p>
+
+<hr>
+
+<h2>キャラクター設計（一貫性のための基本設定）</h2>
+
+<p>荒木誠一の外見は「九州の農村出身・製造業40年・実直な昭和の男」として設計する。<br>
+<strong>顔の特徴は全カットで統一すること</strong>（AIツールによっては LoRA・参照画像が有効）。</p>
+
+<table>
+<tr><th>年代</th><th>年齢</th><th>外見の特徴</th></tr>
+<tr><td>20歳（昭和33年）</td><td>20歳</td><td>細身・角刈り短髪・やや日焼け・まっすぐな目・緊張した顔</td></tr>
+<tr><td>20代前半（昭和35年）</td><td>22〜25歳</td><td>細身だが肩幅が出てきた・作業服姿・笑顔</td></tr>
+<tr><td>28歳（昭和41年）</td><td>28歳</td><td>少し体格よくなる・スーツ・黒髪短髪</td></tr>
+<tr><td>40代（昭和55年ごろ）</td><td>42〜45歳</td><td>中肉中背・黒髪に白髪まじり始め・落ち着いた顔</td></tr>
+<tr><td>50代（昭和60年ごろ）</td><td>48〜52歳</td><td>恰幅よくなる・白髪まじり・工場長らしい貫禄</td></tr>
+<tr><td>65歳（定年後・平成15年）</td><td>65歳</td><td>白髪・穏やかな顔・地域の世話役らしい風格</td></tr>
+<tr><td>現在（87歳）</td><td>87歳</td><td>白髪・深い皺・穏やかで優しい目・痩せた体格</td></tr>
+</table>
+
+<hr>
+
+<h2>写真スタイル別ベースプロンプト</h2>
+
+<h3>昭和30〜40年代（白黒〜カラー初期）</h3>
+<pre><code>authentic Japanese Showa era photograph, circa 1958-1966, film photography,
+slightly faded, aged photo texture, silver halide grain, warm sepia tones or early Kodachrome color,
+authentic period clothing and setting, NOT digital photo, NOT modern styling</code></pre>
+
+<h3>昭和50〜60年代（カラー写真）</h3>
+<pre><code>authentic Japanese Showa era color photograph, circa 1975-1988, 35mm film photography,
+slightly warm color shift, subtle film grain, natural indoor or outdoor lighting,
+period-accurate Japanese clothing and decor, candid family photo style</code></pre>
+
+<h3>現代（平成〜令和）</h3>
+<pre><code>contemporary Japanese photography, warm natural light, realistic portrait,
+elderly Japanese man, candid documentary style, high detail photorealism</code></pre>
+
+<hr>
+
+<h2>カット別生成プロンプト</h2>
+
+<hr>
+
+<h3>■ カット1：現在の誠一の手元アップ（アルバムをめくる） <span class="badge">🎬 現在の実写</span></h3>
+<p><strong>字コンテ参照</strong>: プロローグ・カット1 / 8秒</p>
+<p><strong>シーン概要</strong>: 87歳の誠一の手元。老いた皺深い手が古いアルバムのページをゆっくりめくっている。</p>
+
+<h4>Midjourney / DALL-E 3（英語）</h4>
+<pre><code>Close-up photograph of elderly Japanese man's hands, age 87, deeply wrinkled weathered hands
+of a lifelong manual worker, slowly turning the page of an old photo album,
+worn leather-bound photo album on wooden table, faded photographs visible on pages,
+soft warm afternoon window light from the side, shallow depth of field,
+highly detailed photorealism, documentary portrait style, Canon 5D quality,
+hands of a lifetime farmer and factory worker, dignified, gentle movement
+--ar 16:9</code></pre>
+
+<h4>日本語版（Firefly / 日本語対応ツール）</h4>
+<pre><code>87歳の日本人男性の手元アップ 深い皺が刻まれた農業と工場仕事で鍛えた手
+古い革装丁の写真アルバムをゆっくりめくっている 色あせた写真がページに見える
+木製テーブル 横から差し込む柔らかい午後の窓光 浅い被写界深度
+フォトリアリズム 記録的なポートレートスタイル 16:9</code></pre>
+
+<p class="memo"><strong>生成メモ</strong>: 手だけなので人物の顔一致は不要。老いた手の皺と質感の再現が重要。</p>
+
+<hr>
+
+<h3>■ カット3：現在の誠一の顔（正面・穏やか） <span class="badge">🎬 現在の実写</span> <span class="badge" style="background:#b03030;">★ 顔の基準カット</span></h3>
+<p><strong>字コンテ参照</strong>: プロローグ・カット3 / 18秒</p>
+<p><strong>シーン概要</strong>: 87歳の誠一の顔。屋外の柔らかい光の中、正面を向いて穏やかに微笑んでいる。</p>
+
+<h4>Midjourney / DALL-E 3（英語）</h4>
+<pre><code>Portrait photograph of an 87-year-old Japanese man, Showa era rural Kyushu background,
+kind and weathered face, deep wrinkles around eyes and mouth, full white hair (unkempt but tidy),
+slight gentle smile, clear honest eyes that have seen decades of life,
+medium build, slightly gaunt, wearing a simple beige cardigan,
+soft outdoor natural light, slightly overcast sky background, bokeh trees,
+photorealistic portrait, dignified elderly man, documentary style,
+Canon portrait photography, warm natural tones, 85mm lens quality
+--ar 4:5</code></pre>
+
+<h4>日本語版</h4>
+<pre><code>87歳の日本人男性のポートレート 穏やかな表情 深い皺 白髪（整っているが素朴）
+九州農村出身・元工場長らしい実直な顔立ち 体は細身だが芯がある
+シンプルなベージュのカーディガン 屋外の柔らかい自然光 木々のボケ背景
+フォトリアリズム 記録的なポートレート 温かみのある色調 4:5</code></pre>
+
+<p class="memo"><strong>生成メモ</strong>: このカットが「顔の基準」になる。最初にここで複数パターン生成し、一番「誠一らしい顔」を選ぶ。以降のカットはこの顔を参照画像（<code>--cref</code>等）として使う。</p>
+
+<hr>
+
+<h3>■ カット18：成人式の写真（昭和33年ごろ） <span class="badge badge-gray">📷 実写写真</span></h3>
+<p><strong>字コンテ参照</strong>: 第二章・カット18 / 14秒</p>
+<p><strong>シーン概要</strong>: 20歳の誠一が紋付き袴姿で立っている。白黒または淡いモノクロ写真。緊張しつつも誇らしい表情。</p>
+
+<h4>Midjourney / DALL-E 3（英語）</h4>
+<pre><code>Authentic black and white Japanese photograph, circa 1958, Showa era,
+20-year-old Japanese young man in formal haori hakama (紋付き袴) for Coming of Age ceremony,
+stiff proud posture, slightly nervous but dignified expression, short haircut,
+traditional tatami room or photography studio backdrop with simple curtain,
+authentic period photography studio lighting, silver gelatin print texture,
+slight yellowing on edges, photo slightly out of focus in corners (period lens quality),
+young man with strong honest features, slight tan from outdoor work,
+NOT modern, authentic Showa era photo reproduction style
+--ar 3:4</code></pre>
+
+<h4>日本語版</h4>
+<pre><code>昭和33年ごろ 本物らしい白黒写真の質感 成人式 20歳の日本人青年
+紋付き羽織袴 正装 緊張した表情だが誇らしい まっすぐ前を向いている
+短髪 日焼けした肌 撮影スタジオ（カーテン背景か和室）
+写真館の照明 銀塩フィルムの粒状感 周辺部がやや滲み 古い写真の質感
+3:4 縦構図</code></pre>
+
+<p class="memo"><strong>生成メモ</strong>: 白黒で年代感を出す。「写真の縁が焼けている」「少し傾いている」などの加工ディテールを加えると更にリアル。</p>
+
+<hr>
+
+<h3>■ カット20：職場の同僚との集合写真（昭和35〜38年ごろ） <span class="badge badge-gray">📷 実写写真</span></h3>
+<p><strong>字コンテ参照</strong>: 第二章・カット20 / 12秒</p>
+<p><strong>シーン概要</strong>: 22〜25歳の誠一が工場の同僚たちと並んでいる。全員笑顔。工場の外観や機械前。</p>
+
+<h4>Midjourney / DALL-E 3（英語）</h4>
+<pre><code>Authentic Japanese Showa era group photograph, circa 1961-1963,
+group of 5-7 young Japanese male factory workers, aged 20-30,
+wearing work uniforms (standard Japanese factory workwear, khaki or dark navy),
+standing in front of a small local factory building or machinery,
+one young man (22 years old, slight build, short hair, genuine smile) standing slightly left of center,
+laughing and slightly informal group pose, casual photo taken by a colleague,
+black and white photograph with silver gelatin print texture,
+authentic factory exterior, low wooden factory building, 1960s Japan industrial area,
+genuine warm camaraderie visible, period authentic detail
+--ar 3:2</code></pre>
+
+<h4>日本語版</h4>
+<pre><code>昭和36〜38年ごろ 白黒の集合写真 工場の同僚たち 若い男性5〜7人
+全員工場作業服（カーキか紺の制服）工場の外や機械の前
+中央やや左に22歳の若い男性（細身・短髪・自然な笑顔）
+略式のポーズ 仲間に撮ってもらった感じ 自然な笑顔
+銀塩プリントの粒状感 本物らしい昭和の写真の質感 3:2横構図</code></pre>
+
+<p class="memo"><strong>生成メモ</strong>: 主役の誠一は「左よりに位置」すると動画編集でズームインしやすい。</p>
+
+<hr>
+
+<h3>■ カット22：結婚式の写真（昭和41年ごろ） <span class="badge badge-gray">📷 実写写真</span></h3>
+<p><strong>字コンテ参照</strong>: 第二章・カット22 / 12秒</p>
+<p><strong>シーン概要</strong>: 28歳の誠一と妻が並んでいる。白黒か淡い初期カラー写真。正式な結婚式のスタジオ撮影。</p>
+
+<h4>Midjourney / DALL-E 3（英語）</h4>
+<pre><code>Authentic Japanese wedding photograph, circa 1966, early Showa color or black and white,
+Japanese couple in traditional wedding attire: groom in formal haori hakama (紋付き袴),
+bride in shiromuku (白無垢) pure white kimono with wataboshi headdress,
+standing formally in Japanese wedding photography studio pose, slight stiffness (formal occasion),
+groom age 28, medium build, short black hair, proud gentle expression beside his bride,
+traditional Japanese wedding photography studio backdrop,
+slightly faded early Kodachrome color or authentic black and white,
+soft studio lighting, period-accurate 1966 Japanese wedding style,
+silver gelatin or early color print texture
+--ar 3:4</code></pre>
+
+<h4>日本語版</h4>
+<pre><code>昭和41年ごろ 日本の結婚式写真 白黒か初期カラー
+新郎28歳 紋付き袴 短い黒髪 誇らしく穏やかな表情
+新婦 白無垢 綿帽子 二人が並んで正式なポーズ
+結婚式の写真館 スタジオ撮影の硬い姿勢 時代の格式
+初期コダクロームの色調か銀塩白黒の質感 3:4縦構図</code></pre>
+
+<p class="memo"><strong>生成メモ</strong>: 妻のキャラクター（顔）は後続カットでも登場するため、このカットで妻の顔イメージも固めておく。</p>
+
+<hr>
+
+<h3>■ カット25：40代の家族写真（昭和55年ごろ） <span class="badge badge-gray">📷 実写写真</span></h3>
+<p><strong>字コンテ参照</strong>: 第三章・カット25 / 16秒</p>
+<p><strong>シーン概要</strong>: 40代前半の誠一・妻・幼い子ども2人が食卓を囲んでいる。カラー写真。生活感のある温かい場面。</p>
+
+<h4>Midjourney / DALL-E 3（英語）</h4>
+<pre><code>Authentic Japanese Showa era color family photograph, circa 1980,
+Japanese family of four around a low dining table (chabudai or kotatsu table),
+father age 42-45, medium build, short black hair with slight greying at temples, wearing casual home clothes,
+mother in her 40s, traditional apron,
+two young children (ages 5-10), one boy one girl, in casual 1980s Japanese children's clothes,
+modest Japanese living room, tatami mats or wooden floor, Japanese house decor of the era,
+natural candid family moment, genuine warm smiles, slight blur from amateur photography,
+authentic 35mm film color photography, warm color shift typical of 1980s Japanese family photos,
+snapshot quality, NOT professional photography
+--ar 3:2</code></pre>
+
+<h4>日本語版</h4>
+<pre><code>昭和55年ごろ 日本の家族写真 カラー 35mmフィルム
+父42〜45歳 中肉中背 短髪に白髪まじり始め 普段着
+母40代 エプロン 幼い子ども2人（小学生前後・男女）
+ちゃぶ台かこたつを囲んでいる 和室か木床の居間
+生活感のある1980年代の日本の家 自然な笑顔 スナップ写真
+1980年代の家族写真らしいあたたかい色調の滲み 3:2</code></pre>
+
+<p class="memo"><strong>生成メモ</strong>: 食卓を上からやや俯瞰で撮った構図にすると「家族みんなの顔が見える」自然な写真になる。</p>
+
+<hr>
+
+<h3>■ カット26：家族旅行の写真（昭和57〜60年ごろ） <span class="badge badge-gray">📷 実写写真</span></h3>
+<p><strong>字コンテ参照</strong>: 第三章・カット26 / 14秒（複数スライド）</p>
+<p><strong>シーン概要</strong>: 子どもが小学生〜中学生ごろの家族旅行。全員笑顔。観光地か温泉地の前。</p>
+
+<h4>Midjourney / DALL-E 3（英語）</h4>
+<pre><code>Authentic Japanese family vacation snapshot, circa 1982-1985,
+Japanese family of four at a tourist location (Japanese hot spring resort, national park, or coastal area),
+father age 45-48, wearing casual vacation clothes (polo shirt, slacks), healthy middle-aged appearance,
+mother in her mid-40s, casual 1980s Japanese fashion,
+two children now school age (8-14 years old), energetic and laughing,
+typical Japanese sightseeing location background (torii gate, onsen town buildings, scenic coastline),
+everyone waving or making peace signs, genuine holiday happiness,
+authentic 35mm film color photography circa 1984, warm saturated color typical of era,
+snapshot photo taken by passerby or on self-timer, natural outdoor light
+--ar 3:2</code></pre>
+
+<h4>日本語版</h4>
+<pre><code>昭和57〜60年ごろ 家族旅行のスナップ写真 カラー
+父45〜48歳 ポロシャツやスラックス 普段のお父さん
+母40代半ば 1980年代の日本のカジュアルファッション
+子ども2人（小学生〜中学生ごろ）ピースサインや笑顔
+観光地（温泉街・海岸・神社など）日本らしい背景
+全員笑顔 スナップ写真らしい自然さ 35mmフィルムの色調 3:2</code></pre>
+
+<p class="memo"><strong>生成メモ</strong>: 複数枚スライドするため「場所違い」で2〜3パターン生成するとよい（温泉地・海岸など）。</p>
+
+<hr>
+
+<h3>■ カット27：工場長時代の職場写真（昭和63年〜平成2年ごろ） <span class="badge badge-gray">📷 実写写真</span></h3>
+<p><strong>字コンテ参照</strong>: 第三章・カット27 / 14秒</p>
+<p><strong>シーン概要</strong>: 50代前半の誠一が工場長として同僚たちと並んでいる。工場内か工場前。力強い表情。</p>
+
+<h4>Midjourney / DALL-E 3（英語）</h4>
+<pre><code>Authentic Japanese workplace group photograph, circa 1988-1990,
+Japanese factory manager age 50-52, standing confidently at center of group,
+wearing factory uniform with manager's badge or hard hat, authoritative but approachable expression,
+white hair beginning to show, slightly heavier build than youth, experienced weathered face,
+group of 8-12 factory workers in uniform standing in factory interior or outside factory entrance,
+Japanese manufacturing plant circa 1988, metal machinery visible in background,
+industrial setting, formal company photo pose (aligned rows),
+authentic 35mm color film photography, workplace group photo style,
+NOT digital, period-authentic 1980s Japanese workplace photography
+--ar 3:2</code></pre>
+
+<h4>日本語版</h4>
+<pre><code>昭和63年〜平成2年ごろ 工場の集合写真 カラー
+中央に50〜52歳の工場長（誠一）工場の制服・安全帽または識別バッジ
+貫禄があるが親しみやすい顔 白髪が目立ってきた 少し恰幅よくなった
+工場内または工場正門前 8〜12人の作業員が整列
+機械設備が背景に見える 会社の公式記念写真風のポーズ
+35mmカラーフィルム 1980年代末の日本の工場写真の雰囲気 3:2</code></pre>
+
+<p class="memo"><strong>生成メモ</strong>: 「工場長が中央」は重要。誠一を中央かやや左よりに配置する。</p>
+
+<hr>
+
+<h3>■ カット28：地域の祭りの写真（平成15〜20年ごろ） <span class="badge badge-gray">📷 実写写真</span></h3>
+<p><strong>字コンテ参照</strong>: 第三章・カット28 / 10秒</p>
+<p><strong>シーン概要</strong>: 定年後の65歳ごろの誠一が地域の祭りの世話役として前に立っている。</p>
+
+<h4>Midjourney / DALL-E 3（英語）</h4>
+<pre><code>Authentic Japanese community festival photograph, circa 2003-2008,
+elderly Japanese man age 65, standing at front as festival organizer/coordinator,
+wearing traditional festival happi coat (法被) or formal casual Japanese clothes,
+standing confidently in front of portable shrine (mikoshi) or festival decorations,
+other community members visible in background with lanterns and festival decorations,
+summer rural Japanese festival setting, lanterns (chochin), shrine precincts or community hall,
+white hair, dignified face, warm responsible expression, the man everyone trusts,
+digital camera snapshot quality circa 2005, natural outdoor light, warm evening atmosphere
+--ar 3:2</code></pre>
+
+<h4>日本語版</h4>
+<pre><code>平成15〜20年ごろ デジタル写真（初期） 地域の夏祭り
+65歳の誠一が世話役として前に立っている 半被（法被）か和装の祭り衣装
+後方に神輿や提灯 地域の人々が見える
+神社境内か公民館前 夏の夕暮れの光 温かい雰囲気
+白髪 穏やかだが頼もしい表情 みんなから慕われる世話役の雰囲気
+2005年ごろのデジタルカメラ写真の質感 3:2</code></pre>
+
+<p class="memo"><strong>生成メモ</strong>: 祭りの衣装・背景の提灯が「日本の地域コミュニティ」の雰囲気を作る重要なディテール。</p>
+
+<hr>
+
+<h3>■ カット30：家庭菜園の手元（現在に近い） <span class="badge badge-gray">📷 実写写真</span></h3>
+<p><strong>字コンテ参照</strong>: 第四章・カット30 / 18秒</p>
+<p><strong>シーン概要</strong>: 現在に近い時期の誠一の手元。土をいじっている。野菜が育っている家庭菜園。</p>
+
+<h4>Midjourney / DALL-E 3（英語）</h4>
+<pre><code>Close-up photograph of elderly Japanese man's hands working in a home vegetable garden,
+age 80-85, deeply wrinkled hands gently handling garden soil,
+healthy green vegetable plants (tomatoes, cucumbers, eggplant) visible around,
+wearing garden gloves or bare hands with garden-stained fingers,
+warm natural sunlight on the garden, late morning or early afternoon,
+soft shallow depth of field, photorealistic documentary style,
+genuine garden atmosphere, rich dark soil, authentic small Japanese home garden,
+warm contemporary photography, high detail
+--ar 16:9</code></pre>
+
+<h4>日本語版</h4>
+<pre><code>現在に近い時期 家庭菜園の写真 手元アップ
+80〜85歳の日本人男性の皺深い手 土をやさしく触っている
+周囲にトマト・きゅうり・なすなど緑の野菜
+作業手袋か素手 土のついた指
+温かい自然光（午前〜午後） 浅い被写界深度
+フォトリアリズム 記録的な自然な写真 日本の小さな家庭菜園
+黒い豊かな土 16:9</code></pre>
+
+<p class="memo"><strong>生成メモ</strong>: カット1の「手アップ」と連続する場合は、同じ手の特徴（皺の深さ・関節の形）を統一する。</p>
+
+<hr>
+
+<h3>■ カット31：将棋の写真 <span class="badge badge-gray">📷 実写写真</span></h3>
+<p><strong>字コンテ参照</strong>: 第四章・カット31 / 12秒</p>
+<p><strong>シーン概要</strong>: 縁側か公民館で誠一が将棋の相手と向き合っている。</p>
+
+<h4>Midjourney / DALL-E 3（英語）</h4>
+<pre><code>Authentic photograph of elderly Japanese man playing shogi (Japanese chess),
+age 82-85, sitting across a traditional shogi board from another elderly man,
+both deeply focused on the game, shogi pieces visible on wooden board,
+traditional Japanese engawa (wooden veranda) or community center setting,
+afternoon light coming through shoji screens or windows,
+both men in casual Japanese elder clothing (cardigan, casual kimono),
+documentary style natural photography, warm tones,
+quiet contemplative atmosphere, lifelong friendship between two old men,
+photorealistic, natural light, gentle bokeh background
+--ar 16:9</code></pre>
+
+<h4>日本語版</h4>
+<pre><code>将棋を指している高齢の日本人男性 82〜85歳
+相手の老人と将棋盤を挟んで向き合っている 駒が盤上に見える
+縁側か公民館 午後の光（障子越し、または窓光）
+二人ともカーディガンか和装の普段着
+真剣な集中した顔 長年の友人同士の雰囲気
+記録的な自然な写真スタイル 温かい色調 静かな雰囲気 16:9</code></pre>
+
+<p class="memo"><strong>生成メモ</strong>: 将棋盤は日本の道具なのでAIが誤認識しやすい。「shogi board with pieces」と英語で明記するとよい。</p>
+
+<hr>
+
+<h3>■ カット32：夕暮れの田んぼ・後ろ姿（現在） <span class="badge badge-gray">📷 実写写真</span></h3>
+<p><strong>字コンテ参照</strong>: 第四章・カット32 / 16秒</p>
+<p><strong>シーン概要</strong>: 夕暮れ時、金色に実った稲穂の田んぼの前に誠一の後ろ姿。</p>
+
+<h4>Midjourney / DALL-E 3（英語）</h4>
+<pre><code>Photograph of an elderly Japanese man viewed from behind, standing at the edge of a rice paddy field,
+age 85-87, slight thin build, white hair, wearing simple casual clothes (dark pants, light jacket),
+golden ripe rice stalks (inaho) filling the frame in the foreground,
+warm golden sunset light casting long shadows across the paddy,
+rural Japanese countryside landscape, mountains in far background,
+silhouette partially lit by side light, the man alone in quiet contemplation,
+peaceful melancholic atmosphere, end of summer or autumn,
+documentary photography style, natural light, cinematic composition,
+man's silhouette against golden field and sky
+--ar 16:9</code></pre>
+
+<h4>日本語版</h4>
+<pre><code>夕暮れの田んぼ 現在 高齢の日本人男性の後ろ姿
+85〜87歳 細身・白髪 シンプルな普段着（濃いズボン・薄いジャケット）
+金色に実った稲穂が手前に広がる 夕日の斜光 長い影
+遠景に農村の山々 一人で田んぼを眺めている 穏やかで物思いにふける雰囲気
+ドキュメンタリー写真スタイル 自然光 シネマティックな構図
+男性のシルエットと金色の田んぼ 16:9</code></pre>
+
+<p class="memo"><strong>生成メモ</strong>: 後ろ姿なので顔の一致は不要。稲穂の「金色」が重要な視覚的要素。秋の設定。</p>
+
+<hr>
+
+<h3>■ カット34：家族集合写真（最新・現在） <span class="badge badge-gray">📷 実写写真</span></h3>
+<p><strong>字コンテ参照</strong>: 終章・カット34 / 16秒</p>
+<p><strong>シーン概要</strong>: 誠一87歳と妻・子ども夫婦・孫5人・ひ孫2人の全員集合写真。全員笑顔。</p>
+
+<h4>Midjourney / DALL-E 3（英語）</h4>
+<pre><code>Contemporary Japanese multi-generational family group photograph,
+large family gathering of approximately 12-15 people, three to four generations,
+elderly patriarch age 87 (white-haired, thin but dignified) at center front with elderly wife,
+their two adult children (ages 55-60) with spouses standing behind,
+five grandchildren (ages 20-35) in back rows,
+two small great-grandchildren (ages 2-5) in front or on laps,
+all genuinely smiling and happy, casual but neat clothing,
+modern Japanese living room or outdoor garden/yard setting,
+contemporary digital photography, warm natural light,
+genuine family warmth and closeness, authentic Japanese family portrait,
+NOT overly staged, candid family gathering feeling
+--ar 3:2</code></pre>
+
+<h4>日本語版</h4>
+<pre><code>現在 日本の多世代家族の集合写真 現代デジタル写真
+12〜15人 3〜4世代
+中央前列：87歳の誠一（白髪・細身・穏やかな顔）と妻
+後列：子ども2人（55〜60歳）と配偶者
+その後ろ：孫5人（20〜35歳）
+前列：ひ孫2人（2〜5歳）ひざや前に
+全員笑顔 普段着だが整っている
+現代の和室か庭・リビング 自然光か室内光
+本物らしい温かい家族写真の雰囲気 3:2</code></pre>
+
+<p class="memo"><strong>生成メモ</strong>: 人数が多いため全員の顔を細かく描写するよりも「笑顔の人数感・温かさ」を優先するプロンプトが効果的。複数生成して最も自然なものを選ぶ。</p>
+
+<hr>
+
+<h3>■ カット35：孫・ひ孫の写真（スライド） <span class="badge badge-gray">📷 実写写真</span></h3>
+<p><strong>字コンテ参照</strong>: 終章・カット35 / 14秒</p>
+<p><strong>シーン概要</strong>: 孫・ひ孫の子どもたちの笑顔の写真スライド。</p>
+
+<h4>Midjourney / DALL-E 3（英語）</h4>
+<pre><code>Contemporary photograph of happy Japanese children and young adults,
+mixed age group: 2 toddlers/infants (ages 1-4), 3-4 young adults (ages 20-30),
+genuine natural smiles and laughter, casual modern Japanese clothing,
+outdoor setting (garden, park) or cozy modern Japanese home interior,
+warm natural light, candid family gathering atmosphere,
+NOT posed, genuine happiness and energy of young family members,
+contemporary digital photography, warm tones, soft natural light
+--ar 3:2</code></pre>
+
+<h4>日本語版</h4>
+<pre><code>現代の日本の子どもと若者の写真 スライド複数枚
+幼児・赤ちゃん（1〜4歳）2人、若い大人（20〜30代）3〜4人
+自然な笑顔と笑い声 現代のカジュアルな服装
+庭・公園か現代の日本の家の中 自然光
+ポーズなしの自然なスナップ 若い家族のエネルギーと笑顔
+現代デジタル写真 温かい色調 3:2</code></pre>
+
+<p class="memo"><strong>生成メモ</strong>: 「孫の写真」は動画の感情山場。笑顔の自然さが最重要。複数カット用に2〜3パターン生成推奨。</p>
+
+<hr>
+
+<h3>■ カット37：現在の誠一の笑顔・クローズアップ（終章） <span class="badge">🎬 現在の実写</span></h3>
+<p><strong>字コンテ参照</strong>: 終章・カット37 / 14秒</p>
+<p><strong>シーン概要</strong>: 87歳の誠一の顔アップ。穏やかな笑顔。目元に深い年輪。台詞「まだまだ、終わっていないよ。」</p>
+
+<h4>Midjourney / DALL-E 3（英語）</h4>
+<pre><code>Close-up portrait photograph of an 87-year-old Japanese man, warm genuine smile,
+deeply lined face with character and history written in every wrinkle,
+kind bright eyes that hold decades of memories, slight crinkle at eye corners,
+white hair, slight build but vital spirit visible,
+warm golden light (late afternoon sunlight or warm indoor light),
+emotional resonance visible in expression: "life is still continuing",
+not sad, not sentimental — alive, present, content,
+documentary portrait photography, Canon 85mm 1.4 quality,
+shallow depth of field, warm tones, photorealistic,
+facing slightly toward camera, slight upward curve of lips
+--ar 4:5</code></pre>
+
+<h4>日本語版</h4>
+<pre><code>87歳の日本人男性の顔アップ 温かく自然な笑顔
+深い皺の中に歴史と人生が見える 目元に深い年輪
+白髪 細身だが生命力ある目の輝き 「まだまだ終わっていない」という表情
+悲しくない・感傷的でない 生き生きとした現在感
+温かい光（夕方の自然光か室内の暖色照明）
+記録的なポートレート写真 浅い被写界深度 温かい色調 4:5縦</code></pre>
+
+<p class="memo"><strong>生成メモ</strong>: カット3（プロローグの顔）と同じ人物であることが重要。カット3で選んだ参照画像を使って生成する。表情は「笑顔」「前向き」に変える。</p>
+
+<hr>
+
+<h2>生成の進め方（推奨ワークフロー）</h2>
+
+<h3>Step 1：顔の基準を固める</h3>
+<ol>
+<li>まず<strong>カット3</strong>（プロローグの顔）を最優先で複数生成</li>
+<li>「一番誠一らしい」と感じる1枚を決定 → <strong>参照画像</strong>として保存</li>
+<li>この参照画像をMidjourneyの <code>--cref</code> やDALL-Eの「image prompt」で後続カットに引用</li>
+</ol>
+
+<h3>Step 2：古い年代の写真から生成</h3>
+<ol>
+<li>カット18（成人式・20歳・白黒）→ 参照顔の若い版</li>
+<li>カット22（結婚式・28歳）</li>
+<li>カット20（職場同僚・22〜25歳）</li>
+</ol>
+
+<h3>Step 3：中年〜現在の写真</h3>
+<ol>
+<li>カット27（工場長・50代）</li>
+<li>カット25（家族写真・40代）</li>
+<li>カット26（家族旅行・40代後半）</li>
+</ol>
+
+<h3>Step 4：趣味・現在の写真（顔が見えにくいカット）</h3>
+<ol>
+<li>カット32（後ろ姿 → 顔不要）</li>
+<li>カット30（手元アップ → 顔不要）</li>
+<li>カット31（将棋）</li>
+<li>カット28（祭り）</li>
+</ol>
+
+<h3>Step 5：家族・グループ写真</h3>
+<ol>
+<li>カット34（家族集合）</li>
+<li>カット35（孫・ひ孫）</li>
+<li>カット1（手元アップ → 顔不要）</li>
+<li>カット37（終章の笑顔 → カット3参照）</li>
+</ol>
+
+<hr>
+
+<h2>カット対応早見表</h2>
+
+<table>
+<tr><th>カット</th><th>時代</th><th>年齢</th><th>写真スタイル</th><th>難易度</th><th>備考</th></tr>
+<tr><td>1</td><td>現在</td><td>87歳</td><td>現代カラー</td><td>★☆☆</td><td>手元のみ</td></tr>
+<tr><td>3</td><td>現在</td><td>87歳</td><td>現代カラー</td><td>★★★</td><td><strong>顔の基準カット・最初に生成</strong></td></tr>
+<tr><td>18</td><td>昭和33年</td><td>20歳</td><td>白黒</td><td>★★☆</td><td>成人式・紋付き袴</td></tr>
+<tr><td>20</td><td>昭和35〜38年</td><td>22〜25歳</td><td>白黒</td><td>★★☆</td><td>集合写真</td></tr>
+<tr><td>22</td><td>昭和41年</td><td>28歳</td><td>白黒〜淡いカラー</td><td>★★☆</td><td>結婚式・妻の顔も固める</td></tr>
+<tr><td>25</td><td>昭和55年</td><td>42〜45歳</td><td>カラー</td><td>★★☆</td><td>家族・食卓</td></tr>
+<tr><td>26</td><td>昭和57〜60年</td><td>45〜48歳</td><td>カラー</td><td>★★☆</td><td>旅行・複数枚生成推奨</td></tr>
+<tr><td>27</td><td>昭和63年〜平成2年</td><td>50〜52歳</td><td>カラー</td><td>★★☆</td><td>工場長・集合</td></tr>
+<tr><td>28</td><td>平成15〜20年</td><td>65歳</td><td>デジタル</td><td>★☆☆</td><td>祭り・世話役</td></tr>
+<tr><td>30</td><td>現在に近い</td><td>80〜85歳</td><td>現代カラー</td><td>★☆☆</td><td>手元のみ</td></tr>
+<tr><td>31</td><td>現在に近い</td><td>82〜85歳</td><td>現代カラー</td><td>★★☆</td><td>将棋・2人</td></tr>
+<tr><td>32</td><td>現在</td><td>85〜87歳</td><td>現代カラー</td><td>★☆☆</td><td>後ろ姿のみ</td></tr>
+<tr><td>34</td><td>現在</td><td>87歳</td><td>現代カラー</td><td>★★★</td><td>大家族集合・人数多</td></tr>
+<tr><td>35</td><td>現在</td><td>—</td><td>現代カラー</td><td>★☆☆</td><td>孫・ひ孫のみ・複数枚</td></tr>
+<tr><td>37</td><td>現在</td><td>87歳</td><td>現代カラー</td><td>★★★</td><td>笑顔・終章クライマックス・カット3参照</td></tr>
+</table>
+
+</body></html>
